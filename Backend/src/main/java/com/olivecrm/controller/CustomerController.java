@@ -3,6 +3,8 @@ package com.olivecrm.controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
+import java.util.*; 
+
 @RestController
 @RequestMapping("/api/customers")
 public class CustomerController {
@@ -10,6 +12,9 @@ public class CustomerController {
     @GetMapping("/")
     public List<Customer> getAllCustomers() {
         // Logic to fetch and return all customers
+        List<Customer> customerList = new ArrayList<>();
+        return customerList;
+       
     }
 
     @PostMapping("/")
