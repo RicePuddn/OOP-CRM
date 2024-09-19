@@ -31,11 +31,11 @@ export default function DashboardPage() {
     <>
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 bg-white border-b h-20">
-        <div className="flex items-center">
+        <div className="flex items-center w-7/12">
           <Input
             type="search"
             placeholder="Search..."
-            className="ml-10 text-black"
+            className="ml-10 text-black "
           />
         </div>
         <div className="flex items-center">
