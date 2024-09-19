@@ -1,22 +1,6 @@
-import {
-  Bell,
-  ChevronDown,
-  Users,
-  ShoppingCart,
-  BarChart,
-  LogOut,
-} from "lucide-react";
+import { Users, ShoppingCart, BarChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -29,48 +13,6 @@ import {
 export default function DashboardPage() {
   return (
     <>
-      {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 bg-white border-b h-20">
-        <div className="flex items-center w-7/12">
-          <Input
-            type="search"
-            placeholder="Search..."
-            className="ml-10 text-black "
-          />
-        </div>
-        <div className="flex items-center">
-          <Button
-            variant="default"
-            size="icon"
-            className="bg-green-800 hover:bg-green-700 hover:text-gray-200 h-10"
-          >
-            <Bell className="h-5 w-5" />
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="default"
-                className="ml-4 bg-green-800 hover:bg-green-700 hover:text-gray-200 h-10"
-              >
-                Mr Olive Man
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="center">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
         <div className="container mx-auto px-6 py-8">
