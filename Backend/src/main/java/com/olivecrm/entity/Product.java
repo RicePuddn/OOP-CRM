@@ -1,10 +1,7 @@
 package com.olivecrm.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "PRODUCT")
@@ -15,6 +12,9 @@ public class Product {
     private String productName;
     private String productVariant;
     private double individualPrice;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    private List<Order> orders;
 
     // Getters and setters
     public int getPID() {
@@ -47,5 +47,13 @@ public class Product {
 
     public void setIndividualPrice(double individualPrice) {
         this.individualPrice = individualPrice;
+    }
+
+    public List<Order> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<Order> orders) {
+        this.orders = orders;
     }
 }

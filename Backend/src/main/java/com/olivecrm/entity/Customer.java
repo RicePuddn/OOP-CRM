@@ -1,8 +1,7 @@
 package com.olivecrm.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "CUSTOMER")
@@ -10,6 +9,9 @@ public class Customer {
     @Id
     private int cID;
     private String zipcode;
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+    private List<Order> orders;
 
     // Getters and setters
     public int getCID() {
@@ -26,5 +28,13 @@ public class Customer {
 
     public void setZipcode(String zipcode) {
         this.zipcode = zipcode;
+    }
+
+    public List<Order> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<Order> orders) {
+        this.orders = orders;
     }
 }

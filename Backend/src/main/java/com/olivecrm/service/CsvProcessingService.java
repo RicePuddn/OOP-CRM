@@ -44,7 +44,7 @@ public class CsvProcessingService {
                 logger.info("Row {} processed successfully", i);
             } catch (Exception e) {
                 logger.error("Error processing row " + i + ": " + e.getMessage(), e);
-                throw new Exception("Error processing CSV file at row " + i, e);
+                throw new Exception("Error processing CSV file at row " + i + ": " + e.getMessage(), e);
             }
         }
         logger.info("CSV file processing completed successfully");
@@ -73,12 +73,14 @@ public class CsvProcessingService {
                 logger.info("Creating new customer with ID: {}", customerId);
                 customer = new Customer();
                 customer.setCID(customerId);
+                customer.setZipcode(zipCode);
+                entityManager.persist(customer);
             } else {
                 logger.info("Updating existing customer with ID: {}", customerId);
+                customer.setZipcode(zipCode);
+                customer = entityManager.merge(customer);
             }
-            customer.setZipcode(zipCode);
-            entityManager.merge(customer);
-            logger.info("Customer processed successfully");
+            logger.info("Customer processed successfully: {}", customer);
 
             // Update or create Product
             Product product = entityManager.createQuery("SELECT p FROM Product p WHERE p.productName = :name AND p.productVariant = :variant", Product.class)
@@ -90,12 +92,14 @@ public class CsvProcessingService {
                 product = new Product();
                 product.setProductName(productName);
                 product.setProductVariant(productVariant);
+                product.setIndividualPrice(productPrice);
+                entityManager.persist(product);
             } else {
                 logger.info("Updating existing product: {} - {}", productName, productVariant);
+                product.setIndividualPrice(productPrice);
+                product = entityManager.merge(product);
             }
-            product.setIndividualPrice(productPrice);
-            entityManager.merge(product);
-            logger.info("Product processed successfully");
+            logger.info("Product processed successfully: {}", product);
 
             // Create Order
             Order order = new Order();
@@ -105,8 +109,10 @@ public class CsvProcessingService {
             order.setSalesDate(parseSaleDate(saleDate));
             order.setSalesType(saleType);
             order.setShippingMethod(shippingMethod);
+            order.setCustomer(customer);
+            order.setProduct(product);
             entityManager.persist(order);
-            logger.info("Order created successfully");
+            logger.info("Order created successfully: {}", order);
 
         } catch (Exception e) {
             logger.error("Error processing row: " + e.getMessage(), e);
