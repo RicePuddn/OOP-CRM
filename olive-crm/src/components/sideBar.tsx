@@ -11,6 +11,7 @@ import {
   Bell,
   ChevronDown,
   LogOut,
+  Upload,
 } from "lucide-react";
 import Link from "next/link";
 import { Input } from "./ui/input";
@@ -91,6 +92,13 @@ export default function Sidebar() {
             >
               <BarChart className="h-5 w-5 mr-3" />
               Reports
+            </Link>
+            <Link
+              href="/csv-upload"
+              className="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+            >
+              <Upload className="h-5 w-5 mr-3" />
+              CSV Upload
             </Link>
             <Link
               href="/settings"
