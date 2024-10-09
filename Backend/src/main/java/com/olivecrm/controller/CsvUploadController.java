@@ -32,9 +32,12 @@ public class CsvUploadController {
         } catch (IOException e) {
             logger.error("Failed to read CSV file: " + e.getMessage(), e);
             return ResponseEntity.internalServerError().body("Failed to read CSV file: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid data in CSV file: " + e.getMessage(), e);
+            return ResponseEntity.badRequest().body("Invalid data in CSV file: " + e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to process CSV file: " + e.getMessage(), e);
-            return ResponseEntity.internalServerError().body("Failed to process CSV file: " + e.getMessage());
+            return ResponseEntity.internalServerError().body("Failed to process CSV file. Error: " + e.getMessage() + ". Please check the server logs for more details.");
         }
     }
 }

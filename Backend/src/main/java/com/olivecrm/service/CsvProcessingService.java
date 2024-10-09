@@ -73,11 +73,13 @@ public class CsvProcessingService {
                 logger.info("Creating new customer with ID: {}", customerId);
                 customer = new Customer();
                 customer.setCID(customerId);
+                customer.setZipcode(zipCode);
+                entityManager.persist(customer);
             } else {
                 logger.info("Updating existing customer with ID: {}", customerId);
+                customer.setZipcode(zipCode);
+                customer = entityManager.merge(customer);
             }
-            customer.setZipcode(zipCode);
-            entityManager.merge(customer);
             logger.info("Customer processed successfully");
 
             // Update or create Product
@@ -90,15 +92,19 @@ public class CsvProcessingService {
                 product = new Product();
                 product.setProductName(productName);
                 product.setProductVariant(productVariant);
+                product.setIndividualPrice(productPrice);
+                entityManager.persist(product);
             } else {
                 logger.info("Updating existing product: {} - {}", productName, productVariant);
+                product.setIndividualPrice(productPrice);
+                product = entityManager.merge(product);
             }
-            product.setIndividualPrice(productPrice);
-            entityManager.merge(product);
             logger.info("Product processed successfully");
 
-            // Create Order
+            // Create Order with relationships
             Order order = new Order();
+            order.setCustomer(customer);
+            order.setProduct(product);
             order.setQuantity(quantity);
             order.setTotalCost(price * quantity);
             order.setOrderMethod(digital);
@@ -106,7 +112,7 @@ public class CsvProcessingService {
             order.setSalesType(saleType);
             order.setShippingMethod(shippingMethod);
             entityManager.persist(order);
-            logger.info("Order created successfully");
+            logger.info("Order created successfully with customer ID: {} and product ID: {}", customer.getCID(), product.getPID());
 
         } catch (Exception e) {
             logger.error("Error processing row: " + e.getMessage(), e);
