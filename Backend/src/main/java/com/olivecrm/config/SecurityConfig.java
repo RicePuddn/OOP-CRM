@@ -21,7 +21,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
             .csrf().disable() // Disable CSRF for testing; consider enabling in production
             .authorizeRequests()
-                .antMatchers("/api/users/create").permitAll() // Allow access to create user
+                .antMatchers("/api/users/create", "/api/users/update/**", "/api/users/delete/**").permitAll() // Allow access to create/update/delete user
                 .anyRequest().authenticated() // Require authentication for other requests
             .and()
             .httpBasic(); // Enable Basic Authentication
