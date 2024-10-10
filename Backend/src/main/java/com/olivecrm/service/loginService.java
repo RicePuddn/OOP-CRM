@@ -8,7 +8,7 @@ import java.util.Optional;
 
 @Service
 
-public class loginService {
+public class LoginService {
     @Autowired
     private EmployeeRepository employeeRepository;
 

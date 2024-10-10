@@ -1,6 +1,6 @@
 package com.olivecrm.dto;
 
-public class LoginRequest {
+public class LoginDTO {
     private String username;
     private String password;
 
