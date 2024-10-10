@@ -10,8 +10,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import Cookies from "js-cookie";
 
 export default function DashboardPage() {
+  const username = Cookies.get("username");
   return (
     <div className="w-full px-6 py-8 mt-20">
       <h3 className="text-gray-700 text-3xl font-medium">Dashboard</h3>

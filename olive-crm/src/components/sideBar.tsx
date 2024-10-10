@@ -8,14 +8,12 @@ import {
   ShoppingCart,
   Users,
   Menu,
-  Search,
   Bell,
   ChevronDown,
   LogOut,
-  Upload,
+  Newspaper,
 } from "lucide-react";
 import Link from "next/link";
-import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
@@ -25,9 +23,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 export default function Sidebar() {
+  const username = Cookies.get("username");
+  const role = Cookies.get("role");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const router = useRouter();
 
   // Close sidebar when screen size becomes larger
   useEffect(() => {
@@ -40,6 +43,11 @@ export default function Sidebar() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+  const handleLogout = () => {
+    Cookies.remove("role");
+    Cookies.remove("username");
+    router.push("/"); // Redirect to login page
+  };
 
   return (
     <>
@@ -53,15 +61,13 @@ export default function Sidebar() {
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-20 w-64 bg-white transform ${
+        className={`fixed inset-y-0 left-0 w-64 bg-white z-20 transform ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } transition-transform duration-300 ease-in-out md:translate-x-0 overflow-y-auto`}
+        } transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:w-64`}
       >
         <div className="sticky top-0 bg-white z-10">
           <div className="flex items-center justify-center h-20 border-b">
-            <span className="text-2xl font-bold text-green-800">
-              Olive CRM
-            </span>
+            <span className="text-2xl font-bold text-green-800">Olive CRM</span>
           </div>
         </div>
         <nav className="flex-grow">
@@ -93,37 +99,30 @@ export default function Sidebar() {
             <BarChart className="h-5 w-5 mr-3" />
             Reports
           </Link>
-          <Link
-            href="/csv-upload"
-            className="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
-          >
-            <Upload className="h-5 w-5 mr-3" />
-            CSV Upload
-          </Link>
-          <Link
-            href="/settings"
-            className="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
-          >
-            <Settings className="h-5 w-5 mr-3" />
-            Settings
-          </Link>
+          {role === "MARKETING" && (
+            <Link
+              href="/newsletter"
+              className="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+            >
+              <Newspaper className="h-5 w-5 mr-3" />
+              Newsletter
+            </Link>
+          )}
+          {role === "ADMIN" && (
+            <Link
+              href="/admin"
+              className="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+            >
+              <Settings className="h-5 w-5 mr-3" />
+              Admin
+            </Link>
+          )}
         </nav>
       </div>
+
+      {/* Header */}
       <header className="fixed top-0 right-0 z-20 flex items-center justify-between px-6 py-4 bg-white border-b h-20 left-0 md:left-64">
-        <div className="flex items-center w-7/12">
-          <Input
-            type="search"
-            placeholder="Search..."
-            className="ml-10 text-black "
-          />
-          <Button
-            variant="outline"
-            size="icon"
-            className="ml-2 text-black hover:text-slate-500"
-          >
-            <Search className="h-4 w-4" />
-          </Button>
-        </div>
+        <div className="flex items-center w-7/12"></div>
         <div className="flex items-center">
           <Button
             variant="default"
@@ -136,19 +135,19 @@ export default function Sidebar() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="default"
-                className="ml-4 bg-green-800 hover:bg-green-700 hover:text-gray-200 h-10"
+                className="ml-1 bg-green-800 hover:bg-green-700 hover:text-gray-200 h-10 w-fit"
               >
-                Mr Olive Man
+                {username}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="center">
+            <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Profile</DropdownMenuItem>
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>

@@ -11,11 +11,11 @@ CREATE TABLE ORDERS (
     shipping_method VARCHAR(255) NOT NULL
 );
 CREATE TABLE EMPLOYEES (
-    e_id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255) NOT NULL,
+    username VARCHAR(255) PRIMARY KEY,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    employee_name VARCHAR(255) NOT NULL,
-    team ENUM('Marketing', 'Sales', 'System Administrator') NOT NULL
+    role ENUM('MARKETING', 'SALES', 'ADMIN') NOT NULL
 );
 CREATE TABLE PRODUCT (
     pID INT AUTO_INCREMENT PRIMARY KEY,
