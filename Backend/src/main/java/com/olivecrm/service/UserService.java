@@ -7,8 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.olivecrm.entity.User;
-import com.olivecrm.entity.User.Role;
+import com.olivecrm.entity.Employee;
+import com.olivecrm.entity.Employee.Role;
 import com.olivecrm.repository.UserRepository;
 import com.olivecrm.util.PasswordUtil;
 
@@ -20,46 +20,46 @@ public class UserService {
     private UserRepository userRepository;
 
     // CREATE USER
-    public User createUser(String username, String firstName, String lastName, String rawPassword, Role role) throws Exception {
+    public Employee createUser(String username, String firstName, String lastName, String rawPassword, Role role) throws Exception {
         // Check if user already exists
         if (userRepository.existsByUsername(username)) {
             throw new Exception("Username already exists!");
         }
         // Create new user
-        User user = new User();
-        user.setUsername(username);
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setPassword(PasswordUtil.hashPassword(rawPassword));  // Encrypt password
-        user.setRole(role);
+        Employee employee = new Employee();
+        employee.setUsername(username);
+        employee.setFirstName(firstName);
+        employee.setLastName(lastName);
+        employee.setPassword(PasswordUtil.hashPassword(rawPassword));  // Encrypt password
+        employee.setRole(role);
         
-        return userRepository.save(user);  // Save the new user to the database
+        return userRepository.save(employee);  // Save the new user to the database
     }
 
     // UPDATE USER
-    public User updateUser(String username, String firstName, String lastName, String password, Role role) throws Exception {
-        Optional<User> optionalUser = userRepository.findByUsername(username);
+    public Employee updateUser(String username, String firstName, String lastName, String password, Role role) throws Exception {
+        Optional<Employee> optionalUser = userRepository.findByUsername(username);
         if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
+            Employee employee = optionalUser.get();
             
             // Only update fields that are provided
             if (username != null && !username.isEmpty()) {
-                user.setUsername(username);
+                employee.setUsername(username);
             }
             if (firstName != null && !firstName.isEmpty()) {
-                user.setFirstName(firstName);
+                employee.setFirstName(firstName);
             }
             if (lastName != null && !lastName.isEmpty()) {
-                user.setLastName(lastName);
+                employee.setLastName(lastName);
             }
             if (password != null && !password.isEmpty()) {
-                user.setPassword(PasswordUtil.hashPassword(password)); // Only update password if provided
+                employee.setPassword(PasswordUtil.hashPassword(password)); // Only update password if provided
             }
             if (role != null) {
-                user.setRole(role);
+                employee.setRole(role);
             }
 
-            return userRepository.save(user); // Save the updated user
+            return userRepository.save(employee); // Save the updated user
         } else {
             throw new Exception("User not found");
         }
@@ -68,7 +68,7 @@ public class UserService {
     // DELETE USER
     @Transactional
     public void deleteUser(String username) throws Exception {
-        Optional<User> optionalUser = userRepository.findByUsername(username);
+        Optional<Employee> optionalUser = userRepository.findByUsername(username);
         if (optionalUser.isPresent()) {
             userRepository.deleteByUsername(username); // Delete the user
         } else {
