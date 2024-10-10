@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import java.io.InputStream;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -120,7 +119,7 @@ public class CsvProcessingService {
         }
     }
 
-    private LocalDateTime parseSaleDate(String saleDate) {
+    private LocalDate parseSaleDate(String saleDate) {
         DateTimeFormatter[] formatters = {
             DateTimeFormatter.ofPattern("dd/MM/yyyy"),
             DateTimeFormatter.ofPattern("MM/dd/yyyy"),
@@ -129,8 +128,7 @@ public class CsvProcessingService {
 
         for (DateTimeFormatter formatter : formatters) {
             try {
-                LocalDate date = LocalDate.parse(saleDate, formatter);
-                return date.atStartOfDay(); // Convert LocalDate to LocalDateTime at midnight
+                return LocalDate.parse(saleDate, formatter);
             } catch (DateTimeParseException e) {
                 // Try the next formatter
             }

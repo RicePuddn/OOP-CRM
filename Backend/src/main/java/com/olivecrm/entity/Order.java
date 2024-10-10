@@ -2,7 +2,7 @@ package com.olivecrm.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "ORDERS")
@@ -24,7 +24,7 @@ public class Order {
     private int quantity;
     private double totalCost;
     private String orderMethod;
-    private LocalDateTime salesDate;
+    private LocalDate salesDate;
     private String salesType;
     private String shippingMethod;
 
@@ -77,11 +77,11 @@ public class Order {
         this.orderMethod = orderMethod;
     }
 
-    public LocalDateTime getSalesDate() {
+    public LocalDate getSalesDate() {
         return salesDate;
     }
 
-    public void setSalesDate(LocalDateTime salesDate) {
+    public void setSalesDate(LocalDate salesDate) {
         this.salesDate = salesDate;
     }
 
