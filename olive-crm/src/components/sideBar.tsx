@@ -12,6 +12,7 @@ import {
   ChevronDown,
   LogOut,
   Newspaper,
+  Upload,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
@@ -91,6 +92,13 @@ export default function Sidebar() {
           >
             <ShoppingCart className="h-5 w-5 mr-3" />
             Orders
+          </Link>
+          <Link
+            href="/csv-upload"
+            className="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+          >
+            <Upload className="h-5 w-5 mr-3" />
+            CSV Upload
           </Link>
           <Link
             href="/reports"
