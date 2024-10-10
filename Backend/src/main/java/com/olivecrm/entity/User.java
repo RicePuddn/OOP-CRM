@@ -2,52 +2,57 @@ package com.olivecrm.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "users")
+@Table(name = "EMPLOYEES")
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+   @Id
+    @Column(name = "username", nullable = false, unique = true, length = 255)
+    private String username;
 
-    @Column(nullable = false, unique = true)  // Emails must be unique and not null
-    private String email;
+    @Column(name = "first_name", nullable = false, length = 255)
+    private String firstName;
 
-    @Column(nullable = false)
+    @Column(name = "last_name", nullable = false, length = 255)
+    private String lastName;
+
+    @Column(name = "password", nullable = false, length = 255)
     private String password;
 
-    @Column(nullable = false)
-    private String role;  // Can be "ROLE_MARKETING", "ROLE_SALES", or "ROLE_ADMIN"
-
-    // Constructors
-    public User() {
-    }
-
-    public User(String email, String password, String role) {
-        this.email = email;
-        this.password = password;
-        this.role = role;
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 255)
+    private Role role;
 
     // Getters and Setters
-    public Long getId() {
-        return id;
+
+    public String getUsername() {
+        return username;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public String getEmail() {
-        return email;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getPassword() {
@@ -58,12 +63,19 @@ public class User {
         this.password = password;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
+    }
+
+    // Enum for Role
+    public enum Role {
+        MARKETING,
+        SALES,
+        ADMIN
     }
 
 }

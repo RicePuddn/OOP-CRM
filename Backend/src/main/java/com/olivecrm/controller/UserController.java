@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.olivecrm.dto.UserDTO;
 import com.olivecrm.entity.User;
+import com.olivecrm.dto.UserDTO.Role;
 import com.olivecrm.service.UserService;
 
 @RestController
@@ -25,18 +26,29 @@ public class UserController {
     @PostMapping("/create")
     public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
         try {
-            User newUser = userService.createUser(userDTO.getEmail(), userDTO.getPassword(), userDTO.getRole());
+            // Assuming userDTO.getRole() returns a String like "USER" or "ADMIN"
+            User.Role userRole = mapRole(userDTO.getRole());
+            User newUser = userService.createUser(
+                userDTO.getUsername(),
+                userDTO.getFirstName(),
+                userDTO.getLastName(),
+                userDTO.getPassword(),
+                userRole
+            );
             return ResponseEntity.ok(newUser);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Invalid role: " + userDTO.getRole());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     // UPDATE USER
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
+    @PutMapping("/update/{username}")
+    public ResponseEntity<?> updateUser(@PathVariable String username, @RequestBody UserDTO userDTO) {
         try {
-            User updateUser = userService.updateUser(id, userDTO.getEmail(), userDTO.getPassword(), userDTO.getRole());
+            User.Role userRole = mapRole(userDTO.getRole());
+            User updateUser = userService.updateUser(username, userDTO.getFirstName(), userDTO.getLastName(), userDTO.getPassword(), userRole);
             return ResponseEntity.ok(updateUser);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -44,13 +56,27 @@ public class UserController {
     }
 
     // DELETE USER
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+    @DeleteMapping("/delete/{username}")
+    public ResponseEntity<?> deleteUser(@PathVariable String username) {
         try {
-            userService.deleteUser(id);
-            return ResponseEntity.ok("User " + id + " deleted successfully");
+            userService.deleteUser(username);
+            return ResponseEntity.ok("User " + username + " deleted successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // Method to map UserDTO.Role to User.Role
+    private User.Role mapRole(UserDTO.Role role) {
+        switch (role) {
+            case ADMIN:
+                return User.Role.ADMIN;
+            case MARKETING:
+                return User.Role.MARKETING;
+            case SALES:
+                return User.Role.SALES;
+            default:
+                throw new IllegalArgumentException("Invalid role: " + role);
         }
     }
     

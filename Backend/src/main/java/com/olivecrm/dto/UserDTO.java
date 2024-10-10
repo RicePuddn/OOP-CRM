@@ -2,17 +2,42 @@ package com.olivecrm.dto;
 
 public class UserDTO {
 
-    private String email;
+    private String username;
+    private String firstName;
+    private String lastName;
     private String password;
-    private String role;
+    private Role role;
 
-    // Getters and Setters
-    public String getEmail() {
-        return email;
+    // Enum for Role
+    public enum Role {
+        MARKETING,
+        SALES,
+        ADMIN
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    // Getters and Setters
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getPassword() {
@@ -23,11 +48,11 @@ public class UserDTO {
         this.password = password;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 }
