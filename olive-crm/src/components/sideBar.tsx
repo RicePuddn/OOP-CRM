@@ -1,3 +1,4 @@
+// Sidebar.tsx
 "use client";
 import { useState, useEffect } from "react";
 import {
@@ -42,14 +43,13 @@ export default function Sidebar() {
 
   return (
     <>
-      <div>
-        {/* Toggle button for small screens */}
-        <button
-          className="fixed top-4 left-4 z-30 md:hidden"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-        >
-          <Menu className="h-6 w-6 mt-3 ml-2 text-green-800" />
-        </button>
+      {/* Toggle button for small screens */}
+      <button
+        className="fixed top-4 left-4 z-30 md:hidden"
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+      >
+        <Menu className="h-6 w-6 mt-3 ml-2 text-green-800" />
+      </button>
 
         {/* Sidebar */}
         <div
