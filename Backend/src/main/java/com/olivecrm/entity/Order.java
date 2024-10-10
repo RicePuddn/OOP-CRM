@@ -1,5 +1,6 @@
 package com.olivecrm.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -12,10 +13,12 @@ public class Order {
 
     @ManyToOne
     @JoinColumn(name = "customer_id")
+    @JsonManagedReference
     private Customer customer;
 
     @ManyToOne
     @JoinColumn(name = "product_id")
+    @JsonManagedReference
     private Product product;
 
     private int quantity;
