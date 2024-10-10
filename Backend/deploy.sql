@@ -15,7 +15,6 @@ CREATE TABLE EMPLOYEES (
     username VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     employee_name VARCHAR(255) NOT NULL,
-    role VARCHAR(255) NOT NULL,
     team ENUM('Marketing', 'Sales', 'System Administrator') NOT NULL
 );
 CREATE TABLE PRODUCT (
