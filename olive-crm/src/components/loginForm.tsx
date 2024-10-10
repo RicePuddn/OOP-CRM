@@ -5,16 +5,40 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 const LoginForm: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Add your login logic here
-    console.log({ username, password });
+
+    try {
+      // Use axios to send a POST request to the backend for user login
+      const response = await axios.post(
+        "http://localhost:8080/api/employees/login",
+        {
+          username,
+          password,
+        }
+      );
+
+      if (response.status === 200) {
+        const { role } = response.data;
+        // Save JWT token or session identifier if returned by the backend
+        localStorage.setItem("role", role); // TODO: admin role here
+        console.log(role);
+        router.push("/dashboard"); // Redirect to the dashboard after successful login
+      } else {
+        console.error("Failed to log in user");
+        alert("Login failed. Please check your credentials.");
+      }
+    } catch (error) {
+      console.error("An error occurred during login:", error);
+      alert("An error occurred. Please try again.");
+    }
   };
 
   return (
