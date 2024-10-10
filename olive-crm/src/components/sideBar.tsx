@@ -11,6 +11,7 @@ import {
   Bell,
   ChevronDown,
   LogOut,
+  Newspaper,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
@@ -98,6 +99,15 @@ export default function Sidebar() {
             <BarChart className="h-5 w-5 mr-3" />
             Reports
           </Link>
+          {role === "MARKETING" && (
+            <Link
+              href="/newsletter"
+              className="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+            >
+              <Newspaper className="h-5 w-5 mr-3" />
+              Newsletter
+            </Link>
+          )}
           {role === "ADMIN" && (
             <Link
               href="/admin"
