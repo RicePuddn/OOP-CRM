@@ -1,5 +1,7 @@
-// app/dashboard/layout.tsx
+"use client";
 import SideBar from "@/components/sideBar";
+import "@/app/globals.css";
+import ProtectedLayout from "@/app/protected-layout";
 
 export default function DashboardLayout({
   children,
@@ -7,11 +9,13 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen bg-gray-100 w-full">
-      <SideBar />
-      <div className="flex-grow overflow-hidden">
-        <div className="p-6 overflow-y-auto">{children}</div>
+    <ProtectedLayout>
+      <div className="flex h-screen bg-gray-100 w-full">
+        <SideBar />
+        <div className="flex-grow overflow-hidden">
+          <div className="p-6 overflow-y-auto">{children}</div>
+        </div>
       </div>
-    </div>
+    </ProtectedLayout>
   );
 }
