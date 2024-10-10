@@ -23,11 +23,13 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 export default function Sidebar() {
   const username = Cookies.get("username");
   const role = Cookies.get("role");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const router = useRouter();
 
   // Close sidebar when screen size becomes larger
   useEffect(() => {
@@ -40,6 +42,11 @@ export default function Sidebar() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+  const handleLogout = () => {
+    Cookies.remove("role");
+    Cookies.remove("username");
+    router.push("/"); // Redirect to login page
+  };
 
   return (
     <>
@@ -124,13 +131,13 @@ export default function Sidebar() {
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="center">
+            <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Profile</DropdownMenuItem>
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>
