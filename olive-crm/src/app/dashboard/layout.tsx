@@ -1,27 +1,21 @@
-import type { Metadata } from "next";
-import "@/app/globals.css";
+"use client";
 import SideBar from "@/components/sideBar";
+import "@/app/globals.css";
+import ProtectedLayout from "@/app/protected-layout";
 
-export const metadata: Metadata = {
-  title: "Olive Oil CRM",
-  description: "OLIVEOILOLIVEOILOLIVEOIL",
-};
-
-export default function RootLayout({
+export default function DashboardLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body>
-        <div className="flex h-screen bg-gray-100">
-          <SideBar />
-          <div className="flex-1 ml-0 md:ml-64 flex flex-col overflow-hidden">
-            <main className="flex-1 overflow-y-auto">{children}</main>
-          </div>
+    <ProtectedLayout>
+      <div className="flex h-screen bg-gray-100 w-full">
+        <SideBar />
+        <div className="flex-grow overflow-hidden">
+          <div className="p-6 overflow-y-auto">{children}</div>
         </div>
-      </body>
-    </html>
+      </div>
+    </ProtectedLayout>
   );
 }
