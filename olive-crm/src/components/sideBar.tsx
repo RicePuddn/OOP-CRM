@@ -8,13 +8,11 @@ import {
   ShoppingCart,
   Users,
   Menu,
-  Search,
   Bell,
   ChevronDown,
   LogOut,
 } from "lucide-react";
 import Link from "next/link";
-import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
@@ -24,8 +22,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import Cookies from "js-cookie";
 
 export default function Sidebar() {
+  const username = Cookies.get("username");
+  const role = Cookies.get("role");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Close sidebar when screen size becomes larger
@@ -90,32 +91,21 @@ export default function Sidebar() {
             <BarChart className="h-5 w-5 mr-3" />
             Reports
           </Link>
-          <Link
-            href="/settings"
-            className="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
-          >
-            <Settings className="h-5 w-5 mr-3" />
-            Settings
-          </Link>
+          {role === "ADMIN" && (
+            <Link
+              href="/admin"
+              className="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+            >
+              <Settings className="h-5 w-5 mr-3" />
+              Admin
+            </Link>
+          )}
         </nav>
       </div>
 
       {/* Header */}
       <header className="fixed top-0 right-0 z-20 flex items-center justify-between px-6 py-4 bg-white border-b h-20 left-0 md:left-64">
-        <div className="flex items-center w-7/12">
-          <Input
-            type="search"
-            placeholder="Search..."
-            className="ml-10 text-black "
-          />
-          <Button
-            variant="outline"
-            size="icon"
-            className="ml-2 text-black hover:text-slate-500"
-          >
-            <Search className="h-4 w-4" />
-          </Button>
-        </div>
+        <div className="flex items-center w-7/12"></div>
         <div className="flex items-center">
           <Button
             variant="default"
@@ -128,9 +118,9 @@ export default function Sidebar() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="default"
-                className="ml-4 bg-green-800 hover:bg-green-700 hover:text-gray-200 h-10"
+                className="ml-1 bg-green-800 hover:bg-green-700 hover:text-gray-200 h-10 w-fit"
               >
-                Mr Olive Man
+                {username}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>

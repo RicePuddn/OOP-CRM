@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import Cookies from "js-cookie";
 
 const LoginForm: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -26,10 +27,10 @@ const LoginForm: React.FC = () => {
       );
 
       if (response.status === 200) {
-        const { role } = response.data;
         // Save JWT token or session identifier if returned by the backend
-        localStorage.setItem("role", role); // TODO: admin role here
-        console.log(role);
+        Cookies.set("role", response.data.role, { expires: 1 }); // Set role with 1-day expiration
+        Cookies.set("username", response.data.username, { expires: 1 }); // Set username with 1-day expiration
+        console.log(response.data.role, response.data.username);
         router.push("/dashboard"); // Redirect to the dashboard after successful login
       } else {
         console.error("Failed to log in user");

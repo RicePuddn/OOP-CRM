@@ -1,6 +1,6 @@
-// app/protected-layout.tsx
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 export default function ProtectedLayout({
   children,
@@ -11,8 +11,8 @@ export default function ProtectedLayout({
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("role");
-    if (!token) {
+    const role = Cookies.get("role");
+    if (!role) {
       router.push("/"); // Redirect to login page if not logged in
     } else {
       setIsLoading(false);
