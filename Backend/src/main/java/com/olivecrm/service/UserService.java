@@ -41,6 +41,10 @@ public class UserService {
         Optional<Employee> optionalUser = userRepository.findByUsername(username);
         if (optionalUser.isPresent()) {
             Employee employee = optionalUser.get();
+
+            if (employee.getRole() == Role.ADMIN) {
+                throw new Exception("You  have no permission to update another admin's account.");
+            }
             
             // Only update fields that are provided
             if (username != null && !username.isEmpty()) {
