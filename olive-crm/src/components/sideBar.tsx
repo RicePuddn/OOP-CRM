@@ -73,7 +73,7 @@ export default function Sidebar() {
         </div>
         <nav className="flex-grow">
           <Link
-            href="/"
+            href="/dashboard"
             className="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
           >
             <LayoutDashboard className="h-5 w-5 mr-3" />

@@ -12,8 +12,8 @@ export default function DashboardLayout({
     <ProtectedLayout>
       <div className="flex h-screen bg-gray-100 w-full">
         <SideBar />
-        <div className="flex-grow overflow-hidden">
-          <div className="p-6 overflow-y-auto">{children}</div>
+        <div className="flex-grow overflow-auto">
+          <div className="p-6">{children}</div>
         </div>
       </div>
     </ProtectedLayout>
