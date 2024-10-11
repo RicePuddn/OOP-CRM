@@ -19,7 +19,7 @@ const LoginForm: React.FC = () => {
     try {
       // Use axios to send a POST request to the backend for user login
       const response = await axios.post(
-        "http://localhost:8080/api/employees/login",
+        "http://localhost:8080/api/employee/login",
         {
           username,
           password,

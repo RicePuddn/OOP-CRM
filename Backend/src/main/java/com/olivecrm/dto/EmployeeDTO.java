@@ -1,6 +1,6 @@
 package com.olivecrm.dto;
 
-public class UserDTO {
+public class EmployeeDTO {
 
     private String username;
     private String firstName;
@@ -56,4 +56,3 @@ public class UserDTO {
         this.role = role;
     }
 }
-
