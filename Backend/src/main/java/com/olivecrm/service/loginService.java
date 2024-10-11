@@ -2,6 +2,8 @@ package com.olivecrm.service;
 
 import com.olivecrm.entity.Employee;
 import com.olivecrm.repository.EmployeeRepository;
+import com.olivecrm.util.PasswordUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
@@ -19,7 +21,9 @@ public class LoginService {
             Employee employee = employeeOptional.get();
             System.out.println("Employee found: " + employee.getUsername());
 
-            if (employee.getPassword().equals(password)) {
+            boolean matchPassword = PasswordUtil.checkPassword(password, employee.getPassword());
+
+            if (matchPassword) {
                 System.out.println("Password matched for user: " + employee.getUsername());
                 return employee;
             } else {
