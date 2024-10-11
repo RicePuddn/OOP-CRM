@@ -18,7 +18,7 @@ import com.olivecrm.service.EmployeeService;
 
 @RestController
 @RequestMapping("/api/employee")
-public class UserController {
+public class EmployeeController {
 
     @Autowired
     private EmployeeService employeeService;
@@ -31,8 +31,8 @@ public class UserController {
             Employee.Role userRole = mapRole(userDTO.getRole());
             Employee newUser = employeeService.createUser(
                     userDTO.getUsername(),
-                    userDTO.getFirstName(),
-                    userDTO.getLastName(),
+                    userDTO.getFirst_name(),
+                    userDTO.getLast_name(),
                     userDTO.getPassword(),
                     userRole);
             return ResponseEntity.ok(newUser);
@@ -48,7 +48,7 @@ public class UserController {
     public ResponseEntity<?> updateUser(@PathVariable String username, @RequestBody EmployeeDTO userDTO) {
         try {
             Employee.Role userRole = mapRole(userDTO.getRole());
-            Employee updateUser = employeeService.updateUser(username, userDTO.getFirstName(), userDTO.getLastName(),
+            Employee updateUser = employeeService.updateUser(username, userDTO.getFirst_name(), userDTO.getLast_name(),
                     userDTO.getPassword(), userRole);
             return ResponseEntity.ok(updateUser);
         } catch (Exception e) {
