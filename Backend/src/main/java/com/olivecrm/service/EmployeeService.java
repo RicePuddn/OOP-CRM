@@ -28,8 +28,8 @@ public class EmployeeService {
         // Create new user
         Employee employee = new Employee();
         employee.setUsername(username);
-        employee.setFirstName(first_name);
-        employee.setLastName(last_name);
+        employee.setFirst_name(first_name);
+        employee.setLast_name(last_name);
         employee.setPassword(PasswordUtil.hashPassword(rawPassword)); // Encrypt password
         employee.setRole(role);
 
@@ -52,10 +52,10 @@ public class EmployeeService {
                 employee.setUsername(username);
             }
             if (first_name != null && !first_name.isEmpty()) {
-                employee.setFirstName(first_name);
+                employee.setFirst_name(first_name);
             }
             if (last_name != null && !last_name.isEmpty()) {
-                employee.setLastName(last_name);
+                employee.setLast_name(last_name);
             }
             if (password != null && !password.isEmpty()) {
                 employee.setPassword(PasswordUtil.hashPassword(password)); // Only update password if provided
