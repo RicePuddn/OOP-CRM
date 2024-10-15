@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader } from "./ui/card";
+import EmailModal from "./ui/email-modal";
 
 export default function Newsletter() {
     const [customerName, setCustomerName] = useState<string>("Customer Name");
@@ -19,7 +20,9 @@ export default function Newsletter() {
     const [discount3, setDiscount3] = useState<string>("Discount Percentage");
     const [promoCode3, setPromoCode3] = useState<string>("Promo Code");
 
-    const [email] = useState<string>("");
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [receiverEmail, setReceiverEmail] = useState("");
+    const [emailContent, setEmailContent] = useState("");
 
     const handleBlur =
         (setter: React.Dispatch<React.SetStateAction<string>>) =>
@@ -27,55 +30,62 @@ export default function Newsletter() {
             setter(e.target.textContent || "");
 
     const handleSendEmail = async () => {
-        const receiverEmail = prompt(
-            "Please enter the customer's email address:",
-            email
-        );
-        if (!receiverEmail) return; // Exit if no email is provided
-
         const emailContent = `
-            Dear ${customerName},
+Dear ${customerName},
 
-            We've curated something special for you! 
-            Based on your recent purchases and browsing history, here are some exclusive offers and recommendations we think you'll love.
+We've curated something special for you! 
+Based on your recent purchases and browsing history, 
+here are some exclusive offers and recommendations we think you'll love.
 
-            Top Picks for You:
-            1. ${productName1} 
-                    Price: $${productPrice1}, 
-                    Discount: ${discount1}% off with code ${promoCode1}
-            2. ${productName2} 
-                    Price: $${productPrice2}, 
-                    Discount: ${discount2}% off with code ${promoCode2}
-            3. ${productName3} 
-                    Price: $${productPrice3}, 
-                    Discount: ${discount3}% off with code ${promoCode3}
+Top Picks for You:
+1. ${productName1} 
+        Price: $${productPrice1}, 
+        Discount: ${discount1}% off with code ${promoCode1}
+2. ${productName2} 
+        Price: $${productPrice2}, 
+        Discount: ${discount2}% off with code ${promoCode2}
+3. ${productName3} 
+        Price: $${productPrice3}, 
+        Discount: ${discount3}% off with code ${promoCode3}
 
-            Take advantage of these personalized offers and discover more. Shop now and enjoy the best deals tailored just for you!
+Take advantage of these personalized offers and discover more. 
+Shop now and enjoy the best deals tailored just for you!
 
-            Warm regards,
-            Marketing team
+
+Warm regards,
+Marketing team
         `;
-
-        // Confirm email content with user
-        const isConfirmed = confirm(
-            `Please confirm the email content:\n\n${emailContent}`
-        );
-        if (!isConfirmed) return; // Exit if not confirmed
-
-        // Encode the email content for the URL
+        setEmailContent(emailContent);
+        setIsModalOpen(true);
+    };
+    const sendEmail = async () => {
         const encodedSubject = encodeURIComponent(
             "Personalized Offers for You!"
         );
         const encodedMessage = encodeURIComponent(emailContent);
 
-        // Build the full URL for the backend API
         const apiUrl = `http://localhost:8080/api/send-email?to=${receiverEmail}&subject=${encodedSubject}&message=${encodedMessage}`;
 
-        // Send the request to the backend API
         try {
             const response = await fetch(apiUrl);
             if (response.ok) {
+                setIsModalOpen(false);
                 alert("Email sent successfully!");
+                setCustomerName("Customer Name");
+                setProductName1("Product Name 1");
+                setProductPrice1("Product Price");
+                setDiscount1("Discount Percentage");
+                setPromoCode1("Promo Code");
+
+                setProductName2("Product Name 2");
+                setProductPrice2("Product Price");
+                setDiscount2("Discount Percentage");
+                setPromoCode2("Promo Code");
+
+                setProductName3("Product Name 3");
+                setProductPrice3("Product Price");
+                setDiscount3("Discount Percentage");
+                setPromoCode3("Promo Code");
             } else {
                 alert("Failed to send the email.");
             }
@@ -87,7 +97,7 @@ export default function Newsletter() {
 
     return (
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-            <div className="container mx-auto px-6 py-8 mt-20">
+            <div className="container mx-auto px-6 py-8 mt-5">
                 <h3 className="text-gray-700 text-3xl font-medium p-5">
                     Newsletter Designer
                 </h3>
@@ -288,16 +298,24 @@ export default function Newsletter() {
                             </p>
                             <p>Warm regards,</p>
                             <p>Marketing team</p>
-                            <button
-                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                                onClick={handleSendEmail}
-                            >
-                                Send Email
-                            </button>
                         </div>
                     </CardContent>
                 </Card>
+                <button
+                    className=" bg-green-800 hover:bg-green-900 text-white font-bold py-2 px-4 rounded-lg mt-5 ml-2"
+                    onClick={handleSendEmail}
+                >
+                    Send Email
+                </button>
             </div>
+            <EmailModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSendEmail={sendEmail}
+                emailContent={emailContent}
+                setReceiverEmail={setReceiverEmail}
+                receiverEmail={receiverEmail}
+            />
         </main>
     );
 }
