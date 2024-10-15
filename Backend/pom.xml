@@ -47,28 +47,7 @@
             <version>0.4</version>
         </dependency>
 
-<!-- Add your existing dependencies here -->
-
-<dependency>
-
-    <groupId>org.springframework.boot</groupId>
-
-    <artifactId>spring-boot-starter-security</artifactId>
-
-</dependency>
-
-<!-- Add your dependencies here -->
-
-<dependency>
-
-    <groupId>org.springframework.boot</groupId>
-
-    <artifactId>spring-boot-starter-mail</artifactId>
-
-</dependency>
-
     </dependencies>
-
 
     <build>
         <plugins>
