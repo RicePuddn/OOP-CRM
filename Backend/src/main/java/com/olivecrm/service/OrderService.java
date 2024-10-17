@@ -11,7 +11,6 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDate;
 import java.util.List;
 
-// For the backend
 @Service
 public class OrderService {
 
@@ -20,26 +19,26 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public Page<Order> getAllOrders(Pageable pageable) {
-        return orderRepository.findAll(pageable); // Utilize the JpaRepository method for pagination
+        return orderRepository.findAll(pageable);
     }
 
     public List<Order> getOrdersByCustomerId(int customerId) {
-        return orderRepository.findByCustomer_cID(customerId); // Ensure this matches the getter method name in Customer
+        return orderRepository.findByCustomer_cID(customerId);
     }
 
     public List<Order> getOrdersBySalesType(String salesType) {
         return orderRepository.findBySalesType(salesType);
     }
 
-    public List<Order> getOrdersBySalesDate(LocalDate salesDate) {
-        return orderRepository.findBySalesDate(salesDate);
+    public List<Order> getOrdersBySalesDateRange(LocalDate startDate, LocalDate endDate) {
+        return orderRepository.findBySalesDateBetween(startDate, endDate);
     }
 
     public List<Order> getOrdersByTotalCost(Double totalCost) {
         return orderRepository.findByTotalCost(totalCost);
     }
 
-    public List<Order> getOrdersByFilters(Integer customerId, String salesType, LocalDate salesDate, Double totalCost, Pageable pageable) {
-        return orderRepository.findByFilters(customerId, salesType, salesDate, totalCost, pageable);
+    public Page<Order> getOrdersByFilters(Integer customerId, String salesType, Double totalCost, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        return orderRepository.findByFilters(customerId, salesType, totalCost, startDate, endDate, pageable);
     }
 }

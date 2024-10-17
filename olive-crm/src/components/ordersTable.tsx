@@ -2,10 +2,45 @@
 
 import React, { useState, useEffect } from 'react';
 
-// Added Filter portion to the URL
-async function getOrders(page = 0, size = 20, filters = {}) {
-  const filterParams = new URLSearchParams({ ...filters, page: String(page), size: String(size) }).toString();
-  const res = await fetch(`http://localhost:8080/api/orders?${filterParams}`, { cache: 'no-store' });
+interface Filters {
+  customerId: string;
+  salesType: string;
+  totalCost: string;
+  dateFilterType: 'single' | 'range';
+  singleDate: string;
+  startDate: string;
+  endDate: string;
+}
+
+interface Order {
+  id: number;
+  customer: { cid: number };
+  product: { productName: string };
+  quantity: number;
+  totalCost: number;
+  orderMethod: string;
+  salesDate: string;
+  salesType: string;
+  shippingMethod: string;
+}
+
+async function getOrders(page = 0, size = 20, filters: Filters) {
+  const hasFilters = Object.values(filters).some(value => value !== '');
+  const endpoint = hasFilters ? 'http://localhost:8080/api/orders/filter' : 'http://localhost:8080/api/orders';
+  
+  const filterParams = new URLSearchParams({ 
+    ...Object.entries(filters).reduce((acc, [key, value]) => {
+      if (value !== '' && key !== 'dateFilterType') {
+        acc[key] = value;
+      }
+      return acc;
+    }, {} as Record<string, string>),
+    page: String(page),
+    size: String(size)
+  }).toString();
+
+  console.log('API request URL:', `${endpoint}?${filterParams}`);
+  const res = await fetch(`${endpoint}?${filterParams}`, { cache: 'no-store' });
   if (!res.ok) {
     throw new Error('Failed to fetch orders');
   }
@@ -13,36 +48,49 @@ async function getOrders(page = 0, size = 20, filters = {}) {
 }
 
 export default function OrdersTable() {
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [jumpToPage, setJumpToPage] = useState('');
-  // Define Toggle button
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  // Define filter state
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<Filters>({
     customerId: '',
     salesType: '',
     totalCost: '',
-    salesDate: '',
+    dateFilterType: 'single',
+    singleDate: '',
+    startDate: '',
+    endDate: '',
   });
+  const [applyFilter, setApplyFilter] = useState(false);
 
   useEffect(() => {
-    fetchOrders(); 
-  }, [currentPage, filters]); // Add filter as a dependency
+    fetchOrders();
+  }, [currentPage, applyFilter]);
 
-  // Add in try, catch to error handling in fetch
   const fetchOrders = async () => {
     try {
-      const data = await getOrders(currentPage, 20, filters); // Pass filter to getOrders
-      console.log('Fetched orders:', data.content);
-      if (data.content.length > 0) {
-        console.log('First order structure:', JSON.stringify(data.content[0], null, 2));
+      console.log('Fetching orders with filters:', filters);
+      const data = await getOrders(currentPage, 20, filters);
+      console.log('Fetched data:', data);
+
+      if (Array.isArray(data)) {
+        setOrders(data);
+        setTotalPages(Math.ceil(data.length / 20));
+        console.log('Orders updated:', data);
+      } else if (data && data.content && Array.isArray(data.content)) {
+        setOrders(data.content);
+        setTotalPages(data.totalPages || Math.ceil(data.content.length / 20));
+        console.log('Orders updated:', data.content);
+      } else {
+        console.error('Unexpected data structure:', data);
+        setOrders([]);
+        setTotalPages(0);
       }
-      setOrders(data.content);
-      setTotalPages(data.totalPages);
     } catch (error) {
       console.error('Error fetching orders:', error);
+      setOrders([]);
+      setTotalPages(0);
     }
   };
   
@@ -54,18 +102,35 @@ export default function OrdersTable() {
     setJumpToPage('');
   };
 
-  // Filter methods
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value })); // Update filters based on input name
+    console.log(`Filter changed: ${name} = ${value}`);
+    setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleFilterApply = () => {
-    setCurrentPage(0); // Reset to the first page when applying a new filter
-    fetchOrders();     // Fetch the filtered orders
+    console.log('Applying filters:', filters);
+    setCurrentPage(0);
+    setApplyFilter(prev => !prev);
+    setIsDropdownOpen(false);
   };
 
-  // Toggle Button
+  const handleClearFilters = () => {
+    console.log('Clearing filters');
+    setFilters({
+      customerId: '',
+      salesType: '',
+      totalCost: '',
+      dateFilterType: 'single',
+      singleDate: '',
+      startDate: '',
+      endDate: '',
+    });
+    setCurrentPage(0);
+    setApplyFilter(prev => !prev);
+    setIsDropdownOpen(false);
+  };
+
   const toggleDropdown = () => {
     setIsDropdownOpen((prev) => !prev);
   };
@@ -85,18 +150,25 @@ export default function OrdersTable() {
         <div className="max-w-6xl mx-auto h-full flex flex-col">
           <h1 className="text-2xl font-bold mb-6 text-gray-800">Orders</h1>
           
-          {/* Filter Section */}
           <div className="mb-4 bg-white p-4 rounded shadow">
             <h2 className="text-lg font-bold mb-4 text-black">Filter Orders</h2>
-            <button
-              onClick={toggleDropdown}
-              className="text-left w-full bg-blue-500 text-white py-2 rounded"
-            >
-              {isDropdownOpen ? 'Hide Filters' : 'Show Filters'}
-            </button>
+            <div className="flex justify-between items-center">
+              <button
+                onClick={toggleDropdown}
+                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
+              >
+                {isDropdownOpen ? 'Hide Filters' : 'Show Filters'}
+              </button>
+              <button
+                onClick={handleClearFilters}
+                className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition"
+              >
+                Clear Filters
+              </button>
+            </div>
             {isDropdownOpen && (
               <form onSubmit={(e) => { e.preventDefault(); handleFilterApply(); }} className="mt-4">
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="customerId" className="block text-gray-700 font-medium mb-1">Customer ID:</label>
                     <input
@@ -115,7 +187,7 @@ export default function OrdersTable() {
                       name="salesType"
                       value={filters.salesType}
                       onChange={handleFilterChange}
-                      placeholder="Enter Sales Type (e.g., Marketing, Direct - B2C)"
+                      placeholder="Enter Sales Type"
                       className="px-4 py-2 border rounded w-full focus:outline-none focus:ring focus:ring-blue-300"
                     />
                   </div>
@@ -131,19 +203,56 @@ export default function OrdersTable() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="salesDate" className="block text-gray-700 font-medium mb-1">Sales Date:</label>
-                    <input
-                      type="date"
-                      name="salesDate"
-                      value={filters.salesDate}
+                    <label htmlFor="dateFilterType" className="block text-gray-700 font-medium mb-1">Date Filter Type:</label>
+                    <select
+                      name="dateFilterType"
+                      value={filters.dateFilterType}
                       onChange={handleFilterChange}
                       className="px-4 py-2 border rounded w-full focus:outline-none focus:ring focus:ring-blue-300"
-                    />
+                    >
+                      <option value="single">Single Date</option>
+                      <option value="range">Date Range</option>
+                    </select>
                   </div>
-                  <button type="submit" className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">
-                    Apply Filter
-                  </button>
+                  {filters.dateFilterType === 'single' ? (
+                    <div>
+                      <label htmlFor="singleDate" className="block text-gray-700 font-medium mb-1">Sales Date:</label>
+                      <input
+                        type="date"
+                        name="singleDate"
+                        value={filters.singleDate}
+                        onChange={handleFilterChange}
+                        className="px-4 py-2 border rounded w-full focus:outline-none focus:ring focus:ring-blue-300"
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <div>
+                        <label htmlFor="startDate" className="block text-gray-700 font-medium mb-1">Start Date:</label>
+                        <input
+                          type="date"
+                          name="startDate"
+                          value={filters.startDate}
+                          onChange={handleFilterChange}
+                          className="px-4 py-2 border rounded w-full focus:outline-none focus:ring focus:ring-blue-300"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="endDate" className="block text-gray-700 font-medium mb-1">End Date:</label>
+                        <input
+                          type="date"
+                          name="endDate"
+                          value={filters.endDate}
+                          onChange={handleFilterChange}
+                          className="px-4 py-2 border rounded w-full focus:outline-none focus:ring focus:ring-blue-300"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
+                <button type="submit" className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition">
+                  Apply Filters
+                </button>
               </form>
             )}
           </div>
@@ -165,7 +274,7 @@ export default function OrdersTable() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {orders.map((order: any) => (
+                  {orders.map((order: Order) => (
                     <tr key={order.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.id}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.customer ? order.customer.cid : 'N/A'}</td>
@@ -193,7 +302,7 @@ export default function OrdersTable() {
                 <button
                   onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
                   disabled={currentPage >= totalPages - 1}
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition ml-2"
                 >
                   Next
                 </button>
