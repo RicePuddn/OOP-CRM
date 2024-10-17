@@ -96,7 +96,7 @@ Marketing team
     };
 
     return (
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+        <div className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
             <div className="container mx-auto px-6 py-8 mt-5">
                 <h3 className="text-gray-700 text-3xl font-medium p-5">
                     Newsletter Designer
@@ -316,6 +316,6 @@ Marketing team
                 setReceiverEmail={setReceiverEmail}
                 receiverEmail={receiverEmail}
             />
-        </main>
+        </div>
     );
 }
