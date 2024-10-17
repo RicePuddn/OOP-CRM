@@ -44,7 +44,10 @@ public class EmployeeController {
     public ResponseEntity<?> updateUser(@PathVariable String username,
                                         @RequestBody EmployeeDTO userDTO) {
         try {
-            Employee.Role userRole = mapRole(userDTO.getRole());
+            // Only map the role if it is provided, otherwise pass null
+            Employee.Role userRole =
+                userDTO.getRole() != null ? mapRole(userDTO.getRole()) : null;
+
             Employee updateUser = employeeService.updateUser(
                 username, userDTO.getFirst_name(), userDTO.getLast_name(),
                 userDTO.getPassword(), userRole);

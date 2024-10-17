@@ -31,6 +31,10 @@ public class EmployeeService {
         employee.setFirst_name(first_name);
         employee.setLast_name(last_name);
         employee.setPassword(PasswordUtil.hashPassword(rawPassword)); // Encrypt password
+        
+        if (role == Role.ADMIN) {
+            throw new Exception("You have no permission to create an admin account.");
+        }
         employee.setRole(role);
 
         return employeeRepository.save(employee); // Save the new user to the database
@@ -44,7 +48,7 @@ public class EmployeeService {
             Employee employee = optionalUser.get();
 
             if (employee.getRole() == Role.ADMIN) {
-                throw new Exception("You  have no permission to update another admin's account.");
+                throw new Exception("You have no permission to update another admin's account.");
             }
 
             // Only update fields that are provided
@@ -75,6 +79,12 @@ public class EmployeeService {
     public void deleteUser(String username) throws Exception {
         Optional<Employee> optionalUser = employeeRepository.findByUsername(username);
         if (optionalUser.isPresent()) {
+            Employee employee = optionalUser.get();
+
+            if (employee.getRole() == Role.ADMIN) {
+                throw new Exception("You have no permission to delete another admin's account.");
+            }
+
             employeeRepository.deleteByUsername(username); // Delete the user
         } else {
             throw new Exception("User not found");
