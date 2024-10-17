@@ -67,7 +67,7 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="mt-10  flex flex-col h-screen bg-gray-100">
+    <div className="  flex flex-col h-screen bg-gray-100">
       <div className="flex-grow p-6 overflow-hidden">
         <div className="max-w-6xl mx-auto h-full flex flex-col">
           <h3 className="text-gray-700 text-3xl font-medium">Orders</h3>
