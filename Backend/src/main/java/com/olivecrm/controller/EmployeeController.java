@@ -1,5 +1,8 @@
 package com.olivecrm.controller;
 
+import com.olivecrm.dto.EmployeeDTO;
+import com.olivecrm.entity.Employee;
+import com.olivecrm.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,33 +14,26 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.olivecrm.dto.EmployeeDTO;
-import com.olivecrm.entity.Employee;
-import com.olivecrm.dto.EmployeeDTO.Role;
-import com.olivecrm.service.EmployeeService;
-
 @RestController
 @RequestMapping("/api/employee")
 public class EmployeeController {
 
-    @Autowired
-    private EmployeeService employeeService;
+    @Autowired private EmployeeService employeeService;
 
     // CREATE USER
     @PostMapping("/create")
     public ResponseEntity<?> createUser(@RequestBody EmployeeDTO userDTO) {
         try {
-            // Assuming userDTO.getRole() returns a String like "USER" or "ADMIN"
+            // Assuming userDTO.getRole() returns a String like "USER" or
+            // "ADMIN"
             Employee.Role userRole = mapRole(userDTO.getRole());
             Employee newUser = employeeService.createUser(
-                    userDTO.getUsername(),
-                    userDTO.getFirst_name(),
-                    userDTO.getLast_name(),
-                    userDTO.getPassword(),
-                    userRole);
+                userDTO.getUsername(), userDTO.getFirst_name(),
+                userDTO.getLast_name(), userDTO.getPassword(), userRole);
             return ResponseEntity.ok(newUser);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Invalid role: " + userDTO.getRole());
+            return ResponseEntity.badRequest().body("Invalid role: " +
+                                                    userDTO.getRole());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -45,13 +41,16 @@ public class EmployeeController {
 
     // UPDATE USER
     @PutMapping("/update/{username}")
-    public ResponseEntity<?> updateUser(@PathVariable String username, @RequestBody EmployeeDTO userDTO) {
+    public ResponseEntity<?> updateUser(@PathVariable String username,
+                                        @RequestBody EmployeeDTO userDTO) {
         try {
             // Only map the role if it is provided, otherwise pass null
-            Employee.Role userRole = userDTO.getRole() != null ? mapRole(userDTO.getRole()) : null;
-        
-            Employee updateUser = employeeService.updateUser(username, userDTO.getFirst_name(), userDTO.getLast_name(),
-                    userDTO.getPassword(), userRole);
+            Employee.Role userRole =
+                userDTO.getRole() != null ? mapRole(userDTO.getRole()) : null;
+
+            Employee updateUser = employeeService.updateUser(
+                username, userDTO.getFirst_name(), userDTO.getLast_name(),
+                userDTO.getPassword(), userRole);
             return ResponseEntity.ok(updateUser);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -63,7 +62,8 @@ public class EmployeeController {
     public ResponseEntity<?> deleteUser(@PathVariable String username) {
         try {
             employeeService.deleteUser(username);
-            return ResponseEntity.ok("User " + username + " deleted successfully");
+            return ResponseEntity.ok("User " + username +
+                                     " deleted successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -72,14 +72,14 @@ public class EmployeeController {
     // Method to map UserDTO.Role to User.Role
     private Employee.Role mapRole(EmployeeDTO.Role role) {
         switch (role) {
-            case ADMIN:
-                return Employee.Role.ADMIN;
-            case MARKETING:
-                return Employee.Role.MARKETING;
-            case SALES:
-                return Employee.Role.SALES;
-            default:
-                throw new IllegalArgumentException("Invalid role: " + role);
+        case ADMIN:
+            return Employee.Role.ADMIN;
+        case MARKETING:
+            return Employee.Role.MARKETING;
+        case SALES:
+            return Employee.Role.SALES;
+        default:
+            throw new IllegalArgumentException("Invalid role: " + role);
         }
     }
 
@@ -87,12 +87,14 @@ public class EmployeeController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody EmployeeDTO loginRequest) {
         try {
-            Employee employee = employeeService.login(loginRequest.getUsername(), loginRequest.getPassword());
+            Employee employee = employeeService.login(
+                loginRequest.getUsername(), loginRequest.getPassword());
             // You can create and return a JWT token or session information here
-            return ResponseEntity.ok(employee); // Or return relevant info such as a token
+            return ResponseEntity.ok(
+                employee); // Or return relevant info such as a token
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body("Invalid username or password");
         }
     }
-
 }
