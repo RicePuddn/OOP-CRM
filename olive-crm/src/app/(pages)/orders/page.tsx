@@ -1,5 +1,5 @@
-import OrdersPage from "@/components/ordersComponent";
+import OrdersTable from "../../../components/ordersTable";
 
-export default function Home() {
-  return <OrdersPage />;
+export default function OrdersPage() {
+  return <OrdersTable />;
 }
