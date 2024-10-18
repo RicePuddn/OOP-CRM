@@ -54,7 +54,7 @@ const CsvUploadForm: React.FC = () => {
   };
 
   return (
-    <div className="w-full px-6 py-8 mt-10">
+    <div className="w-full px-6 py-8">
       <h3 className="text-gray-700 text-3xl font-medium">Update Orders</h3>
       <Card>
         <CardHeader>
