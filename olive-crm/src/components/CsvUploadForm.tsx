@@ -56,46 +56,48 @@ const CsvUploadForm: React.FC = () => {
   return (
     <div className="w-full px-6 py-8">
       <h3 className="text-gray-700 text-3xl font-medium">Update Orders</h3>
-      <Card>
-        <CardHeader>
-          <CardTitle>CSV Upload</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <input
-                type="file"
-                accept=".csv"
-                onChange={handleFileChange}
-                className="block w-full text-sm text-gray-500
+      <div className="mt-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>CSV Upload</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit}>
+              <div className="mb-4">
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileChange}
+                  className="block w-full text-sm text-gray-500
                 file:mr-4 file:py-2 file:px-4
                 file:rounded-full file:border-0
                 file:text-sm file:font-semibold
                 file:bg-green-50 file:text-green-700
                 hover:file:bg-green-100"
-              />
-            </div>
-            <Button
-              type="submit"
-              disabled={uploading}
-              className="bg-green-800 hover:bg-green-700"
-            >
-              {uploading ? "Uploading..." : "Upload CSV"}
-            </Button>
-          </form>
-          {uploadStatus && (
-            <p
-              className={`mt-4 ${
-                uploadStatus.includes("successfully")
-                  ? "text-green-600"
-                  : "text-red-600"
-              }`}
-            >
-              {uploadStatus}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={uploading}
+                className="bg-green-800 hover:bg-green-700"
+              >
+                {uploading ? "Uploading..." : "Upload CSV"}
+              </Button>
+            </form>
+            {uploadStatus && (
+              <p
+                className={`mt-4 ${
+                  uploadStatus.includes("successfully")
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {uploadStatus}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
