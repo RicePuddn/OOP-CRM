@@ -1,4 +1,4 @@
-import NewsletterPage from "@/components/newsletter-marketing";
+import NewsletterPage from "@/components/newsletter";
 
 export default function newsletter() {
     return <NewsletterPage />;

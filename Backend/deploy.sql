@@ -24,6 +24,15 @@ CREATE TABLE PRODUCT (
     individualPrice DECIMAL(10, 2)
 );
 CREATE TABLE CUSTOMER (
-    cID INT PRIMARY KEY,
-    zipcode VARCHAR(10)
+    cID INT PRIMARY KEY AUTO_INCREMENT,
+    zipcode VARCHAR(10),
+    cName VARCHAR(255) NOT NULL,
+);
+CREATE TABLE newsletter (
+    newsID int NOT NULL AUTO_INCREMENT,
+    title varchar(255) NOT NULL,
+	username VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL, -- Changed content type to TEXT for longer paragraphs
+    PRIMARY KEY (newsID),
+    FOREIGN KEY (username) REFERENCES employees(username)
 );
