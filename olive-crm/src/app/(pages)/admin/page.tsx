@@ -1,5 +1,5 @@
-import DashboardPage from "@/components/dashBoard";
+import UserManagementPage from "@/components/userManagement";
 
-export default function Admin() {
-  return <DashboardPage />;
+export default function userManagement() {
+  return <UserManagementPage />;
 }

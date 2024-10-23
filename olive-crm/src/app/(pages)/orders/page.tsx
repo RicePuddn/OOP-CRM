@@ -1,5 +1,5 @@
 import OrdersPage from "@/components/ordersComponent";
 
-export default function Home() {
+export default function orders() {
   return <OrdersPage />;
 }
