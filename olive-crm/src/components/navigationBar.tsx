@@ -8,7 +8,8 @@ import {
   ShoppingCart,
   Upload,
   User2,
-  UserCog,
+  UserRoundCog,
+  UsersRound,
 } from "lucide-react";
 
 import {
@@ -56,6 +57,11 @@ export default function AppSidebar() {
       url: "/csv-upload",
       icon: Upload,
     },
+    {
+      title: "Customers",
+      url: "/customers",
+      icon: UsersRound,
+    },
   ];
   if (role === "ADMIN") {
     items.push(
@@ -67,13 +73,13 @@ export default function AppSidebar() {
       {
         title: "Admin",
         url: "/admin",
-        icon: UserCog,
+        icon: UserRoundCog,
       }
     );
   } else if (role === "MARKETING") {
     items.push({
       title: "Reports",
-      url: "#",
+      url: "/reports",
       icon: BarChart,
     });
   }
@@ -107,7 +113,7 @@ export default function AppSidebar() {
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuButton>
+                <SidebarMenuButton className="rounded bg-green-700 text-white hover:bg-green-600 hover:text-white">
                   <User2 /> {username}
                   <ChevronUp className="ml-auto" />
                 </SidebarMenuButton>
@@ -118,7 +124,7 @@ export default function AppSidebar() {
               >
                 <DropdownMenuItem
                   onClick={handleLogout}
-                  className="cursor-pointer rounded bg-red-400 h-8 flex items-center"
+                  className="cursor-pointer rounded bg-red-400 h-8 flex items-center mb-1 hover:bg-red-300 hover:text-white"
                 >
                   <span className="text-white">
                     <LogOut className="mx-2 h-4 w-4 inline" />
