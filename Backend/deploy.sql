@@ -29,10 +29,9 @@ CREATE TABLE CUSTOMER (
     cName VARCHAR(255) NOT NULL,
 );
 CREATE TABLE newsletter (
-    newsID int NOT NULL AUTO_INCREMENT,
-    title varchar(255) NOT NULL,
+	newsID int NOT NULL auto_increment primary key,
+    title varchar(255) NOT NULL unique,
 	username VARCHAR(255) NOT NULL,
     content TEXT NOT NULL, -- Changed content type to TEXT for longer paragraphs
-    PRIMARY KEY (newsID),
     FOREIGN KEY (username) REFERENCES employees(username)
 );

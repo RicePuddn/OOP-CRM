@@ -1,6 +1,10 @@
 "use client";
+import React from 'react';
+
 export default function Newsletter() {
-    return <div id="newsletter-container">
-          
-    </div>;
+
+
+    return (
+       
+    );
 }

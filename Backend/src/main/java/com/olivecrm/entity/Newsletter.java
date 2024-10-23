@@ -1,5 +1,6 @@
 package com.olivecrm.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -11,13 +12,13 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "NEWSLETTER")
+@Table(name = "newsletter")
 public class Newsletter {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "newsID")
-    private Integer newsID;
+    @Column(name = "newsID", nullable = false)
+    private int newsID;
 
     @Column(name = "title", nullable = false) private String title;
 
@@ -25,11 +26,10 @@ public class Newsletter {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "username", nullable = false)
+    @JsonIgnore
     private Employee createdBy;
 
-    public Integer getNewsID() { return newsID; }
-
-    public void setNewsID(Integer newsID) { this.newsID = newsID; }
+    public int getId() { return newsID; }
 
     public String getTitle() { return title; }
 
