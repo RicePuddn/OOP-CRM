@@ -1,6 +1,8 @@
 package com.olivecrm.controller;
 
 import com.olivecrm.dto.CustomerSegmentDTO;
+import com.olivecrm.dto.ProductPurchaseHistoryDTO;
+import com.olivecrm.dto.TopProductDTO;
 import com.olivecrm.entity.Order;
 import com.olivecrm.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,39 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
+    @GetMapping("/customer/{customerId}/top-products")
+    public ResponseEntity<List<TopProductDTO>> getTopThreeProducts(@PathVariable Integer customerId) {
+        logger.info("Fetching top three most purchased products for customer ID: {}", customerId);
+        try {
+            List<TopProductDTO> topProducts = orderService.getTopThreeMostPurchasedProducts(customerId);
+            if (topProducts.isEmpty()) {
+                logger.info("No products found for customer ID: {}", customerId);
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(topProducts);
+        } catch (Exception e) {
+            logger.error("Error fetching top products for customer ID: {}", customerId, e);
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @GetMapping("/customer/{customerId}/purchase-history")
+    public ResponseEntity<ProductPurchaseHistoryDTO> getCustomerPurchaseHistory(
+            @PathVariable Integer customerId) {
+        logger.info("Fetching purchase history for customer ID: {}", customerId);
+        try {
+            ProductPurchaseHistoryDTO purchaseHistory = orderService.getCustomerPurchaseHistory(customerId);
+            if (purchaseHistory.getPurchaseCounts().isEmpty()) {
+                logger.info("No purchase history found for customer ID: {}", customerId);
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(purchaseHistory);
+        } catch (Exception e) {
+            logger.error("Error fetching purchase history for customer ID: {}", customerId, e);
+            return ResponseEntity.status(500).build();
+        }
+    }
+
     @GetMapping("/filter")
     public ResponseEntity<Page<Order>> getOrdersByFilters(
             @RequestParam(required = false) Integer customerId,
@@ -40,17 +75,19 @@ public class OrderController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
             Pageable pageable) {
 
-        logger.info("Received filter request - dateFilterType: {}, singleDate: {}, startDate: {}, endDate: {}", 
-                   dateFilterType, singleDate, startDate, endDate);
+        logger.info("Received filter request - dateFilterType: {}, singleDate: {}, startDate: {}, endDate: {}",
+                dateFilterType, singleDate, startDate, endDate);
 
         Page<Order> orders;
         try {
             if ("single".equals(dateFilterType) && singleDate != null) {
                 logger.info("Applying single date filter for date: {}", singleDate);
-                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, singleDate, null, null, pageable);
+                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, singleDate, null, null,
+                        pageable);
             } else if ("range".equals(dateFilterType) && startDate != null && endDate != null) {
                 logger.info("Applying date range filter from {} to {}", startDate, endDate);
-                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, startDate, endDate, pageable);
+                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, startDate, endDate,
+                        pageable);
             } else {
                 logger.info("No date filtering applied");
                 orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, null, null, pageable);
@@ -105,4 +142,5 @@ public class OrderController {
     public ResponseEntity<List<CustomerSegmentDTO>> getMonetarySegments() {
         return ResponseEntity.ok(orderService.getMonetarySegments());
     }
+
 }
