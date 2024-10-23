@@ -73,7 +73,7 @@ export default function AppSidebar() {
   } else if (role === "MARKETING") {
     items.push({
       title: "Reports",
-      url: "#",
+      url: "/reports",
       icon: BarChart,
     });
   }
