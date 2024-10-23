@@ -1,5 +1,6 @@
 package com.olivecrm.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -18,14 +19,19 @@ public class EmployeeService {
     @Autowired
     private EmployeeRepository employeeRepository;
 
-    // CREATE USER
+    // LIST EMPLOYEE
+    public List<Employee> getAllEmployees() {
+        return employeeRepository.findAll();
+    }
+
+    // CREATE EMPLOYEE
     public Employee createUser(String username, String first_name, String last_name, String rawPassword, Role role)
             throws Exception {
         // Check if user already exists
         if (employeeRepository.existsByUsername(username)) {
             throw new Exception("Username already exists!");
         }
-        // Create new user
+        // Create new employee
         Employee employee = new Employee();
         employee.setUsername(username);
         employee.setFirst_name(first_name);
@@ -40,7 +46,7 @@ public class EmployeeService {
         return employeeRepository.save(employee); // Save the new user to the database
     }
 
-    // UPDATE USER
+    // UPDATE EMPLOYEE
     public Employee updateUser(String username, String first_name, String last_name, String password, Role role)
             throws Exception {
         Optional<Employee> optionalUser = employeeRepository.findByUsername(username);
@@ -74,7 +80,7 @@ public class EmployeeService {
         }
     }
 
-    // DELETE USER
+    // DELETE EMPLOYEE
     @Transactional
     public void deleteUser(String username) throws Exception {
         Optional<Employee> optionalUser = employeeRepository.findByUsername(username);
@@ -91,7 +97,7 @@ public class EmployeeService {
         }
     }
 
-    // LOGIN
+    // EMPLOYEE LOGIN
     public Employee login(String username, String password) {
         Optional<Employee> employeeOptional = employeeRepository.findByUsername(username);
 

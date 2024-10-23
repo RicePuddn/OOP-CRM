@@ -3,10 +3,14 @@ package com.olivecrm.controller;
 import com.olivecrm.dto.EmployeeDTO;
 import com.olivecrm.entity.Employee;
 import com.olivecrm.service.EmployeeService;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -20,7 +24,13 @@ public class EmployeeController {
 
     @Autowired private EmployeeService employeeService;
 
-    // CREATE USER
+    // LIST EMPLOYEE
+    @GetMapping
+    public List<Employee> getAllEmployees() {
+        return employeeService.getAllEmployees();
+    }
+
+    // CREATE EMPLOYEE
     @PostMapping("/create")
     public ResponseEntity<?> createUser(@RequestBody EmployeeDTO userDTO) {
         try {
@@ -39,7 +49,7 @@ public class EmployeeController {
         }
     }
 
-    // UPDATE USER
+    // UPDATE EMPLOYEE
     @PutMapping("/update/{username}")
     public ResponseEntity<?> updateUser(@PathVariable String username,
                                         @RequestBody EmployeeDTO userDTO) {
@@ -57,7 +67,7 @@ public class EmployeeController {
         }
     }
 
-    // DELETE USER
+    // DELETE EMPLOYEE
     @DeleteMapping("/delete/{username}")
     public ResponseEntity<?> deleteUser(@PathVariable String username) {
         try {
@@ -83,7 +93,7 @@ public class EmployeeController {
         }
     }
 
-    // Login Service
+    // EMPLOYEE LOGIN
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody EmployeeDTO loginRequest) {
         try {
