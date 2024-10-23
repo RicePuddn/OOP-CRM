@@ -22,6 +22,7 @@ const UserManagementPage: React.FC = () => {
     const [editedUser, setEditedUser] = useState<User | null>(null);
     const [showEditModal, setShowEditModal] = useState(false);
     const [sortConfig, setSortConfig] = useState<{ key: keyof User; direction: 'asc' | 'desc' } | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -59,7 +60,7 @@ const UserManagementPage: React.FC = () => {
   const handleEdit = (username: string) => {
     const userToEdit = users.find((user) => user.username === username);
     if (userToEdit) {
-      setEditedUser(userToEdit);
+      setEditedUser({ ...userToEdit, password: '' });
       setShowEditModal(true);
     }
   };
@@ -169,10 +170,8 @@ return (
                 <input
                   type="text"
                   value={generatedPassword}
-                  readOnly
-                  className="mt-1 p-2 block w-full border rounded bg-gray-100 cursor-not-allowed text-gray-700"
+                  className="mt-1 p-2 block w-full border rounded text-gray-700"
                 />
-                <p className="text-xs text-gray-500 mt-1">Share this password with the user. They might need to change it after logging in for the first time.</p>
               </div>
               <div className="flex justify-end">
                 <Button type="button" onClick={() => setShowCreateModal(false)} className="bg-gray-500 text-white px-4 py-2 rounded mr-2">
@@ -201,6 +200,7 @@ return (
                         role: editedUser.role,
                         password: editedUser.password
                       });
+                  
                   fetchUsers();
                   setShowEditModal(false);
                   setEditedUser(null);
@@ -251,15 +251,25 @@ return (
                 </select>
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Password</label>
+              <label className="block text-sm font-medium text-gray-700">New Password (optional)</label>
+              <div className="relative">
                 <input
-                  type="password"
-                  value={editedUser.password || ''}
+                  type={showPassword ? "text" : "password"}
+                  // value={editedUser.password || ''}
+                  value={editedUser.password !== undefined ? editedUser.password : ''}
                   onChange={(e) => setEditedUser({ ...editedUser, password: e.target.value })}
+                  placeholder="Enter new password to reset"
                   className="text-gray-700 mt-1 p-2 block w-full border rounded"
-                  required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
               </div>
+            </div>
               <div className="flex justify-end">
                 <Button type="button" onClick={() => setShowEditModal(false)} className="bg-gray-500 text-white px-4 py-2 rounded mr-2">
                   Cancel
