@@ -10,17 +10,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import Cookies from "js-cookie";
 
 export default function DashboardPage() {
-  const username = Cookies.get("username");
   return (
     <div className="w-full px-6 py-8">
       <h3 className="text-gray-700 text-3xl font-medium">Dashboard</h3>
 
       {/* Stats */}
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 w-full">
+        <Card className="w-full">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Total Customers
@@ -76,7 +74,7 @@ export default function DashboardPage() {
 
       {/* Recent Orders */}
       <h3 className="mt-6 text-xl text-gray-700">Recent Orders</h3>
-      <Card className="mt-4">
+      <Card className="mt-4 w-full">
         <Table>
           <TableHeader>
             <TableRow>
@@ -127,7 +125,7 @@ export default function DashboardPage() {
 
       {/* Low Stock Alert */}
       <h3 className="mt-6 text-xl text-gray-700">Low Stock Alert</h3>
-      <Card className="mt-4">
+      <Card className="mt-4 w-full">
         <Table>
           <TableHeader>
             <TableRow>

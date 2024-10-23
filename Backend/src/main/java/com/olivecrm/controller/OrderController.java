@@ -1,5 +1,6 @@
 package com.olivecrm.controller;
 
+import com.olivecrm.dto.CustomerSegmentDTO;
 import com.olivecrm.entity.Order;
 import com.olivecrm.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,12 +9,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
+    private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
 
     @Autowired
     private OrderService orderService;
@@ -30,23 +35,74 @@ public class OrderController {
             @RequestParam(required = false) String salesType,
             @RequestParam(required = false) Double totalCost,
             @RequestParam(required = false) String dateFilterType,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate singleDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate singleDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
             Pageable pageable) {
 
-        Page<Order> orders;
-        if ("single".equals(dateFilterType) && singleDate != null) {
-            orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, singleDate, singleDate, pageable);
-        } else if ("range".equals(dateFilterType) && startDate != null && endDate != null) {
-            orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, startDate, endDate, pageable);
-        } else {
-            orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, null, pageable);
-        }
+        logger.info("Received filter request - dateFilterType: {}, singleDate: {}, startDate: {}, endDate: {}", 
+                   dateFilterType, singleDate, startDate, endDate);
 
-        if (orders.isEmpty()) {
-            return ResponseEntity.noContent().build();
+        Page<Order> orders;
+        try {
+            if ("single".equals(dateFilterType) && singleDate != null) {
+                logger.info("Applying single date filter for date: {}", singleDate);
+                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, singleDate, null, null, pageable);
+            } else if ("range".equals(dateFilterType) && startDate != null && endDate != null) {
+                logger.info("Applying date range filter from {} to {}", startDate, endDate);
+                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, startDate, endDate, pageable);
+            } else {
+                logger.info("No date filtering applied");
+                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, null, null, pageable);
+            }
+
+            logger.info("Filter query returned {} results", orders.getContent().size());
+
+            if (orders.isEmpty()) {
+                logger.info("No orders found matching the filters");
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            logger.error("Error processing filter request", e);
+            throw e;
         }
-        return ResponseEntity.ok(orders);
+    }
+
+    // Customer Segmentation Endpoints
+
+    @GetMapping("/segments/recency/active")
+    public ResponseEntity<CustomerSegmentDTO> getActiveCustomers() {
+        return ResponseEntity.ok(orderService.getActiveCustomers());
+    }
+
+    @GetMapping("/segments/recency/dormant")
+    public ResponseEntity<CustomerSegmentDTO> getDormantCustomers() {
+        return ResponseEntity.ok(orderService.getDormantCustomers());
+    }
+
+    @GetMapping("/segments/recency/returning")
+    public ResponseEntity<CustomerSegmentDTO> getReturningCustomers() {
+        return ResponseEntity.ok(orderService.getReturningCustomers());
+    }
+
+    @GetMapping("/segments/frequency/frequent")
+    public ResponseEntity<CustomerSegmentDTO> getFrequentCustomers() {
+        return ResponseEntity.ok(orderService.getFrequentCustomers());
+    }
+
+    @GetMapping("/segments/frequency/occasional")
+    public ResponseEntity<CustomerSegmentDTO> getOccasionalCustomers() {
+        return ResponseEntity.ok(orderService.getOccasionalCustomers());
+    }
+
+    @GetMapping("/segments/frequency/one-time")
+    public ResponseEntity<CustomerSegmentDTO> getOneTimeCustomers() {
+        return ResponseEntity.ok(orderService.getOneTimeCustomers());
+    }
+
+    @GetMapping("/segments/monetary")
+    public ResponseEntity<List<CustomerSegmentDTO>> getMonetarySegments() {
+        return ResponseEntity.ok(orderService.getMonetarySegments());
     }
 }
