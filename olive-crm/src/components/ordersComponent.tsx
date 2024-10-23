@@ -24,25 +24,41 @@ interface Order {
   shippingMethod: string;
 }
 
+const SALES_TYPE_OPTIONS = ['Direct - B2B', 'Consignment', 'Marketing'];
+
 async function getOrders(page = 0, size = 20, filters: Filters) {
   const hasFilters = Object.values(filters).some((value) => value !== "");
   const endpoint = hasFilters
     ? "http://localhost:8080/api/orders/filter"
     : "http://localhost:8080/api/orders";
 
-  const filterParams = new URLSearchParams({
-    ...Object.entries(filters).reduce((acc, [key, value]) => {
-      if (value !== "" && key !== "dateFilterType") {
-        acc[key] = value;
-      }
-      return acc;
-    }, {} as Record<string, string>),
-    page: String(page),
-    size: String(size),
-  }).toString();
+  // Create a copy of filters to modify
+  const filterParams: Record<string, string> = {};
+  
+  // Add non-date filters
+  if (filters.customerId) filterParams.customerId = filters.customerId;
+  if (filters.salesType) filterParams.salesType = filters.salesType;
+  if (filters.totalCost) filterParams.totalCost = filters.totalCost;
+  
+  // Add date filters based on dateFilterType
+  filterParams.dateFilterType = filters.dateFilterType;
+  
+  if (filters.dateFilterType === "single" && filters.singleDate) {
+    filterParams.singleDate = filters.singleDate; // Already in YYYY-MM-DD format from input
+  } else if (filters.dateFilterType === "range" && filters.startDate && filters.endDate) {
+    filterParams.startDate = filters.startDate; // Already in YYYY-MM-DD format from input
+    filterParams.endDate = filters.endDate; // Already in YYYY-MM-DD format from input
+  }
 
-  console.log("API request URL:", `${endpoint}?${filterParams}`);
-  const res = await fetch(`${endpoint}?${filterParams}`, { cache: "no-store" });
+  // Add pagination parameters
+  filterParams.page = String(page);
+  filterParams.size = String(size);
+
+  const queryString = new URLSearchParams(filterParams).toString();
+  console.log("API request URL:", `${endpoint}?${queryString}`);
+  console.log("Filter parameters:", filterParams);
+  
+  const res = await fetch(`${endpoint}?${queryString}`, { cache: "no-store" });
   if (!res.ok) {
     throw new Error("Failed to fetch orders");
   }
@@ -206,28 +222,33 @@ export default function OrdersTable() {
                     >
                       Sales Type:
                     </label>
-                    <input
-                      type="text"
+                    <select
                       name="salesType"
                       value={filters.salesType}
                       onChange={handleFilterChange}
-                      placeholder="Enter Sales Type"
                       className="px-4 py-2 border rounded w-full focus:outline-none focus:ring focus:ring-blue-300 text-black"
-                    />
+                    >
+                      <option value="">Select Sales Type</option>
+                      {SALES_TYPE_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label
                       htmlFor="totalCost"
                       className="block text-gray-700 font-medium mb-1"
                     >
-                      Total Cost:
+                      Total Cost (Exact Amount):
                     </label>
                     <input
                       type="number"
                       name="totalCost"
                       value={filters.totalCost}
                       onChange={handleFilterChange}
-                      placeholder="Enter Total Cost"
+                      placeholder="Enter Exact Total Cost"
                       className="px-4 py-2 border rounded w-full focus:outline-none focus:ring focus:ring-blue-300 text-black"
                     />
                   </div>
@@ -254,7 +275,7 @@ export default function OrdersTable() {
                         htmlFor="singleDate"
                         className="block text-gray-700 font-medium mb-1"
                       >
-                        Sales Date:
+                        Sales Date (Exact Date):
                       </label>
                       <input
                         type="date"
