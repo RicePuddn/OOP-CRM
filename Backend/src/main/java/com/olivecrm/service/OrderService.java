@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -103,9 +102,15 @@ public class OrderService {
             LocalDate startDate,
             LocalDate endDate,
             Pageable pageable) {
-        // Ensure productIds is never null
-        List<Integer> effectiveProductIds = productIds != null ? productIds : Collections.emptyList();
-        return orderRepository.findByFilters(customerId, salesType, effectiveProductIds, singleDate, startDate, endDate, pageable);
+        // Pass productIds directly since the repository handles null check
+        return orderRepository.findByFilters(
+            customerId,
+            salesType,
+            productIds,
+            singleDate,
+            startDate,
+            endDate,
+            pageable);
     }
 
     // Metrics methods
@@ -113,11 +118,15 @@ public class OrderService {
         logger.info("Getting metrics with parameters - customerId: {}, salesType: {}, productIds: {}, startDate: {}, endDate: {}", 
                    customerId, salesType, productIds, startDate, endDate);
 
-        // Ensure productIds is never null
-        List<Integer> effectiveProductIds = productIds != null ? productIds : Collections.emptyList();
-
         // Get all orders without pagination for metrics calculation
-        Page<Order> filteredOrders = getOrdersByFilters(customerId, salesType, effectiveProductIds, null, startDate, endDate, Pageable.unpaged());
+        Page<Order> filteredOrders = getOrdersByFilters(
+            customerId,
+            salesType,
+            productIds,
+            null,  // singleDate
+            startDate,
+            endDate,
+            Pageable.unpaged());
         List<Order> orders = filteredOrders.getContent();
         
         logger.info("Found {} orders for metrics calculation", orders.size());
