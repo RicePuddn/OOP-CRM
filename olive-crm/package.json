@@ -24,7 +24,6 @@
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.441.0",
     "next": "14.2.11",
-    "olive-crm": "file:",
     "react": "^18",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18",

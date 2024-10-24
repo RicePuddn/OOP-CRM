@@ -10,7 +10,6 @@ import {
   User2,
   UserRoundCog,
   UsersRound,
-  LineChart,
 } from "lucide-react";
 
 import {
@@ -64,7 +63,6 @@ export default function AppSidebar() {
       icon: UsersRound,
     },
   ];
-
   if (role === "ADMIN") {
     items.push(
       {
@@ -84,14 +82,7 @@ export default function AppSidebar() {
       url: "/reports",
       icon: BarChart,
     });
-  } else if (role === "SALES") {
-    items.push({
-      title: "Sales Metrics",
-      url: "/sales-metrics",
-      icon: LineChart,
-    });
   }
-
   return (
     <Sidebar>
       <SidebarHeader>
