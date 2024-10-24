@@ -6,17 +6,31 @@ import { BarChart, DollarSign, TrendingUp } from "lucide-react";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
+import { Checkbox } from "./ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+
+interface Product {
+  pid: number;
+  individualPrice: number;
+  productName: string;
+  productVariant: string;
+}
 
 interface SalesMetrics {
   totalSales: number;
   totalAmount: number;
-   averageOrderValue: number;
+  averageOrderValue: number;
 }
 
 interface Filters {
   customerId?: number;
   salesType?: string;
-  totalCost?: number;
+  productIds?: number[];
   dateFilterType?: 'single' | 'range';
   singleDate?: string;
   startDate?: string;
@@ -27,7 +41,11 @@ async function getSalesMetrics(filters: Filters) {
   const queryParams = new URLSearchParams();
   if (filters.customerId) queryParams.append('customerId', filters.customerId.toString());
   if (filters.salesType) queryParams.append('salesType', filters.salesType);
-  if (filters.totalCost) queryParams.append('totalCost', filters.totalCost.toString());
+  if (filters.productIds && filters.productIds.length > 0) {
+    filters.productIds.forEach(id => {
+      queryParams.append('productIds', id.toString());
+    });
+  }
   if (filters.dateFilterType) {
     queryParams.append('dateFilterType', filters.dateFilterType);
     if (filters.dateFilterType === 'single' && filters.singleDate) {
@@ -48,6 +66,16 @@ async function getSalesMetrics(filters: Filters) {
   return res.json();
 }
 
+async function getProducts(): Promise<Product[]> {
+  const res = await fetch('http://localhost:8080/api/products', {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    throw new Error("Failed to fetch products");
+  }
+  return res.json();
+}
+
 export default function SalesMetrics() {
   const [metrics, setMetrics] = useState<SalesMetrics>({
     totalSales: 0,
@@ -59,10 +87,24 @@ export default function SalesMetrics() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<Set<number>>(new Set());
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
     fetchMetrics();
+    fetchProducts();
   }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const data = await getProducts();
+      setProducts(data);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+      setError("Failed to load products");
+    }
+  };
 
   const fetchMetrics = async () => {
     try {
@@ -78,22 +120,42 @@ export default function SalesMetrics() {
     }
   };
 
+  const handleProductSelect = (productId: number) => {
+    const newSelected = new Set(selectedProducts);
+    if (newSelected.has(productId)) {
+      newSelected.delete(productId);
+    } else {
+      newSelected.add(productId);
+    }
+    setSelectedProducts(newSelected);
+
+    // Update filters with selected product IDs
+    const selectedIds = Array.from(newSelected);
+    setFilters(prev => ({
+      ...prev,
+      productIds: selectedIds.length > 0 ? selectedIds : undefined
+    }));
+  };
+
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFilters(prev => ({
       ...prev,
       [name]: value === "" ? undefined : 
-        (name === "customerId" || name === "totalCost") ? Number(value) : value
+        (name === "customerId") ? Number(value) : value
     }));
   };
 
   const applyFilters = () => {
     fetchMetrics();
+    setDropdownOpen(false);
   };
 
   const clearFilters = () => {
+    setSelectedProducts(new Set());
     setFilters({ dateFilterType: 'range' });
     fetchMetrics();
+    setDropdownOpen(false);
   };
 
   if (loading) {
@@ -144,15 +206,41 @@ export default function SalesMetrics() {
                 />
               </div>
               <div>
-                <Label htmlFor="totalCost">Total Cost</Label>
-                <Input
-                  id="totalCost"
-                  name="totalCost"
-                  type="number"
-                  value={filters.totalCost || ""}
-                  onChange={handleFilterChange}
-                  placeholder="Enter total cost"
-                />
+                <Label>Product Filter</Label>
+                <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start">
+                      {selectedProducts.size === 0 
+                        ? "Select products" 
+                        : `${selectedProducts.size} product${selectedProducts.size === 1 ? '' : 's'} selected`}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-80 max-h-96 overflow-auto">
+                    {products.map((product) => (
+                      <DropdownMenuItem
+                        key={product.pid}
+                        className="flex items-center space-x-2"
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          handleProductSelect(product.pid);
+                        }}
+                      >
+                        <div className="flex items-center flex-1">
+                          <Checkbox
+                            checked={selectedProducts.has(product.pid)}
+                            className="mr-2"
+                          />
+                          <span>
+                            {product.productName} - {product.productVariant}
+                            <span className="ml-1 text-gray-500">
+                              (${product.individualPrice.toFixed(2)})
+                            </span>
+                          </span>
+                        </div>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               <div>
                 <Label htmlFor="dateFilterType">Date Filter Type</Label>

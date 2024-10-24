@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -97,21 +98,26 @@ public class OrderService {
     public Page<Order> getOrdersByFilters(
             Integer customerId,
             String salesType,
-            Double totalCost,
+            List<Integer> productIds,
             LocalDate singleDate,
             LocalDate startDate,
             LocalDate endDate,
             Pageable pageable) {
-        return orderRepository.findByFilters(customerId, salesType, totalCost, singleDate, startDate, endDate, pageable);
+        // Ensure productIds is never null
+        List<Integer> effectiveProductIds = productIds != null ? productIds : Collections.emptyList();
+        return orderRepository.findByFilters(customerId, salesType, effectiveProductIds, singleDate, startDate, endDate, pageable);
     }
 
     // Metrics methods
-    public SalesMetrics getMetrics(Integer customerId, String salesType, Double totalCost, LocalDate startDate, LocalDate endDate) {
-        logger.info("Getting metrics with parameters - customerId: {}, salesType: {}, totalCost: {}, startDate: {}, endDate: {}", 
-                   customerId, salesType, totalCost, startDate, endDate);
+    public SalesMetrics getMetrics(Integer customerId, String salesType, List<Integer> productIds, LocalDate startDate, LocalDate endDate) {
+        logger.info("Getting metrics with parameters - customerId: {}, salesType: {}, productIds: {}, startDate: {}, endDate: {}", 
+                   customerId, salesType, productIds, startDate, endDate);
+
+        // Ensure productIds is never null
+        List<Integer> effectiveProductIds = productIds != null ? productIds : Collections.emptyList();
 
         // Get all orders without pagination for metrics calculation
-        Page<Order> filteredOrders = getOrdersByFilters(customerId, salesType, totalCost, null, startDate, endDate, Pageable.unpaged());
+        Page<Order> filteredOrders = getOrdersByFilters(customerId, salesType, effectiveProductIds, null, startDate, endDate, Pageable.unpaged());
         List<Order> orders = filteredOrders.getContent();
         
         logger.info("Found {} orders for metrics calculation", orders.size());

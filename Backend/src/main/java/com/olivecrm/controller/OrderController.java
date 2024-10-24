@@ -71,29 +71,29 @@ public class OrderController {
     public ResponseEntity<Page<Order>> getOrdersByFilters(
             @RequestParam(required = false) Integer customerId,
             @RequestParam(required = false) String salesType,
-            @RequestParam(required = false) Double totalCost,
+            @RequestParam(required = false) List<Integer> productIds,
             @RequestParam(required = false) String dateFilterType,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate singleDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
             Pageable pageable) {
 
-        logger.info("Received filter request - dateFilterType: {}, singleDate: {}, startDate: {}, endDate: {}",
-                dateFilterType, singleDate, startDate, endDate);
+        logger.info("Received filter request - dateFilterType: {}, singleDate: {}, startDate: {}, endDate: {}, productIds: {}",
+                dateFilterType, singleDate, startDate, endDate, productIds);
 
         Page<Order> orders;
         try {
             if ("single".equals(dateFilterType) && singleDate != null) {
                 logger.info("Applying single date filter for date: {}", singleDate);
-                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, singleDate, null, null,
+                orders = orderService.getOrdersByFilters(customerId, salesType, productIds, singleDate, null, null,
                         pageable);
             } else if ("range".equals(dateFilterType) && startDate != null && endDate != null) {
                 logger.info("Applying date range filter from {} to {}", startDate, endDate);
-                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, startDate, endDate,
+                orders = orderService.getOrdersByFilters(customerId, salesType, productIds, null, startDate, endDate,
                         pageable);
             } else {
                 logger.info("No date filtering applied");
-                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, null, null, pageable);
+                orders = orderService.getOrdersByFilters(customerId, salesType, productIds, null, null, null, pageable);
             }
 
             logger.info("Filter query returned {} results", orders.getContent().size());
@@ -113,14 +113,14 @@ public class OrderController {
     public ResponseEntity<SalesMetrics> getMetrics(
             @RequestParam(required = false) Integer customerId,
             @RequestParam(required = false) String salesType,
-            @RequestParam(required = false) Double totalCost,
+            @RequestParam(required = false) List<Integer> productIds,
             @RequestParam(required = false) String dateFilterType,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate singleDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
 
-        logger.info("Getting metrics with parameters - customerId: {}, salesType: {}, totalCost: {}, dateFilterType: {}, singleDate: {}, startDate: {}, endDate: {}", 
-                   customerId, salesType, totalCost, dateFilterType, singleDate, startDate, endDate);
+        logger.info("Getting metrics with parameters - customerId: {}, salesType: {}, productIds: {}, dateFilterType: {}, singleDate: {}, startDate: {}, endDate: {}", 
+                   customerId, salesType, productIds, dateFilterType, singleDate, startDate, endDate);
 
         LocalDate effectiveStartDate = null;
         LocalDate effectiveEndDate = null;
@@ -135,7 +135,7 @@ public class OrderController {
             logger.info("Using date range filter: {} to {}", effectiveStartDate, effectiveEndDate);
         }
 
-        SalesMetrics metrics = orderService.getMetrics(customerId, salesType, totalCost, effectiveStartDate, effectiveEndDate);
+        SalesMetrics metrics = orderService.getMetrics(customerId, salesType, productIds, effectiveStartDate, effectiveEndDate);
         
         logger.info("Metrics result - totalSales: {}, totalAmount: {}, averageOrderValue: {}", 
                    metrics.getTotalSales(), metrics.getTotalAmount(), metrics.getAverageOrderValue());
