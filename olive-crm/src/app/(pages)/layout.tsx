@@ -1,5 +1,6 @@
 "use client";
-import NavigationBar from "@/components/sideBar";
+import AppSidebar from "@/components/navigationBar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import "@/app/globals.css";
 import ProtectedLayout from "@/app/protected-layout";
 
@@ -10,12 +11,15 @@ export default function DashboardLayout({
 }) {
   return (
     <ProtectedLayout>
-      <div className="flex flex-col h-screen bg-gray-100 w-full">
-        <NavigationBar />
-        <div className="flex-grow overflow-auto">
-          <div className="p-1">{children}</div>
-        </div>
-      </div>
+      <SidebarProvider>
+        <AppSidebar />
+        <main className="flex h-[100dvh] max-h-[100dvh] max-w-full flex-1 flex-col p-2 transition-all duration-300 ease-in-out">
+          <SidebarTrigger />
+          <div className="h-full max-h-full overflow-y-scroll rounded-md border-2">
+            <div className="text-black">{children}</div>
+          </div>
+        </main>
+      </SidebarProvider>
     </ProtectedLayout>
   );
 }

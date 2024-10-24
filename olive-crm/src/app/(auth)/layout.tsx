@@ -17,8 +17,8 @@ export default function AuthLayout({
       className="flex w-full h-screen items-center justify-center"
       style={{
         backgroundImage: "url('/images/background1.png')",
-        backgroundSize: "cover", // Ensures the image covers the entire screen
-        backgroundPosition: "center", // Centers the image
+        backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
     >
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
