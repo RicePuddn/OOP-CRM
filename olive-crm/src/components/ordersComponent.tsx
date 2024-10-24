@@ -24,7 +24,7 @@ interface Order {
   shippingMethod: string;
 }
 
-const SALES_TYPE_OPTIONS = ['Direct - B2B', 'Consignment', 'Marketing'];
+const SALES_TYPE_OPTIONS = ["Direct - B2B", "Consignment", "Marketing"];
 
 async function getOrders(page = 0, size = 20, filters: Filters) {
   const hasFilters = Object.values(filters).some((value) => value !== "");
@@ -34,18 +34,22 @@ async function getOrders(page = 0, size = 20, filters: Filters) {
 
   // Create a copy of filters to modify
   const filterParams: Record<string, string> = {};
-  
+
   // Add non-date filters
   if (filters.customerId) filterParams.customerId = filters.customerId;
   if (filters.salesType) filterParams.salesType = filters.salesType;
   if (filters.totalCost) filterParams.totalCost = filters.totalCost;
-  
+
   // Add date filters based on dateFilterType
   filterParams.dateFilterType = filters.dateFilterType;
-  
+
   if (filters.dateFilterType === "single" && filters.singleDate) {
     filterParams.singleDate = filters.singleDate; // Already in YYYY-MM-DD format from input
-  } else if (filters.dateFilterType === "range" && filters.startDate && filters.endDate) {
+  } else if (
+    filters.dateFilterType === "range" &&
+    filters.startDate &&
+    filters.endDate
+  ) {
     filterParams.startDate = filters.startDate; // Already in YYYY-MM-DD format from input
     filterParams.endDate = filters.endDate; // Already in YYYY-MM-DD format from input
   }
@@ -57,7 +61,7 @@ async function getOrders(page = 0, size = 20, filters: Filters) {
   const queryString = new URLSearchParams(filterParams).toString();
   console.log("API request URL:", `${endpoint}?${queryString}`);
   console.log("Filter parameters:", filterParams);
-  
+
   const res = await fetch(`${endpoint}?${queryString}`, { cache: "no-store" });
   if (!res.ok) {
     throw new Error("Failed to fetch orders");
@@ -81,10 +85,6 @@ export default function OrdersTable() {
     endDate: "",
   });
   const [applyFilter, setApplyFilter] = useState(false);
-
-  useEffect(() => {
-    fetchOrders();
-  }, [currentPage, applyFilter]);
 
   const fetchOrders = async () => {
     try {
@@ -111,6 +111,10 @@ export default function OrdersTable() {
       setTotalPages(0);
     }
   };
+
+  useEffect(() => {
+    fetchOrders();
+  }, [currentPage, applyFilter]);
 
   const handleJumpToPage = () => {
     const pageNumber = parseInt(jumpToPage, 10) - 1;
