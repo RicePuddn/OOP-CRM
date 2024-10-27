@@ -5,6 +5,7 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 
 interface User {
+  id: number;
   username: string;
   first_name: string;
   last_name: string;
@@ -20,7 +21,7 @@ const UserManagementPage: React.FC = () => {
     const [editedUser, setEditedUser] = useState<User | null>(null);
     const [showEditModal, setShowEditModal] = useState(false);
     const [sortConfig, setSortConfig] = useState<{ key: keyof User; direction: 'asc' | 'desc' } | null>(null);
-    const [showPassword, setShowPassword] = useState(false);
+    const [showPassword, setShowPassword] = useState(true);
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -29,6 +30,7 @@ const UserManagementPage: React.FC = () => {
     try {
       const response = await axios.get("http://localhost:8080/api/employee");
       const fetchedUsers = response.data.map((user: User) => ({
+        id: user.id,
         username: user.username,
         first_name: user.first_name,
         last_name: user.last_name,
@@ -56,22 +58,21 @@ const UserManagementPage: React.FC = () => {
     return password;
   };
 
-  const handleEdit = (username: string) => {
-    const userToEdit = users.find((user) => user.username === username);
+  const handleEdit = (id: number) => {
+    const userToEdit = users.find((user) => user.id === id);
     if (userToEdit) {
       setEditedUser({ ...userToEdit, password: '' });
       setShowEditModal(true);
     }
   };
 
-  const handleDelete = async (username: string) => {
+  const handleDelete = async (id: number) => {
     try {
       await axios.delete(
-        `http://localhost:8080/api/employee/delete/${username}`
+        `http://localhost:8080/api/employee/delete/${id}`
       );
-      setUsers(users.filter((user) => user.username !== username));
+      setUsers(users.filter((user) => user.id !== id));
     } catch (error) {
-      console.error("Failed to delete user", error);
       console.error("Failed to delete user", error);
     }
   };
@@ -199,11 +200,22 @@ const UserManagementPage: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700">
                   Generated Password
                 </label>
-                <input
-                  type="text"
-                  value={generatedPassword}
-                  className="mt-1 p-2 block w-full border rounded text-gray-700"
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={generatedPassword}
+                    onChange={(e) => setGeneratedPassword(e.target.value)}
+                    className="mt-1 p-2 block w-full border rounded text-gray-700"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
               </div>
               <div className="flex justify-end">
                 <Button
@@ -234,7 +246,7 @@ const UserManagementPage: React.FC = () => {
               onSubmit={async (e) => {
                 e.preventDefault();
                 try {
-                    await axios.put(`http://localhost:8080/api/employee/update/${editedUser.username}`, {
+                    await axios.put(`http://localhost:8080/api/employee/update/${editedUser.id}`, {
                         username: editedUser.username,
                         first_name: editedUser.first_name,
                         last_name: editedUser.last_name,
@@ -257,8 +269,10 @@ const UserManagementPage: React.FC = () => {
                 <input
                   type="text"
                   value={editedUser.username}
-                  readOnly
-                  className="mt-1 p-2 block w-full border rounded bg-gray-100 cursor-not-allowed text-gray-700"
+                  onChange={(e) =>
+                    setEditedUser({ ...editedUser, username: e.target.value })
+                  }
+                  className="text-gray-700 mt-1 p-2 block w-full border rounded"
                   required
                 />
               </div>
@@ -362,6 +376,9 @@ const UserManagementPage: React.FC = () => {
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-gray-50">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      ID
+                    </th>
                     <th
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                       onClick={() => handleSort("username")}
@@ -413,7 +430,10 @@ const UserManagementPage: React.FC = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {users.map((user) => (
-                    <tr key={user.username}>
+                    <tr key={user.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.id}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {user.username}
                       </td>
@@ -428,14 +448,14 @@ const UserManagementPage: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <Button
-                          onClick={() => handleEdit(user.username)}
+                          onClick={() => handleEdit(user.id)}
                           className="bg-green-800 hover:bg-green-700 mr-2"
                           disabled={user.role === "ADMIN"}
                         >
                           Edit
                         </Button>
                         <Button
-                          onClick={() => handleDelete(user.username)}
+                          onClick={() => handleDelete(user.id)}
                           className="bg-green-800 hover:bg-green-700"
                           disabled={user.role === "ADMIN"}
                         >
