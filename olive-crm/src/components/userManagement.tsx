@@ -3,8 +3,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-import { Table } from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
 
 interface User {
   username: string;
@@ -30,7 +28,7 @@ const UserManagementPage: React.FC = () => {
   const fetchUsers = async () => {
     try {
       const response = await axios.get("http://localhost:8080/api/employee");
-      const fetchedUsers = response.data.map((user: any) => ({
+      const fetchedUsers = response.data.map((user: User) => ({
         username: user.username,
         first_name: user.first_name,
         last_name: user.last_name,
