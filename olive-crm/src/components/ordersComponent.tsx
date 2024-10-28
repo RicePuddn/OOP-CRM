@@ -217,7 +217,7 @@ export default function OrdersTable() {
           <h3 className="text-gray-700 text-3xl font-medium">Orders</h3>
           <button
             onClick={handleExport}
-            className="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors duration-200"
+            className="px-4 py-2 text-sm bg-green-700 text-white rounded hover:bg-green-600 transition-colors duration-200"
           >
             Export to CSV
           </button>
@@ -233,7 +233,7 @@ export default function OrdersTable() {
             </button>
             <button
               onClick={handleClearFilters}
-              className="text-sm px-3 py-1.5 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+              className="text-sm px-3 py-1.5 bg-gray-100 bg-red-400 text-white rounded hover:bg-red-500 duration-200"
             >
               Clear Filters
             </button>
@@ -370,7 +370,7 @@ export default function OrdersTable() {
               </div>
               <button
                 type="submit"
-                className="mt-3 px-3 py-1.5 text-sm bg-gray-700 text-white rounded hover:bg-gray-800 transition-colors duration-200"
+                className="text-sm px-3 py-1.5 bg-gray-100 bg-green-700 text-white rounded hover:bg-green-600 transition-colors duration-200"
               >
                 Apply Filters
               </button>
