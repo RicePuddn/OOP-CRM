@@ -22,6 +22,11 @@ public class OrderService {
         @Autowired
         private OrderRepository orderRepository;
 
+        private LocalDate getAnalysisReferenceDate() {
+            LocalDate mostRecentOrder = orderRepository.findMostRecentOrderDate();
+            return mostRecentOrder != null ? mostRecentOrder : LocalDate.now();
+        }
+
         public List<TopProductDTO> getTopThreeMostPurchasedProducts(Integer customerId) {
                 List<Order> orders = orderRepository.findAllByCustomer_cID(customerId);
                 return orders.stream()
@@ -77,22 +82,25 @@ public class OrderService {
 
         // Recency-based segmentation
         public CustomerSegmentDTO getActiveCustomers() {
-                LocalDate thirtyDaysAgo = LocalDate.now().minusDays(30);
+                LocalDate referenceDate = getAnalysisReferenceDate();
+                LocalDate thirtyDaysAgo = referenceDate.minusDays(30);
                 List<Integer> customerIds = orderRepository.findActiveCustomers(thirtyDaysAgo);
                 return new CustomerSegmentDTO(customerIds, CustomerSegmentType.ACTIVE.getLabel(),
                                 CustomerSegmentType.ACTIVE.getCategory());
         }
 
         public CustomerSegmentDTO getDormantCustomers() {
-                LocalDate sixMonthsAgo = LocalDate.now().minusMonths(6);
+                LocalDate referenceDate = getAnalysisReferenceDate();
+                LocalDate sixMonthsAgo = referenceDate.minusMonths(6);
                 List<Integer> customerIds = orderRepository.findDormantCustomers(sixMonthsAgo);
                 return new CustomerSegmentDTO(customerIds, CustomerSegmentType.DORMANT.getLabel(),
                                 CustomerSegmentType.DORMANT.getCategory());
         }
 
         public CustomerSegmentDTO getReturningCustomers() {
-                LocalDate oneYearAgo = LocalDate.now().minusYears(1);
-                LocalDate twoYearsAgo = LocalDate.now().minusYears(2);
+                LocalDate referenceDate = getAnalysisReferenceDate();
+                LocalDate oneYearAgo = referenceDate.minusYears(1);
+                LocalDate twoYearsAgo = referenceDate.minusYears(2);
                 List<Integer> customerIds = orderRepository.findReturningCustomers(oneYearAgo, twoYearsAgo);
                 return new CustomerSegmentDTO(customerIds, CustomerSegmentType.RETURNING.getLabel(),
                                 CustomerSegmentType.RETURNING.getCategory());
@@ -100,15 +108,22 @@ public class OrderService {
 
         // Frequency-based segmentation
         public CustomerSegmentDTO getFrequentCustomers() {
-                LocalDate monthStart = LocalDate.now().withDayOfMonth(1);
-                List<Integer> customerIds = orderRepository.findFrequentCustomers(monthStart);
+                LocalDate referenceDate = getAnalysisReferenceDate();
+                // Get the start and end of the current month relative to the reference date
+                LocalDate monthStart = referenceDate.withDayOfMonth(1);
+                LocalDate monthEnd = referenceDate.withDayOfMonth(referenceDate.lengthOfMonth());
+                List<Integer> customerIds = orderRepository.findFrequentCustomers(monthStart, monthEnd);
                 return new CustomerSegmentDTO(customerIds, CustomerSegmentType.FREQUENT.getLabel(),
                                 CustomerSegmentType.FREQUENT.getCategory());
         }
 
         public CustomerSegmentDTO getOccasionalCustomers() {
-                LocalDate quarterStart = LocalDate.now().minusMonths(3);
-                List<Integer> customerIds = orderRepository.findOccasionalCustomers(quarterStart);
+                LocalDate referenceDate = getAnalysisReferenceDate();
+                // Get the start and end of the current quarter relative to the reference date
+                LocalDate quarterStart = referenceDate.withDayOfMonth(1)
+                    .minusMonths((referenceDate.getMonthValue() - 1) % 3);
+                LocalDate quarterEnd = quarterStart.plusMonths(3).minusDays(1);
+                List<Integer> customerIds = orderRepository.findOccasionalCustomers(quarterStart, quarterEnd);
                 return new CustomerSegmentDTO(customerIds, CustomerSegmentType.OCCASIONAL.getLabel(),
                                 CustomerSegmentType.OCCASIONAL.getCategory());
         }

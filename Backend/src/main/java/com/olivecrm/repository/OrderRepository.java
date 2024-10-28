@@ -37,6 +37,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                         @Param("endDate") LocalDate endDate,
                         Pageable pageable);
 
+        // Get the most recent order date
+        @Query("SELECT MAX(o.salesDate) FROM Order o")
+        LocalDate findMostRecentOrderDate();
+
         // Recency Queries
         @Query("SELECT DISTINCT o.customer.cID FROM Order o WHERE o.salesDate >= :thirtyDaysAgo")
         List<Integer> findActiveCustomers(@Param("thirtyDaysAgo") LocalDate thirtyDaysAgo);
@@ -49,14 +53,29 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                         @Param("oneYearAgo") LocalDate oneYearAgo,
                         @Param("twoYearsAgo") LocalDate twoYearsAgo);
 
-        // Frequency Queries
-        @Query("SELECT o.customer.cID FROM Order o WHERE o.salesDate >= :startDate GROUP BY o.customer.cID HAVING COUNT(o) > 10")
-        List<Integer> findFrequentCustomers(@Param("startDate") LocalDate startDate);
+        // Frequency Queries - Updated
+        @Query("SELECT DISTINCT o1.customer.cID FROM Order o1 WHERE EXISTS (" +
+               "SELECT 1 FROM Order o2 WHERE o2.customer.cID = o1.customer.cID " +
+               "AND o2.salesDate >= :monthStart AND o2.salesDate <= :monthEnd " +
+               "GROUP BY YEAR(o2.salesDate), MONTH(o2.salesDate) " +
+               "HAVING COUNT(o2) > 10)")
+        List<Integer> findFrequentCustomers(
+               @Param("monthStart") LocalDate monthStart,
+               @Param("monthEnd") LocalDate monthEnd);
 
-        @Query("SELECT o.customer.cID FROM Order o WHERE o.salesDate >= :startDate GROUP BY o.customer.cID HAVING COUNT(o) BETWEEN 3 AND 5")
-        List<Integer> findOccasionalCustomers(@Param("startDate") LocalDate startDate);
+        @Query("SELECT DISTINCT o1.customer.cID FROM Order o1 WHERE EXISTS (" +
+               "SELECT 1 FROM Order o2 WHERE o2.customer.cID = o1.customer.cID " +
+               "AND o2.salesDate >= :quarterStart AND o2.salesDate <= :quarterEnd " +
+               "GROUP BY YEAR(o2.salesDate), QUARTER(o2.salesDate) " +
+               "HAVING COUNT(o2) BETWEEN 3 AND 5)")
+        List<Integer> findOccasionalCustomers(
+               @Param("quarterStart") LocalDate quarterStart,
+               @Param("quarterEnd") LocalDate quarterEnd);
 
-        @Query("SELECT o.customer.cID FROM Order o GROUP BY o.customer.cID HAVING COUNT(o) = 1")
+        // One-time buyers - Simplified 
+        @Query("SELECT o.customer.cID FROM Order o " +
+               "GROUP BY o.customer.cID " +
+               "HAVING COUNT(o) = 1")
         List<Integer> findOneTimeCustomers();
 
         // Monetary Value Queries
@@ -69,5 +88,4 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         // Method to find all orders by customer ID
         @Query("SELECT o FROM Order o WHERE o.customer.cID = :customerId")
         List<Order> findAllByCustomer_cID(@Param("customerId") Integer customerId);
-
 }
