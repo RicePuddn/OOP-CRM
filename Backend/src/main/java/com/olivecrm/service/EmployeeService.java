@@ -26,18 +26,19 @@ public class EmployeeService {
 
     // CREATE EMPLOYEE
     public Employee createUser(String username, String first_name, String last_name, String rawPassword, Role role)
-            throws Exception {
+        throws Exception {
         // Check if user already exists
         if (employeeRepository.existsByUsername(username)) {
             throw new Exception("Username already exists!");
         }
+
         // Create new employee
         Employee employee = new Employee();
         employee.setUsername(username);
         employee.setFirst_name(first_name);
         employee.setLast_name(last_name);
         employee.setPassword(PasswordUtil.hashPassword(rawPassword)); // Encrypt password
-        
+
         if (role == Role.ADMIN) {
             throw new Exception("You have no permission to create an admin account.");
         }
@@ -46,10 +47,10 @@ public class EmployeeService {
         return employeeRepository.save(employee); // Save the new user to the database
     }
 
+
     // UPDATE EMPLOYEE
-    public Employee updateUser(String username, String first_name, String last_name, String password, Role role)
-            throws Exception {
-        Optional<Employee> optionalUser = employeeRepository.findByUsername(username);
+    public Employee updateUser(Long id, String newUsername, String first_name, String last_name, String password, Role role) throws Exception {
+        Optional<Employee> optionalUser = employeeRepository.findById(id);
         if (optionalUser.isPresent()) {
             Employee employee = optionalUser.get();
 
@@ -57,9 +58,12 @@ public class EmployeeService {
                 throw new Exception("You have no permission to update another admin's account.");
             }
 
-            // Only update fields that are provided
-            if (username != null && !username.isEmpty()) {
-                employee.setUsername(username);
+            // Update the username (primary key) if a new one is provided
+            if (newUsername != null && !newUsername.isEmpty() && !newUsername.equals(employee.getUsername())) {
+                if (employeeRepository.existsByUsername(newUsername)) {
+                    throw new Exception("Username is already taken");
+                }
+                employee.setUsername(newUsername);
             }
             if (first_name != null && !first_name.isEmpty()) {
                 employee.setFirst_name(first_name);
@@ -82,8 +86,8 @@ public class EmployeeService {
 
     // DELETE EMPLOYEE
     @Transactional
-    public void deleteUser(String username) throws Exception {
-        Optional<Employee> optionalUser = employeeRepository.findByUsername(username);
+    public void deleteUser(Long id) throws Exception {
+        Optional<Employee> optionalUser = employeeRepository.findById(id);
         if (optionalUser.isPresent()) {
             Employee employee = optionalUser.get();
 
@@ -91,7 +95,7 @@ public class EmployeeService {
                 throw new Exception("You have no permission to delete another admin's account.");
             }
 
-            employeeRepository.deleteByUsername(username); // Delete the user
+            employeeRepository.deleteById(id); // Delete the user
         } else {
             throw new Exception("User not found");
         }
