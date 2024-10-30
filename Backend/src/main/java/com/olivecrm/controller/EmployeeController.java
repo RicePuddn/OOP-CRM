@@ -34,8 +34,6 @@ public class EmployeeController {
     @PostMapping("/create")
     public ResponseEntity<?> createUser(@RequestBody EmployeeDTO userDTO) {
         try {
-            // Assuming userDTO.getRole() returns a String like "USER" or
-            // "ADMIN"
             Employee.Role userRole = mapRole(userDTO.getRole());
             Employee newUser = employeeService.createUser(
                 userDTO.getUsername(), userDTO.getFirst_name(),
@@ -50,8 +48,8 @@ public class EmployeeController {
     }
 
     // UPDATE EMPLOYEE
-    @PutMapping("/update/{username}")
-    public ResponseEntity<?> updateUser(@PathVariable String username,
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable Long id,
                                         @RequestBody EmployeeDTO userDTO) {
         try {
             // Only map the role if it is provided, otherwise pass null
@@ -59,7 +57,7 @@ public class EmployeeController {
                 userDTO.getRole() != null ? mapRole(userDTO.getRole()) : null;
 
             Employee updateUser = employeeService.updateUser(
-                username, userDTO.getFirst_name(), userDTO.getLast_name(),
+                id, userDTO.getUsername(), userDTO.getFirst_name(), userDTO.getLast_name(),
                 userDTO.getPassword(), userRole);
             return ResponseEntity.ok(updateUser);
         } catch (Exception e) {
@@ -68,12 +66,11 @@ public class EmployeeController {
     }
 
     // DELETE EMPLOYEE
-    @DeleteMapping("/delete/{username}")
-    public ResponseEntity<?> deleteUser(@PathVariable String username) {
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         try {
-            employeeService.deleteUser(username);
-            return ResponseEntity.ok("User " + username +
-                                     " deleted successfully");
+            employeeService.deleteUser(id);
+            return ResponseEntity.ok("User deleted successfully!");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

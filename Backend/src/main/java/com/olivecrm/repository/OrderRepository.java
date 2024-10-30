@@ -19,17 +19,19 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
         List<Order> findBySalesDateBetween(LocalDate startDate, LocalDate endDate);
 
-        @Query("SELECT DISTINCT o FROM Order o WHERE " +
+        List<Order> findByTotalCost(Double totalCost);
+
+        @Query("SELECT o FROM Order o WHERE " +
                         "(:customerId IS NULL OR o.customer.cID = :customerId) AND " +
                         "(:salesType IS NULL OR o.salesType = :salesType) AND " +
-                        "(:#{#productIds == null} = true OR o.product.pID IN (:productIds)) AND " +
+                        "(:totalCost IS NULL OR o.totalCost = :totalCost) AND " +
                         "(:singleDate IS NULL OR o.salesDate = :singleDate) AND " +
                         "((:startDate IS NULL AND :endDate IS NULL) OR " +
                         "(o.salesDate >= :startDate AND o.salesDate <= :endDate))")
         Page<Order> findByFilters(
                         @Param("customerId") Integer customerId,
                         @Param("salesType") String salesType,
-                        @Param("productIds") List<Integer> productIds,
+                        @Param("totalCost") Double totalCost,
                         @Param("singleDate") LocalDate singleDate,
                         @Param("startDate") LocalDate startDate,
                         @Param("endDate") LocalDate endDate,
@@ -67,4 +69,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         // Method to find all orders by customer ID
         @Query("SELECT o FROM Order o WHERE o.customer.cID = :customerId")
         List<Order> findAllByCustomer_cID(@Param("customerId") Integer customerId);
+
 }
