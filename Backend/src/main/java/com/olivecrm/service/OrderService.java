@@ -41,12 +41,6 @@ public class OrderService {
 
         public ProductPurchaseHistoryDTO getCustomerPurchaseHistory(Integer customerId) {
                 List<Order> orders = orderRepository.findAllByCustomer_cID(customerId);
-                System.out.println("Number of orders fetched: " + orders.size());
-                orders.forEach(order -> {
-                        System.out.println("Order ID: " + order.getId() + ", Quantity: " + order.getQuantity()
-                                        + ", Sales Date: " + order.getSalesDate());
-                });
-
                 ProductPurchaseHistoryDTO purchaseHistoryDTO = new ProductPurchaseHistoryDTO();
 
                 List<Integer> quantities = orders.stream()
@@ -106,24 +100,15 @@ public class OrderService {
                                 CustomerSegmentType.RETURNING.getCategory());
         }
 
-        // Frequency-based segmentation
+        // Updated Frequency-based segmentation for lifetime analysis
         public CustomerSegmentDTO getFrequentCustomers() {
-                LocalDate referenceDate = getAnalysisReferenceDate();
-                // Get the start and end of the current month relative to the reference date
-                LocalDate monthStart = referenceDate.withDayOfMonth(1);
-                LocalDate monthEnd = referenceDate.withDayOfMonth(referenceDate.lengthOfMonth());
-                List<Integer> customerIds = orderRepository.findFrequentCustomers(monthStart, monthEnd);
+                List<Integer> customerIds = orderRepository.findFrequentCustomers();
                 return new CustomerSegmentDTO(customerIds, CustomerSegmentType.FREQUENT.getLabel(),
                                 CustomerSegmentType.FREQUENT.getCategory());
         }
 
         public CustomerSegmentDTO getOccasionalCustomers() {
-                LocalDate referenceDate = getAnalysisReferenceDate();
-                // Get the start and end of the current quarter relative to the reference date
-                LocalDate quarterStart = referenceDate.withDayOfMonth(1)
-                    .minusMonths((referenceDate.getMonthValue() - 1) % 3);
-                LocalDate quarterEnd = quarterStart.plusMonths(3).minusDays(1);
-                List<Integer> customerIds = orderRepository.findOccasionalCustomers(quarterStart, quarterEnd);
+                List<Integer> customerIds = orderRepository.findOccasionalCustomers();
                 return new CustomerSegmentDTO(customerIds, CustomerSegmentType.OCCASIONAL.getLabel(),
                                 CustomerSegmentType.OCCASIONAL.getCategory());
         }

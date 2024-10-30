@@ -53,26 +53,29 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                         @Param("oneYearAgo") LocalDate oneYearAgo,
                         @Param("twoYearsAgo") LocalDate twoYearsAgo);
 
-        // Frequency Queries - Updated
-        @Query("SELECT DISTINCT o1.customer.cID FROM Order o1 WHERE EXISTS (" +
-               "SELECT 1 FROM Order o2 WHERE o2.customer.cID = o1.customer.cID " +
-               "AND o2.salesDate >= :monthStart AND o2.salesDate <= :monthEnd " +
-               "GROUP BY YEAR(o2.salesDate), MONTH(o2.salesDate) " +
-               "HAVING COUNT(o2) > 10)")
-        List<Integer> findFrequentCustomers(
-               @Param("monthStart") LocalDate monthStart,
-               @Param("monthEnd") LocalDate monthEnd);
+        // Updated Frequency Queries for lifetime analysis
+        @Query("SELECT DISTINCT c.cID FROM Order o1 " +
+               "JOIN o1.customer c " +
+               "WHERE EXISTS (" +
+               "  SELECT 1 FROM Order o2 " +
+               "  WHERE o2.customer = o1.customer " +
+               "  GROUP BY o2.customer, FUNCTION('DATE_FORMAT', o2.salesDate, '%Y-%m') " +
+               "  HAVING COUNT(o2) > 10" +
+               ")")
+        List<Integer> findFrequentCustomers();
 
-        @Query("SELECT DISTINCT o1.customer.cID FROM Order o1 WHERE EXISTS (" +
-               "SELECT 1 FROM Order o2 WHERE o2.customer.cID = o1.customer.cID " +
-               "AND o2.salesDate >= :quarterStart AND o2.salesDate <= :quarterEnd " +
-               "GROUP BY YEAR(o2.salesDate), QUARTER(o2.salesDate) " +
-               "HAVING COUNT(o2) BETWEEN 3 AND 5)")
-        List<Integer> findOccasionalCustomers(
-               @Param("quarterStart") LocalDate quarterStart,
-               @Param("quarterEnd") LocalDate quarterEnd);
+        @Query("SELECT DISTINCT c.cID FROM Order o1 " +
+               "JOIN o1.customer c " +
+               "WHERE EXISTS (" +
+               "  SELECT 1 FROM Order o2 " +
+               "  WHERE o2.customer = o1.customer " +
+               "  GROUP BY o2.customer, " +
+               "    FUNCTION('YEAR', o2.salesDate), " +
+               "    FUNCTION('QUARTER', o2.salesDate) " +
+               "  HAVING COUNT(o2) BETWEEN 3 AND 5" +
+               ")")
+        List<Integer> findOccasionalCustomers();
 
-        // One-time buyers - Simplified 
         @Query("SELECT o.customer.cID FROM Order o " +
                "GROUP BY o.customer.cID " +
                "HAVING COUNT(o) = 1")
