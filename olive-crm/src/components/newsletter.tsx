@@ -114,9 +114,9 @@ Marketing team
                 ,
               </p>
               <p>
-                We&apos;ve curated something special for you! Based on your
-                recent purchases and browsing history, here are some exclusive
-                offers and recommendations we think you&apos;ll love.
+                We’ve curated something special for you! Based on your recent
+                purchases and browsing history, here are some exclusive offers
+                and recommendations we think you'll love.
               </p>
               <p>Top Picks for You:</p>
               <ol className="list-decimal list-inside">
