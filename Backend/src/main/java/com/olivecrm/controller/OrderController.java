@@ -5,25 +5,25 @@ import com.olivecrm.dto.ProductPurchaseHistoryDTO;
 import com.olivecrm.dto.TopProductDTO;
 import com.olivecrm.entity.Order;
 import com.olivecrm.service.OrderService;
-import com.olivecrm.service.OrderService.SalesMetrics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
     private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Autowired
     private OrderService orderService;
@@ -71,29 +71,29 @@ public class OrderController {
     public ResponseEntity<Page<Order>> getOrdersByFilters(
             @RequestParam(required = false) Integer customerId,
             @RequestParam(required = false) String salesType,
-            @RequestParam(required = false) List<Integer> productIds,
+            @RequestParam(required = false) Double totalCost,
             @RequestParam(required = false) String dateFilterType,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate singleDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
             Pageable pageable) {
 
-        logger.info("Received filter request - dateFilterType: {}, singleDate: {}, startDate: {}, endDate: {}, productIds: {}",
-                dateFilterType, singleDate, startDate, endDate, productIds);
+        logger.info("Received filter request - dateFilterType: {}, singleDate: {}, startDate: {}, endDate: {}",
+                dateFilterType, singleDate, startDate, endDate);
 
         Page<Order> orders;
         try {
             if ("single".equals(dateFilterType) && singleDate != null) {
                 logger.info("Applying single date filter for date: {}", singleDate);
-                orders = orderService.getOrdersByFilters(customerId, salesType, productIds, singleDate, null, null,
+                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, singleDate, null, null,
                         pageable);
             } else if ("range".equals(dateFilterType) && startDate != null && endDate != null) {
                 logger.info("Applying date range filter from {} to {}", startDate, endDate);
-                orders = orderService.getOrdersByFilters(customerId, salesType, productIds, null, startDate, endDate,
+                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, startDate, endDate,
                         pageable);
             } else {
                 logger.info("No date filtering applied");
-                orders = orderService.getOrdersByFilters(customerId, salesType, productIds, null, null, null, pageable);
+                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, null, null, pageable);
             }
 
             logger.info("Filter query returned {} results", orders.getContent().size());
@@ -109,41 +109,69 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/metrics")
-    public ResponseEntity<SalesMetrics> getMetrics(
+    @GetMapping("/export/csv")
+    public ResponseEntity<byte[]> exportOrdersToCSV(
             @RequestParam(required = false) Integer customerId,
             @RequestParam(required = false) String salesType,
-            @RequestParam(required = false) List<Integer> productIds,
+            @RequestParam(required = false) Double totalCost,
             @RequestParam(required = false) String dateFilterType,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate singleDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
+        
+        logger.info("Received CSV export request with filters");
+        
+        try {
+            // Get all orders matching the filters (without pagination)
+            Page<Order> orders;
+            if ("single".equals(dateFilterType) && singleDate != null) {
+                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, singleDate, null, null, Pageable.unpaged());
+            } else if ("range".equals(dateFilterType) && startDate != null && endDate != null) {
+                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, startDate, endDate, Pageable.unpaged());
+            } else {
+                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, null, null, Pageable.unpaged());
+            }
 
-        logger.info("Getting metrics with parameters - customerId: {}, salesType: {}, productIds: {}, dateFilterType: {}, singleDate: {}, startDate: {}, endDate: {}", 
-                   customerId, salesType, productIds, dateFilterType, singleDate, startDate, endDate);
+            // Build CSV content
+            StringBuilder csvContent = new StringBuilder();
+            // Add CSV header
+            csvContent.append("Order ID,Customer ID,Product ID,Quantity,Total Cost,Order Method,Sales Date,Sales Type,Shipping Method\n");
 
-        LocalDate effectiveStartDate = null;
-        LocalDate effectiveEndDate = null;
+            // Add data rows
+            for (Order order : orders.getContent()) {
+                csvContent.append(String.format("%d,%d,%d,%d,%.2f,%s,%s,%s,%s\n",
+                    order.getId(),
+                    order.getCustomer().getCID(),  // Updated to use getCID()
+                    order.getProduct().getPID(),   // Updated to use getPID()
+                    order.getQuantity(),
+                    order.getTotalCost(),
+                    order.getOrderMethod(),
+                    order.getSalesDate(),
+                    order.getSalesType(),
+                    order.getShippingMethod()
+                ));
+            }
 
-        if ("single".equals(dateFilterType) && singleDate != null) {
-            effectiveStartDate = singleDate;
-            effectiveEndDate = singleDate;
-            logger.info("Using single date filter: {}", effectiveStartDate);
-        } else if ("range".equals(dateFilterType) && startDate != null && endDate != null) {
-            effectiveStartDate = startDate;
-            effectiveEndDate = endDate;
-            logger.info("Using date range filter: {} to {}", effectiveStartDate, effectiveEndDate);
+            // Prepare the response
+            byte[] csvBytes = csvContent.toString().getBytes(StandardCharsets.UTF_8);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("text/csv"));
+            headers.setContentDispositionFormData("attachment", "orders_export.csv");
+            headers.setContentLength(csvBytes.length);
+
+            return ResponseEntity
+                    .ok()
+                    .headers(headers)
+                    .body(csvBytes);
+
+        } catch (Exception e) {
+            logger.error("Error exporting orders to CSV", e);
+            throw e;
         }
-
-        SalesMetrics metrics = orderService.getMetrics(customerId, salesType, productIds, effectiveStartDate, effectiveEndDate);
-        
-        logger.info("Metrics result - totalSales: {}, totalAmount: {}, averageOrderValue: {}", 
-                   metrics.getTotalSales(), metrics.getTotalAmount(), metrics.getAverageOrderValue());
-        
-        return ResponseEntity.ok(metrics);
     }
 
     // Customer Segmentation Endpoints
+
     @GetMapping("/segments/recency/active")
     public ResponseEntity<CustomerSegmentDTO> getActiveCustomers() {
         return ResponseEntity.ok(orderService.getActiveCustomers());
@@ -178,4 +206,5 @@ public class OrderController {
     public ResponseEntity<List<CustomerSegmentDTO>> getMonetarySegments() {
         return ResponseEntity.ok(orderService.getMonetarySegments());
     }
+
 }

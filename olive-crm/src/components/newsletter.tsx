@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import EmailModal from "./ui/email-modal";
+import { motion } from "framer-motion";
 
 export default function Newsletter() {
   const [customerName, setCustomerName] = useState<string>("Customer Name");
@@ -94,187 +95,196 @@ Marketing team
   };
 
   return (
-    <div className="w-full px-6 py-8">
-      <h3 className="text-gray-700 text-3xl font-medium">News Letter</h3>
-      <div className="mt-4">
-        <Card>
-          <CardHeader></CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <p>
-                Dear{" "}
-                <span
-                  contentEditable
-                  onBlur={handleBlur(setCustomerName)}
-                  className="border border-slate-400 rounded-sm p-1"
-                  suppressContentEditableWarning={true}
-                >
-                  {customerName}
-                </span>
-                ,
-              </p>
-              <p>
-                We’ve curated something special for you! Based on your recent
-                purchases and browsing history, here are some exclusive offers
-                and recommendations we think you'll love.
-              </p>
-              <p>Top Picks for You:</p>
-              <ol className="list-decimal list-inside">
-                <li className="p-2">
+    <motion.section
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{
+        opacity: 1,
+        scale: 1,
+        transition: { duration: 0.5 },
+      }}
+    >
+      <div className="w-full px-6 py-8">
+        <h3 className="text-gray-700 text-3xl font-medium">News Letter</h3>
+        <div className="mt-4">
+          <Card>
+            <CardHeader></CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p>
+                  Dear{" "}
                   <span
                     contentEditable
-                    onBlur={handleBlur(setProductName1)}
+                    onBlur={handleBlur(setCustomerName)}
                     className="border border-slate-400 rounded-sm p-1"
                     suppressContentEditableWarning={true}
                   >
-                    {productName1}
+                    {customerName}
                   </span>
-                  <ul className="list-disc list-inside ml-3">
-                    <li className="p-2">
-                      Price: $
-                      <span
-                        contentEditable
-                        onBlur={handleBlur(setProductPrice1)}
-                        className="border border-slate-400 rounded-sm p-1 m-1"
-                        suppressContentEditableWarning={true}
-                      >
-                        {productPrice1}
-                      </span>
-                    </li>
-                    <li className="p-2">
-                      Discount:
-                      <span
-                        contentEditable
-                        onBlur={handleBlur(setDiscount1)}
-                        className="border border-slate-400 rounded-sm p-1 m-1"
-                        suppressContentEditableWarning={true}
-                      >
-                        {discount1}
-                      </span>
-                      % off with code
-                      <span
-                        contentEditable
-                        onBlur={handleBlur(setPromoCode1)}
-                        className="border border-slate-400 rounded-sm p-1 m-1"
-                        suppressContentEditableWarning={true}
-                      >
-                        {promoCode1}
-                      </span>
-                    </li>
-                  </ul>
-                </li>
-                <li className="p-2">
-                  <span
-                    contentEditable
-                    onBlur={handleBlur(setProductName2)}
-                    className="border border-slate-400 rounded-sm p-1"
-                    suppressContentEditableWarning={true}
-                  >
-                    {productName2}
-                  </span>
-                  <ul className="list-disc list-inside ml-3">
-                    <li className="p-2">
-                      Price: $
-                      <span
-                        contentEditable
-                        onBlur={handleBlur(setProductPrice2)}
-                        className="border border-slate-400 rounded-sm p-1 m-1"
-                        suppressContentEditableWarning={true}
-                      >
-                        {productPrice2}
-                      </span>
-                    </li>
-                    <li className="p-2">
-                      Discount:
-                      <span
-                        contentEditable
-                        onBlur={handleBlur(setDiscount2)}
-                        className="border border-slate-400 rounded-sm p-1 m-1"
-                        suppressContentEditableWarning={true}
-                      >
-                        {discount2}
-                      </span>
-                      % off with code
-                      <span
-                        contentEditable
-                        onBlur={handleBlur(setPromoCode2)}
-                        className="border border-slate-400 rounded-sm p-1 m-1"
-                        suppressContentEditableWarning={true}
-                      >
-                        {promoCode2}
-                      </span>
-                    </li>
-                  </ul>
-                </li>
-                <li className="p-2">
-                  <span
-                    contentEditable
-                    onBlur={handleBlur(setProductName3)}
-                    className="border border-slate-400 rounded-sm p-1"
-                    suppressContentEditableWarning={true}
-                  >
-                    {productName3}
-                  </span>
-                  <ul className="list-disc list-inside ml-3">
-                    <li className="p-2">
-                      Price: $
-                      <span
-                        contentEditable
-                        onBlur={handleBlur(setProductPrice3)}
-                        className="border border-slate-400 rounded-sm p-1 m-1"
-                        suppressContentEditableWarning={true}
-                      >
-                        {productPrice3}
-                      </span>
-                    </li>
-                    <li className="p-2">
-                      Discount:
-                      <span
-                        contentEditable
-                        onBlur={handleBlur(setDiscount3)}
-                        className="border border-slate-400 rounded-sm p-1 m-1"
-                        suppressContentEditableWarning={true}
-                      >
-                        {discount3}
-                      </span>
-                      % off with code
-                      <span
-                        contentEditable
-                        onBlur={handleBlur(setPromoCode3)}
-                        className="border border-slate-400 rounded-sm p-1 m-1"
-                        suppressContentEditableWarning={true}
-                      >
-                        {promoCode3}
-                      </span>
-                    </li>
-                  </ul>
-                </li>
-              </ol>
-              <p>
-                Take advantage of these personalized offers and discover more
-                with Timperio. Shop now and enjoy the best deals tailored just
-                for you!
-              </p>
-              <p>Warm regards,</p>
-              <p>Marketing team</p>
-            </div>
-          </CardContent>
-        </Card>
-        <button
-          className=" bg-green-800 hover:bg-green-900 text-white font-bold py-2 px-4 rounded-lg mt-5 ml-2"
-          onClick={handleSendEmail}
-        >
-          Send Email
-        </button>
-        <EmailModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSendEmail={sendEmail}
-          emailContent={emailContent}
-          setReceiverEmail={setReceiverEmail}
-          receiverEmail={receiverEmail}
-        />
+                  ,
+                </p>
+                <p>
+                  We&apos;ve curated something special for you! Based on your
+                  recent purchases and browsing history, here are some exclusive
+                  offers and recommendations we think you&apos;ll love.
+                </p>
+                <p>Top Picks for You:</p>
+                <ol className="list-decimal list-inside">
+                  <li className="p-2">
+                    <span
+                      contentEditable
+                      onBlur={handleBlur(setProductName1)}
+                      className="border border-slate-400 rounded-sm p-1"
+                      suppressContentEditableWarning={true}
+                    >
+                      {productName1}
+                    </span>
+                    <ul className="list-disc list-inside ml-3">
+                      <li className="p-2">
+                        Price: $
+                        <span
+                          contentEditable
+                          onBlur={handleBlur(setProductPrice1)}
+                          className="border border-slate-400 rounded-sm p-1 m-1"
+                          suppressContentEditableWarning={true}
+                        >
+                          {productPrice1}
+                        </span>
+                      </li>
+                      <li className="p-2">
+                        Discount:
+                        <span
+                          contentEditable
+                          onBlur={handleBlur(setDiscount1)}
+                          className="border border-slate-400 rounded-sm p-1 m-1"
+                          suppressContentEditableWarning={true}
+                        >
+                          {discount1}
+                        </span>
+                        % off with code
+                        <span
+                          contentEditable
+                          onBlur={handleBlur(setPromoCode1)}
+                          className="border border-slate-400 rounded-sm p-1 m-1"
+                          suppressContentEditableWarning={true}
+                        >
+                          {promoCode1}
+                        </span>
+                      </li>
+                    </ul>
+                  </li>
+                  <li className="p-2">
+                    <span
+                      contentEditable
+                      onBlur={handleBlur(setProductName2)}
+                      className="border border-slate-400 rounded-sm p-1"
+                      suppressContentEditableWarning={true}
+                    >
+                      {productName2}
+                    </span>
+                    <ul className="list-disc list-inside ml-3">
+                      <li className="p-2">
+                        Price: $
+                        <span
+                          contentEditable
+                          onBlur={handleBlur(setProductPrice2)}
+                          className="border border-slate-400 rounded-sm p-1 m-1"
+                          suppressContentEditableWarning={true}
+                        >
+                          {productPrice2}
+                        </span>
+                      </li>
+                      <li className="p-2">
+                        Discount:
+                        <span
+                          contentEditable
+                          onBlur={handleBlur(setDiscount2)}
+                          className="border border-slate-400 rounded-sm p-1 m-1"
+                          suppressContentEditableWarning={true}
+                        >
+                          {discount2}
+                        </span>
+                        % off with code
+                        <span
+                          contentEditable
+                          onBlur={handleBlur(setPromoCode2)}
+                          className="border border-slate-400 rounded-sm p-1 m-1"
+                          suppressContentEditableWarning={true}
+                        >
+                          {promoCode2}
+                        </span>
+                      </li>
+                    </ul>
+                  </li>
+                  <li className="p-2">
+                    <span
+                      contentEditable
+                      onBlur={handleBlur(setProductName3)}
+                      className="border border-slate-400 rounded-sm p-1"
+                      suppressContentEditableWarning={true}
+                    >
+                      {productName3}
+                    </span>
+                    <ul className="list-disc list-inside ml-3">
+                      <li className="p-2">
+                        Price: $
+                        <span
+                          contentEditable
+                          onBlur={handleBlur(setProductPrice3)}
+                          className="border border-slate-400 rounded-sm p-1 m-1"
+                          suppressContentEditableWarning={true}
+                        >
+                          {productPrice3}
+                        </span>
+                      </li>
+                      <li className="p-2">
+                        Discount:
+                        <span
+                          contentEditable
+                          onBlur={handleBlur(setDiscount3)}
+                          className="border border-slate-400 rounded-sm p-1 m-1"
+                          suppressContentEditableWarning={true}
+                        >
+                          {discount3}
+                        </span>
+                        % off with code
+                        <span
+                          contentEditable
+                          onBlur={handleBlur(setPromoCode3)}
+                          className="border border-slate-400 rounded-sm p-1 m-1"
+                          suppressContentEditableWarning={true}
+                        >
+                          {promoCode3}
+                        </span>
+                      </li>
+                    </ul>
+                  </li>
+                </ol>
+                <p>
+                  Take advantage of these personalized offers and discover more
+                  with Timperio. Shop now and enjoy the best deals tailored just
+                  for you!
+                </p>
+                <p>Warm regards,</p>
+                <p>Marketing team</p>
+              </div>
+            </CardContent>
+          </Card>
+          <button
+            className=" bg-green-800 hover:bg-green-900 text-white font-bold py-2 px-4 rounded-lg mt-5 ml-2"
+            onClick={handleSendEmail}
+          >
+            Send Email
+          </button>
+          <EmailModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onSendEmail={sendEmail}
+            emailContent={emailContent}
+            setReceiverEmail={setReceiverEmail}
+            receiverEmail={receiverEmail}
+          />
+        </div>
       </div>
-    </div>
+    </motion.section>
   );
 }

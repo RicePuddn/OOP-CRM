@@ -7,6 +7,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "CUSTOMER")
 public class Customer {
+
     @Id
     private int cID;
     private String zipcode;

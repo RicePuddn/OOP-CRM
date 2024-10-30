@@ -10,7 +10,6 @@ import {
   User2,
   UserRoundCog,
   UsersRound,
-  LineChart,
 } from "lucide-react";
 
 import {
@@ -64,7 +63,6 @@ export default function AppSidebar() {
       icon: UsersRound,
     },
   ];
-
   if (role === "ADMIN") {
     items.push(
       {
@@ -84,14 +82,7 @@ export default function AppSidebar() {
       url: "/reports",
       icon: BarChart,
     });
-  } else if (role === "SALES") {
-    items.push({
-      title: "Sales Metrics",
-      url: "/sales-metrics",
-      icon: LineChart,
-    });
   }
-
   return (
     <Sidebar>
       <SidebarHeader>
@@ -133,7 +124,7 @@ export default function AppSidebar() {
               >
                 <DropdownMenuItem
                   onClick={handleLogout}
-                  className="cursor-pointer rounded bg-red-400 h-8 flex items-center mb-1 hover:bg-red-300 hover:text-white"
+                  className="cursor-pointer rounded bg-red-600 h-8 flex items-center mb-1 hover:bg-red-500 hover:text-white"
                 >
                   <span className="text-white">
                     <LogOut className="mx-2 h-4 w-4 inline" />
