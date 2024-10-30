@@ -63,35 +63,17 @@ public class OrderService {
                 return orderRepository.findAll(pageable);
         }
 
-    public Page<Order> getOrdersByFilters(
-            Integer customerId,
-            String salesType,
-            List<Integer> productIds,
-            LocalDate singleDate,
-            LocalDate startDate,
-            LocalDate endDate,
-            Pageable pageable) {
-        // Ensure productIds is never null
-        List<Integer> effectiveProductIds = productIds != null ? productIds : Collections.emptyList();
-        return orderRepository.findByFilters(customerId, salesType, effectiveProductIds, singleDate, startDate, endDate, pageable);
-    }
-
-    // Metrics methods
-    public SalesMetrics getMetrics(Integer customerId, String salesType, List<Integer> productIds, LocalDate startDate, LocalDate endDate) {
-        logger.info("Getting metrics with parameters - customerId: {}, salesType: {}, productIds: {}, startDate: {}, endDate: {}", 
-                   customerId, salesType, productIds, startDate, endDate);
-
-        // Ensure productIds is never null
-        List<Integer> effectiveProductIds = productIds != null ? productIds : Collections.emptyList();
-
-        // Get all orders without pagination for metrics calculation
-        Page<Order> filteredOrders = getOrdersByFilters(customerId, salesType, effectiveProductIds, null, startDate, endDate, Pageable.unpaged());
-        List<Order> orders = filteredOrders.getContent();
-        
-        logger.info("Found {} orders for metrics calculation", orders.size());
-        
-        return new SalesMetrics(orders);
-    }
+        public Page<Order> getOrdersByFilters(
+                        Integer customerId,
+                        String salesType,
+                        Double totalCost,
+                        LocalDate singleDate,
+                        LocalDate startDate,
+                        LocalDate endDate,
+                        Pageable pageable) {
+                return orderRepository.findByFilters(customerId, salesType, totalCost, singleDate, startDate, endDate,
+                                pageable);
+        }
 
         // Recency-based segmentation
         public CustomerSegmentDTO getActiveCustomers() {
@@ -103,7 +85,8 @@ public class OrderService {
 
         public CustomerSegmentDTO getDormantCustomers() {
                 LocalDate sixMonthsAgo = LocalDate.now().minusMonths(6);
-                List<Integer> customerIds = orderRepository.findDormantCustomers(sixMonthsAgo);
+                List<Integer> customerIds =
+orderRepository.findDormantCustomers(sixMonthsAgo);
                 return new CustomerSegmentDTO(customerIds, CustomerSegmentType.DORMANT.getLabel(),
                                 CustomerSegmentType.DORMANT.getCategory());
         }
