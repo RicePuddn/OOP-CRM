@@ -91,12 +91,8 @@ public class OrderService {
         purchaseHistoryDTO.setPurchaseDates(
                 salesDates.stream().map(LocalDate::toString).collect(Collectors.toList()));
 
-                return purchaseHistoryDTO;
-        }
-
-        public Page<Order> getAllOrders(Pageable pageable) {
-                return orderRepository.findAll(pageable);
-        }
+        return purchaseHistoryDTO;
+    }
 
     public Page<Order> getOrdersByFilters(
             Integer customerId,
@@ -192,9 +188,9 @@ public class OrderService {
                 .map(arr -> (Integer) arr[0])
                 .collect(Collectors.toList());
 
-                int totalCustomers = sortedCustomers.size();
-                int topTenPercent = (int) (totalCustomers * 0.1);
-                int bottomTwentyPercent = (int) (totalCustomers * 0.2);
+        int totalCustomers = sortedCustomers.size();
+        int topTenPercent = (int) (totalCustomers * 0.1);
+        int bottomTwentyPercent = (int) (totalCustomers * 0.2);
 
         List<CustomerSegmentDTO> segments = new ArrayList<>();
 
@@ -203,22 +199,12 @@ public class OrderService {
                 sortedCustomers.subList(0, topTenPercent),
                 CustomerSegmentType.HIGH_VALUE.getLabel(),
                 CustomerSegmentType.HIGH_VALUE.getCategory()));
-                // High-Value (top 10%)
-                segments.add(new CustomerSegmentDTO(
-                                sortedCustomers.subList(0, topTenPercent),
-                                CustomerSegmentType.HIGH_VALUE.getLabel(),
-                                CustomerSegmentType.HIGH_VALUE.getCategory()));
 
         // Mid-Tier (10%-80%)
         segments.add(new CustomerSegmentDTO(
                 sortedCustomers.subList(topTenPercent, totalCustomers - bottomTwentyPercent),
                 CustomerSegmentType.MID_TIER.getLabel(),
                 CustomerSegmentType.MID_TIER.getCategory()));
-                // Mid-Tier (10%-80%)
-                segments.add(new CustomerSegmentDTO(
-                                sortedCustomers.subList(topTenPercent, totalCustomers - bottomTwentyPercent),
-                                CustomerSegmentType.MID_TIER.getLabel(),
-                                CustomerSegmentType.MID_TIER.getCategory()));
 
         // Low-Spend (bottom 20%)
         segments.add(new CustomerSegmentDTO(
