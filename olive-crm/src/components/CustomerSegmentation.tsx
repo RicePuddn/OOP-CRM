@@ -13,6 +13,7 @@ import {
   LinearScale,
   BarElement,
 } from "chart.js";
+import { motion } from "framer-motion";
 
 ChartJS.register(
   ArcElement,
@@ -158,26 +159,35 @@ export default function CustomerSegmentation() {
     );
 
     return (
-      <div className="mt-4 grid grid-cols-1 gap-4">
-        {categorySegments.map(([type, segment]) => (
-          <div key={type} className="bg-white p-4 rounded-lg shadow">
-            <h4 className="text-lg font-semibold mb-2 text-black">{type}</h4>
-            <p className="text-black">
-              Number of customers: {segment.customerIds.length}
-            </p>
-            <div className="mt-2">
-              <details>
-                <summary className="cursor-pointer text-blue-500">
-                  View Customer IDs
-                </summary>
-                <div className="mt-2 p-2 bg-gray-50 rounded text-black">
-                  {segment.customerIds.join(", ")}
-                </div>
-              </details>
+      <motion.section
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{
+          opacity: 1,
+          scale: 1,
+          transition: { duration: 0.5 },
+        }}
+      >
+        <div className="mt-4 grid grid-cols-1 gap-4">
+          {categorySegments.map(([type, segment]) => (
+            <div key={type} className="bg-white p-4 rounded-lg shadow">
+              <h4 className="text-lg font-semibold mb-2 text-black">{type}</h4>
+              <p className="text-black">
+                Number of customers: {segment.customerIds.length}
+              </p>
+              <div className="mt-2">
+                <details>
+                  <summary className="cursor-pointer text-blue-500">
+                    View Customer IDs
+                  </summary>
+                  <div className="mt-2 p-2 bg-gray-50 rounded text-black">
+                    {segment.customerIds.join(", ")}
+                  </div>
+                </details>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </motion.section>
     );
   };
 
