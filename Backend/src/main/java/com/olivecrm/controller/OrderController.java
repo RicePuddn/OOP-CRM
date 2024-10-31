@@ -1,6 +1,7 @@
 package com.olivecrm.controller;
 
 import com.olivecrm.dto.CustomerSegmentDTO;
+import com.olivecrm.dto.OrderCreateDTO;
 import com.olivecrm.dto.ProductPurchaseHistoryDTO;
 import com.olivecrm.dto.TopProductDTO;
 import com.olivecrm.entity.Order;
@@ -22,11 +23,25 @@ import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/api/orders")
+@CrossOrigin(origins = "http://localhost:3000")
 public class OrderController {
     private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
 
     @Autowired
     private OrderService orderService;
+
+    @PostMapping("/manual")
+    public ResponseEntity<Order> createManualOrder(@RequestBody OrderCreateDTO orderDTO) {
+        logger.info("Received manual order creation request");
+        try {
+            Order createdOrder = orderService.createOrder(orderDTO);
+            logger.info("Successfully created manual order with ID: {}", createdOrder.getId());
+            return ResponseEntity.ok(createdOrder);
+        } catch (Exception e) {
+            logger.error("Error creating manual order", e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
     @GetMapping
     public ResponseEntity<Page<Order>> getAllOrders(Pageable pageable) {
@@ -145,8 +160,8 @@ public class OrderController {
             for (Order order : orders.getContent()) {
                 csvContent.append(String.format("%d,%d,%d,%d,%.2f,%s,%s,%s,%s\n",
                         order.getId(),
-                        order.getCustomer().getCID(), // Updated to use getCID()
-                        order.getProduct().getPID(), // Updated to use getPID()
+                        order.getCustomer().getCID(),
+                        order.getProduct().getPID(),
                         order.getQuantity(),
                         order.getTotalCost(),
                         order.getOrderMethod(),
@@ -209,5 +224,4 @@ public class OrderController {
     public ResponseEntity<List<CustomerSegmentDTO>> getMonetarySegments() {
         return ResponseEntity.ok(orderService.getMonetarySegments());
     }
-
 }

@@ -1,17 +1,22 @@
 package com.olivecrm.service;
 
 import com.olivecrm.dto.CustomerSegmentDTO;
+import com.olivecrm.dto.OrderCreateDTO;
 import com.olivecrm.dto.ProductPurchaseHistoryDTO;
 import com.olivecrm.dto.TopProductDTO;
+import com.olivecrm.entity.Customer;
 import com.olivecrm.entity.Order;
 import com.olivecrm.entity.Product;
 import com.olivecrm.enums.CustomerSegmentType;
+import com.olivecrm.repository.CustomerRepository;
 import com.olivecrm.repository.OrderRepository;
+import com.olivecrm.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +27,34 @@ public class OrderService {
 
         @Autowired
         private OrderRepository orderRepository;
+
+        @Autowired
+        private CustomerRepository customerRepository;
+
+        @Autowired
+        private ProductRepository productRepository;
+
+        public Order createOrder(OrderCreateDTO orderDTO) {
+            // Find customer and product
+            Customer customer = customerRepository.findById(orderDTO.getCustomerId())
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+            
+            Product product = productRepository.findById(orderDTO.getProductId())
+                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+
+            // Create new order
+            Order order = new Order();
+            order.setCustomer(customer);
+            order.setProduct(product);
+            order.setQuantity(orderDTO.getQuantity());
+            order.setTotalCost(orderDTO.getTotalCost());
+            order.setSalesType(orderDTO.getSalesType());
+            order.setSalesDate(orderDTO.getSalesDate() != null ? orderDTO.getSalesDate() : LocalDate.now());
+            order.setOrderMethod("Online - Website");
+            order.setShippingMethod("Standard Delivery");
+
+            return orderRepository.save(order);
+        }
 
         public List<TopProductDTO> getTopThreeMostPurchasedProducts(Integer customerId) {
                 List<Order> orders = orderRepository.findAllByCustomer_cID(customerId);
