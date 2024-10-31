@@ -15,13 +15,9 @@ public class CustomerController {
     @Autowired
     private CustomerService customerService;
 
-    // Endpoint to retrieve all customers with their zip codes
-    @GetMapping("/zipcodes")
-    public ResponseEntity<List<Customer>> getAllCustomersWithZipcodes() {
-        List<Customer> customers = customerService.getAllCustomersWithZipcodes();
-        if (customers.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
+    @GetMapping("/retrieve")
+    public ResponseEntity<List<Customer>> getAllCustomerIds() {
+        List<Customer> customers = customerService.findAllCustomers();
         return ResponseEntity.ok(customers);
     }
 }

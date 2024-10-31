@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Integer> {
-    // No need to define findAll() explicitly, it is provided by JpaRepository
 }

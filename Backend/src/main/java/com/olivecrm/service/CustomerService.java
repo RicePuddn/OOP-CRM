@@ -13,8 +13,7 @@ public class CustomerService {
     @Autowired
     private CustomerRepository customerRepository;
 
-    // Service method to retrieve all customers with their IDs and zip codes
-    public List<Customer> getAllCustomersWithZipcodes() {
+    public List<Customer> findAllCustomers() {
         return customerRepository.findAll();
     }
 }
