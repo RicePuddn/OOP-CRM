@@ -1,20 +1,17 @@
 "use client";
-import { Users, ShoppingCart, BarChart } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Plot from "react-plotly.js";
+import {
+  Card,
+  CardTitle,
+  CardContent,
+  CardHeader,
+  CardDescription,
+} from "@/components/ui/card";
 import { format, parseISO } from "date-fns";
+import { Users, ShoppingCart, BarChart } from "lucide-react";
+import Image from "next/image";
 
 interface Order {
   id: number;
@@ -26,7 +23,7 @@ interface Order {
     productName: string;
     productVariant: string;
     individualPrice: number;
-    productId: number;
+    pid: number;
   };
   quantity: number;
   totalCost: number;
@@ -36,8 +33,21 @@ interface Order {
   shippingMethod: string;
 }
 
-export default function DashboardPage() {
+interface TopProduct {
+  productName: string;
+  productVariant: string;
+  pid: number;
+  totalQuantity: number;
+}
+
+export default function AllCustomerPurchaseHistory() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [imageError, setImageError] = useState<{ [key: number]: boolean }>({});
+  const [totalCustomers, setTotalCustomers] = useState<number>(0);
+  const [totalOrders, setTotalOrders] = useState<number>(0);
+  const [averageOrderValue, setAverageOrderValue] = useState<number>(0);
+  const [totalRevenue, setTotalRevenue] = useState<number>(0);
+  const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -57,6 +67,44 @@ export default function DashboardPage() {
         }
 
         setOrders(allOrders);
+        setTotalOrders(allOrders.length);
+
+        // Calculate total customers
+        const uniqueCustomers = new Set(
+          allOrders.map((order) => order.customer.cid)
+        );
+        setTotalCustomers(uniqueCustomers.size);
+
+        // Calculate total revenue
+        const revenue = allOrders.reduce(
+          (sum, order) => sum + order.totalCost,
+          0
+        );
+        setTotalRevenue(revenue);
+
+        // Calculate average order value
+        const avgOrderValue = revenue / allOrders.length;
+        setAverageOrderValue(avgOrderValue);
+
+        // Calculate top 3 most purchased products
+        const productQuantities = allOrders.reduce((acc, order) => {
+          const key = `${order.product.productName}-${order.product.productVariant}-${order.product.pid}`;
+          acc[key] = (acc[key] || 0) + order.quantity;
+          return acc;
+        }, {} as Record<string, number>);
+        const topProductsArray = Object.entries(productQuantities)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 3)
+          .map(([key, totalQuantity]) => {
+            const [productName, productVariant, pid] = key.split("-");
+            return {
+              productName,
+              productVariant,
+              pid: parseInt(pid) || 0,
+              totalQuantity,
+            };
+          });
+        setTopProducts(topProductsArray);
       } catch (error) {
         console.error("Error fetching orders:", error);
         setError("Failed to fetch orders. Please try again later.");
@@ -69,203 +117,141 @@ export default function DashboardPage() {
     date: format(parseISO(order.salesDate), "yyyy-MM-dd"),
     quantity: order.quantity,
   }));
+
   return (
-    <motion.section
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{
-        opacity: 1,
-        scale: 1,
-        transition: { duration: 0.5 },
-      }}
-    >
-      <div className="w-full px-6 py-8">
-        <h3 className="text-gray-700 text-3xl font-medium">Dashboard</h3>
-        <Card className="p-8 w-full border rounded-lg shadow">
-          <CardTitle className="text-lg font-semibold mb-4">
-            All Customer Purchase History
-          </CardTitle>
-          {error && <p className="text-red-500 mb-4">{error}</p>}
+    <div className="p-8 w-full">
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 w-full">
+        <Card className=" transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-lg font-bold text-blue-800">
+              Total Customers
+            </CardTitle>
+            <Users className="h-7 w-7 text-blue-800" />
+          </CardHeader>
           <CardContent>
-            <div style={{ width: "100%", height: 500, overflowX: "auto" }}>
-              <Plot
-                data={[
-                  {
-                    x: chartData.map((data) => data.date),
-                    y: chartData.map((data) => data.quantity),
-                    type: "scatter",
-                    mode: "lines+markers",
-                    marker: { color: "#8884d8" },
-                  },
-                ]}
-                layout={{
-                  title: "All Customer Purchase History",
-                  xaxis: {
-                    title: "Sales Date",
-                    tickformat: "%b %Y",
-                    automargin: true,
-                  },
-                  yaxis: {
-                    title: "Quantity Purchased",
-                    automargin: true,
-                  },
-                  margin: { t: 50, r: 30, l: 50, b: 50 },
-                  autosize: true,
-                }}
-                style={{ width: "100%", height: "100%" }}
-                useResizeHandler={true}
-              />
+            <div className="text-2xl font-extrabold text-blue-800">
+              {totalCustomers}
             </div>
           </CardContent>
         </Card>
-
-        {/* Stats */}
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 w-full">
-          <Card className=" transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Customers
-              </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">1,274</div>
-              <p className="text-xs text-muted-foreground">
-                +20% from last month
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Orders
-              </CardTitle>
-              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">12,234</div>
-              <p className="text-xs text-muted-foreground">
-                +15% from last month
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Average Order Value
-              </CardTitle>
-              <BarChart className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">$534.32</div>
-              <p className="text-xs text-muted-foreground">
-                +2.5% from last month
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Revenue
-              </CardTitle>
-              <BarChart className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">$6,537,234</div>
-              <p className="text-xs text-muted-foreground">
-                +18% from last month
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Orders */}
-        <h3 className="mt-6 text-xl text-gray-700">Recent Orders</h3>
-        <Card className="mt-4 w-full">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Order ID</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Product</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell className="font-medium">#1234</TableCell>
-                <TableCell>John Smith</TableCell>
-                <TableCell>Extra Virgin Olive Oil</TableCell>
-                <TableCell>$59.99</TableCell>
-                <TableCell>
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                    Completed
-                  </span>
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">#1235</TableCell>
-                <TableCell>Jane Doe</TableCell>
-                <TableCell>Organic Olive Oil</TableCell>
-                <TableCell>$45.99</TableCell>
-                <TableCell>
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                    Pending
-                  </span>
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">#1236</TableCell>
-                <TableCell>Bob Johnson</TableCell>
-                <TableCell>Infused Olive Oil Set</TableCell>
-                <TableCell>$89.99</TableCell>
-                <TableCell>
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                    Processing
-                  </span>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+        <Card className="transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-lg font-bold text-green-800">
+              Total Orders
+            </CardTitle>
+            <ShoppingCart className="h-7 w-7 text-green-800" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-extrabold text-green-800">
+              {totalOrders}
+            </div>
+          </CardContent>
         </Card>
-
-        {/* Low Stock Alert */}
-        <h3 className="mt-6 text-xl text-gray-700">Low Stock Alert</h3>
-        <Card className="mt-4 w-full">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Product</TableHead>
-                <TableHead>Current Stock</TableHead>
-                <TableHead>Reorder Level</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell className="font-medium">
-                  Extra Virgin Olive Oil (500ml)
-                </TableCell>
-                <TableCell>15</TableCell>
-                <TableCell>20</TableCell>
-                <TableCell>
-                  <Button size="sm">Reorder</Button>
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">
-                  Organic Olive Oil (750ml)
-                </TableCell>
-                <TableCell>8</TableCell>
-                <TableCell>15</TableCell>
-                <TableCell>
-                  <Button size="sm">Reorder</Button>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+        <Card className="transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-lg font-bold  text-yellow-800">
+              Average Order Value
+            </CardTitle>
+            <BarChart className="h-7 w-7  text-yellow-800" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-extrabold  text-yellow-800">
+              ${averageOrderValue.toFixed(2)}
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-lg font-bold  text-purple-800">
+              Total Revenue
+            </CardTitle>
+            <BarChart className="h-7 w-7  text-purple-800" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-extrabold  text-purple-800">
+              ${totalRevenue.toFixed(2)}
+            </div>
+          </CardContent>
         </Card>
       </div>
-    </motion.section>
+
+      <Card className="p-8 w-full border rounded-lg shadow mt-8">
+        <CardTitle className="text-lg font-semibold mb-4">
+          All Customer Purchase History
+        </CardTitle>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        <CardContent>
+          <div style={{ width: "100%", height: 500, overflowX: "auto" }}>
+            <Plot
+              data={[
+                {
+                  x: chartData.map((data) => data.date),
+                  y: chartData.map((data) => data.quantity),
+                  type: "scatter",
+                  mode: "lines+markers",
+                  marker: { color: "#8884d8" },
+                },
+              ]}
+              layout={{
+                title: "All Customer Purchase History",
+                xaxis: {
+                  title: "Sales Date",
+                  tickformat: "%b %Y",
+                  automargin: true,
+                },
+                yaxis: {
+                  title: "Quantity Purchased",
+                  automargin: true,
+                },
+                margin: { t: 50, r: 30, l: 50, b: 50 },
+                autosize: true,
+              }}
+              style={{ width: "100%", height: "100%" }}
+              useResizeHandler={true}
+            />
+          </div>
+        </CardContent>
+      </Card>
+      <Card className="p-8 w-full border rounded-lg shadow mt-8">
+        <CardTitle className="text-lg font-semibold mb-4">
+          Top 3 Most Purchased Products
+        </CardTitle>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {topProducts.map((product, index) => (
+              <Card
+                key={index}
+                className="p-4 border rounded-lg transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl"
+              >
+                <CardTitle>{product.productName}</CardTitle>
+                <CardDescription>
+                  Variant: {product.productVariant}ml
+                  <br />
+                  Total Purchased: {product.totalQuantity}
+                </CardDescription>
+                <CardContent>
+                  <Image
+                    src={
+                      imageError[product.pid]
+                        ? "/images/products/oil.jpg"
+                        : `/images/products/${product.pid}.jpg`
+                    }
+                    height="500"
+                    width="500"
+                    alt={"Product Image"}
+                    onError={() =>
+                      setImageError((prev) => ({
+                        ...prev,
+                        [product.pid]: true,
+                      }))
+                    }
+                  ></Image>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
