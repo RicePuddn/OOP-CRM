@@ -11,8 +11,64 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Plot from "react-plotly.js";
+import { format, parseISO } from "date-fns";
+
+interface Order {
+  id: number;
+  customer: {
+    zipcode: string;
+    cid: number;
+  };
+  product: {
+    productName: string;
+    productVariant: string;
+    individualPrice: number;
+    productId: number;
+  };
+  quantity: number;
+  totalCost: number;
+  orderMethod: string;
+  salesDate: string;
+  salesType: string;
+  shippingMethod: string;
+}
 
 export default function DashboardPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAllOrders = async () => {
+      try {
+        let allOrders: Order[] = [];
+        let currentPage = 0;
+        let totalPages = 1;
+
+        while (currentPage < totalPages) {
+          const response = await axios.get(
+            `http://localhost:8080/api/orders?page=${currentPage}&size=20`
+          );
+          allOrders = allOrders.concat(response.data.content);
+          totalPages = response.data.totalPages;
+          currentPage++;
+        }
+
+        setOrders(allOrders);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        setError("Failed to fetch orders. Please try again later.");
+      }
+    };
+    fetchAllOrders();
+  }, []);
+
+  const chartData = orders.map((order) => ({
+    date: format(parseISO(order.salesDate), "yyyy-MM-dd"),
+    quantity: order.quantity,
+  }));
   return (
     <motion.section
       initial={{ opacity: 0, scale: 0.8 }}
@@ -24,6 +80,43 @@ export default function DashboardPage() {
     >
       <div className="w-full px-6 py-8">
         <h3 className="text-gray-700 text-3xl font-medium">Dashboard</h3>
+        <Card className="p-8 w-full border rounded-lg shadow">
+          <CardTitle className="text-lg font-semibold mb-4">
+            All Customer Purchase History
+          </CardTitle>
+          {error && <p className="text-red-500 mb-4">{error}</p>}
+          <CardContent>
+            <div style={{ width: "100%", height: 500, overflowX: "auto" }}>
+              <Plot
+                data={[
+                  {
+                    x: chartData.map((data) => data.date),
+                    y: chartData.map((data) => data.quantity),
+                    type: "scatter",
+                    mode: "lines+markers",
+                    marker: { color: "#8884d8" },
+                  },
+                ]}
+                layout={{
+                  title: "All Customer Purchase History",
+                  xaxis: {
+                    title: "Sales Date",
+                    tickformat: "%b %Y",
+                    automargin: true,
+                  },
+                  yaxis: {
+                    title: "Quantity Purchased",
+                    automargin: true,
+                  },
+                  margin: { t: 50, r: 30, l: 50, b: 50 },
+                  autosize: true,
+                }}
+                style={{ width: "100%", height: "100%" }}
+                useResizeHandler={true}
+              />
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Stats */}
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 w-full">
