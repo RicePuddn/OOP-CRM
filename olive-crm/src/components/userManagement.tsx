@@ -392,75 +392,120 @@ const UserManagementPage: React.FC = () => {
               </form>
             </div>
           </div>
-        )}
-        <div className="flex-grow overflow-hidden w-full px-6 py-8">
-          <div className=" mx-auto h-full flex flex-col">
-            <h3 className="text-gray-700 text-3xl font-medium">
-              User Management
-            </h3>
-            <div className="flex-grow bg-white rounded-lg shadow overflow-hidden flex flex-col mt-4">
-              <div className="overflow-x-auto flex-grow">
-                <div className="p-4">
-                  <Button
-                    onClick={handleCreate}
-                    className="bg-green-800 hover:bg-green-700"
-                  >
-                    Create New User
-                  </Button>
-                </div>
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gray-50">
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        ID
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleSort("username")}
-                      >
-                        Username{" "}
-                        {sortConfig?.key === "username"
-                          ? sortConfig.direction === "asc"
-                            ? "▲"
-                            : "▼"
-                          : ""}
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleSort("first_name")}
-                      >
-                        First Name{" "}
-                        {sortConfig?.key === "first_name"
-                          ? sortConfig.direction === "asc"
-                            ? "▲"
-                            : "▼"
-                          : ""}
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleSort("last_name")}
-                      >
-                        Last Name{" "}
-                        {sortConfig?.key === "last_name"
-                          ? sortConfig.direction === "asc"
-                            ? "▲"
-                            : "▼"
-                          : ""}
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => handleSort("role")}
-                      >
-                        Role{" "}
-                        {sortConfig?.key === "role"
-                          ? sortConfig.direction === "asc"
-                            ? "▲"
-                            : "▼"
-                          : ""}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
+        </div>
+      )}
+      <div className="flex-grow overflow-hidden w-full px-6 py-8">
+        <div className=" mx-auto h-full flex flex-col">
+          <h3 className="text-gray-700 text-3xl font-medium">
+            User Management
+          </h3>
+          <div className="flex-grow bg-white rounded-lg shadow overflow-hidden flex flex-col mt-4">
+            <div className="overflow-x-auto flex-grow">
+              <div className="p-4">
+                <Button
+                  onClick={handleCreate}
+                  className="bg-green-800 hover:bg-green-700"
+                >
+                  Create New User
+                </Button>
+              </div>
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort("id")}
+                    >
+                      ID{" "}
+                      {sortConfig?.key === "id"
+                        ? sortConfig.direction === "asc"
+                          ? "▲"
+                          : "▼"
+                        : ""}
+                    </th>
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort("username")}
+                    >
+                      Username{" "}
+                      {sortConfig?.key === "username"
+                        ? sortConfig.direction === "asc"
+                          ? "▲"
+                          : "▼"
+                        : ""}
+                    </th>
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort("first_name")}
+                    >
+                      First Name{" "}
+                      {sortConfig?.key === "first_name"
+                        ? sortConfig.direction === "asc"
+                          ? "▲"
+                          : "▼"
+                        : ""}
+                    </th>
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort("last_name")}
+                    >
+                      Last Name{" "}
+                      {sortConfig?.key === "last_name"
+                        ? sortConfig.direction === "asc"
+                          ? "▲"
+                          : "▼"
+                        : ""}
+                    </th>
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort("role")}
+                    >
+                      Role{" "}
+                      {sortConfig?.key === "role"
+                        ? sortConfig.direction === "asc"
+                          ? "▲"
+                          : "▼"
+                        : ""}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {users.map((user) => (
+                    <tr key={user.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.username}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.first_name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.last_name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.role}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <Button
+                          onClick={() => handleEdit(user.id)}
+                          className="bg-green-800 hover:bg-green-700 mr-2"
+                          disabled={user.role === "ADMIN"}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          onClick={() => handleDelete(user.id)}
+                          className="bg-green-800 hover:bg-green-700"
+                          disabled={user.role === "ADMIN"}
+                        >
+                          Delete
+                        </Button>
+                      </td>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
