@@ -118,38 +118,41 @@ public class OrderController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate singleDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
-        
+
         logger.info("Received CSV export request with filters");
-        
+
         try {
             // Get all orders matching the filters (without pagination)
             Page<Order> orders;
             if ("single".equals(dateFilterType) && singleDate != null) {
-                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, singleDate, null, null, Pageable.unpaged());
+                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, singleDate, null, null,
+                        Pageable.unpaged());
             } else if ("range".equals(dateFilterType) && startDate != null && endDate != null) {
-                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, startDate, endDate, Pageable.unpaged());
+                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, startDate, endDate,
+                        Pageable.unpaged());
             } else {
-                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, null, null, Pageable.unpaged());
+                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, null, null,
+                        Pageable.unpaged());
             }
 
             // Build CSV content
             StringBuilder csvContent = new StringBuilder();
             // Add CSV header
-            csvContent.append("Order ID,Customer ID,Product ID,Quantity,Total Cost,Order Method,Sales Date,Sales Type,Shipping Method\n");
+            csvContent.append(
+                    "Order ID,Customer ID,Product ID,Quantity,Total Cost,Order Method,Sales Date,Sales Type,Shipping Method\n");
 
             // Add data rows
             for (Order order : orders.getContent()) {
                 csvContent.append(String.format("%d,%d,%d,%d,%.2f,%s,%s,%s,%s\n",
-                    order.getId(),
-                    order.getCustomer().getCID(),  // Updated to use getCID()
-                    order.getProduct().getPID(),   // Updated to use getPID()
-                    order.getQuantity(),
-                    order.getTotalCost(),
-                    order.getOrderMethod(),
-                    order.getSalesDate(),
-                    order.getSalesType(),
-                    order.getShippingMethod()
-                ));
+                        order.getId(),
+                        order.getCustomer().getCID(), // Updated to use getCID()
+                        order.getProduct().getPID(), // Updated to use getPID()
+                        order.getQuantity(),
+                        order.getTotalCost(),
+                        order.getOrderMethod(),
+                        order.getSalesDate(),
+                        order.getSalesType(),
+                        order.getShippingMethod()));
             }
 
             // Prepare the response

@@ -4,6 +4,7 @@ import com.olivecrm.dto.CustomerSegmentDTO;
 import com.olivecrm.dto.ProductPurchaseHistoryDTO;
 import com.olivecrm.dto.TopProductDTO;
 import com.olivecrm.entity.Order;
+import com.olivecrm.entity.Product;
 import com.olivecrm.enums.CustomerSegmentType;
 import com.olivecrm.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +26,16 @@ public class OrderService {
         public List<TopProductDTO> getTopThreeMostPurchasedProducts(Integer customerId) {
                 List<Order> orders = orderRepository.findAllByCustomer_cID(customerId);
                 return orders.stream()
-                                .collect(Collectors.groupingBy(order -> order.getProduct().getProductName(),
+                                .collect(Collectors.groupingBy(order -> order.getProduct(),
                                                 Collectors.summingLong(Order::getQuantity)))
                                 .entrySet().stream()
                                 .sorted((e1, e2) -> Long.compare(e2.getValue(), e1.getValue()))
                                 .limit(3)
-                                .map(entry -> new TopProductDTO(entry.getKey(), entry.getValue()))
+                                .map(entry -> {
+                                        Product product = entry.getKey();
+                                        return new TopProductDTO(product.getPID(), product.getProductName(),
+                                                        entry.getValue());
+                                })
                                 .collect(Collectors.toList());
         }
 

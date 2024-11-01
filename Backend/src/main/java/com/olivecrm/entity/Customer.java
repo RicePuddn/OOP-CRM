@@ -8,6 +8,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "CUSTOMER")
 public class Customer {
+
     @Id
     private int cID;
     private String zipcode;
@@ -34,7 +35,7 @@ public class Customer {
     public void setZipcode(String zipcode) {
         this.zipcode = zipcode;
     }
-
+  
     public String getFirst_name() {
         return first_name;
     }
