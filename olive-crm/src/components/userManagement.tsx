@@ -22,6 +22,8 @@ const UserManagementPage: React.FC = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [sortConfig, setSortConfig] = useState<{ key: keyof User; direction: 'asc' | 'desc' } | null>(null);
     const [showPassword, setShowPassword] = useState(true);
+    const [originalUsers, setOriginalUsers] = useState<User[]>([]);
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -38,6 +40,7 @@ const UserManagementPage: React.FC = () => {
         password: user.password,
       }));
       setUsers(fetchedUsers);
+      setOriginalUsers(fetchedUsers);
     } catch (error) {
       console.error("Failed to fetch users", error);
     }
@@ -66,12 +69,17 @@ const UserManagementPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number, username: string) => {
     try {
-      await axios.delete(
-        `http://localhost:8080/api/employee/delete/${id}`
-      );
-      setUsers(users.filter((user) => user.id !== id));
+      const confirmDelete = confirm(`Are you sure you want to delete user '${username}'?`);
+      if (confirmDelete) {
+        await axios.delete(
+          `http://localhost:8080/api/employee/delete/${id}`
+        );
+        setUsers(users.filter((user) => user.id !== id));
+      } else {
+        console.log(`User '${id}' not deleted`); // User canceled
+      }
     } catch (error) {
       console.error("Failed to delete user", error);
     }
@@ -103,6 +111,25 @@ const UserManagementPage: React.FC = () => {
     setUsers(sortedUsers);
   };
 
+  const filterUsers = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    const searchQuery = event.target.value.toLowerCase();
+  
+    if (!searchQuery) {
+      setUsers(originalUsers); // Reset to original users if the search is cleared
+    } else {
+      const filteredUsers = originalUsers.filter((user) => {
+        return (
+          user.username.toLowerCase().includes(searchQuery) ||
+          user.first_name.toLowerCase().includes(searchQuery) ||
+          user.last_name.toLowerCase().includes(searchQuery) ||
+          user.role.toLowerCase().includes(searchQuery)
+        );
+      });
+  
+      setUsers(filteredUsers);
+    }
+  };
+  
   return (
     <div className="flex flex-col h-screen bg-gray-100 w-full">
       {showCreateModal && (
@@ -372,7 +399,34 @@ const UserManagementPage: React.FC = () => {
                 >
                   Create New User
                 </Button>
+
+                <div className="relative flex-grow mt-6">
+                  <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search by Username, First Name, Last Name, or Role"
+                    onChange={filterUsers}
+                    className="form-control mt-1 p-2 block w-full border rounded text-gray-700 pl-10"
+                  />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg
+                      className="w-5 h-5 text-gray-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M21 21l-4.35-4.35m-3.25 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 009.25 12.15z"
+                      />
+                    </svg>
+                  </div>
+                </div>
               </div>
+              
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-gray-50">
@@ -463,7 +517,7 @@ const UserManagementPage: React.FC = () => {
                           Edit
                         </Button>
                         <Button
-                          onClick={() => handleDelete(user.id)}
+                          onClick={() => handleDelete(user.id, user.username)}
                           className="bg-green-800 hover:bg-green-700"
                           disabled={user.role === "ADMIN"}
                         >
