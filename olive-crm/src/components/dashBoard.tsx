@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Plot from "react-plotly.js";
 import {
   Card,
   CardTitle,
@@ -10,7 +9,17 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { format, parseISO } from "date-fns";
-import { Users, ShoppingCart, BarChart } from "lucide-react";
+import { Users, ShoppingCart } from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Brush,
+  ResponsiveContainer,
+} from "recharts";
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import Image from "next/image";
 
 interface Order {
@@ -42,13 +51,13 @@ interface TopProduct {
 
 export default function AllCustomerPurchaseHistory() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [imageError, setImageError] = useState<{ [key: number]: boolean }>({});
   const [totalCustomers, setTotalCustomers] = useState<number>(0);
   const [totalOrders, setTotalOrders] = useState<number>(0);
   const [averageOrderValue, setAverageOrderValue] = useState<number>(0);
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<{ [key: number]: boolean }>({});
 
   useEffect(() => {
     const fetchAllOrders = async () => {
@@ -122,53 +131,53 @@ export default function AllCustomerPurchaseHistory() {
     <div className="p-8 w-full">
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 w-full">
         <Card className=" transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-bold text-blue-800">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-blue-100">
+            <CardTitle className="text-sm font-medium text-blue-800">
               Total Customers
             </CardTitle>
-            <Users className="h-7 w-7 text-blue-800" />
+            <Users className="h-4 w-4 text-blue-800" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-extrabold text-blue-800">
+            <div className="text-2xl font-bold text-blue-800">
               {totalCustomers}
             </div>
           </CardContent>
         </Card>
         <Card className="transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-bold text-green-800">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-green-100">
+            <CardTitle className="text-sm font-medium text-green-800">
               Total Orders
             </CardTitle>
-            <ShoppingCart className="h-7 w-7 text-green-800" />
+            <ShoppingCart className="h-4 w-4 text-green-800" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-extrabold text-green-800">
+            <div className="text-2xl font-bold text-green-800">
               {totalOrders}
             </div>
           </CardContent>
         </Card>
         <Card className="transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-bold  text-yellow-800">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-yellow-100">
+            <CardTitle className="text-sm font-medium text-yellow-800">
               Average Order Value
             </CardTitle>
-            <BarChart className="h-7 w-7  text-yellow-800" />
+            <BarChart className="h-4 w-4 text-yellow-800" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-extrabold  text-yellow-800">
+            <div className="text-2xl font-bold text-yellow-800">
               ${averageOrderValue.toFixed(2)}
             </div>
           </CardContent>
         </Card>
         <Card className="transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-bold  text-purple-800">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-purple-100">
+            <CardTitle className="text-sm font-medium text-purple-800">
               Total Revenue
             </CardTitle>
-            <BarChart className="h-7 w-7  text-purple-800" />
+            <BarChart className="h-4 w-4 text-purple-800" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-extrabold  text-purple-800">
+            <div className="text-2xl font-bold text-purple-800">
               ${totalRevenue.toFixed(2)}
             </div>
           </CardContent>
@@ -177,47 +186,70 @@ export default function AllCustomerPurchaseHistory() {
 
       <Card className="p-8 w-full border rounded-lg shadow mt-8">
         <CardTitle className="text-lg font-semibold mb-4">
-          All Customer Purchase History
+          All Orders History
         </CardTitle>
         {error && <p className="text-red-500 mb-4">{error}</p>}
         <CardContent>
-          <div style={{ width: "100%", height: 500, overflowX: "auto" }}>
-            <Plot
-              data={[
-                {
-                  x: chartData.map((data) => data.date),
-                  y: chartData.map((data) => data.quantity),
-                  type: "scatter",
-                  mode: "lines+markers",
-                  marker: { color: "#8884d8" },
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              overflowX: "auto",
+              overflowY: "auto",
+            }}
+          >
+            <ChartContainer
+              config={{
+                quantity: {
+                  label: "Quantity Purchased",
+                  color: "hsl(var(--chart-2))",
                 },
-              ]}
-              layout={{
-                title: "All Customer Purchase History",
-                xaxis: {
-                  title: "Sales Date",
-                  tickformat: "%b %Y",
-                  automargin: true,
-                },
-                yaxis: {
-                  title: "Quantity Purchased",
-                  automargin: true,
-                },
-                margin: { t: 50, r: 30, l: 50, b: 50 },
-                autosize: true,
               }}
-              style={{ width: "100%", height: "100%" }}
-              useResizeHandler={true}
-            />
+              className="aspect-auto h-[400px] w-full"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={chartData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                    label={{
+                      value: "Sales Date",
+                      position: "insideBottom",
+                      offset: 3,
+                    }}
+                  />
+                  <YAxis
+                    label={{
+                      value: "Quantity Purchased",
+                      angle: -90,
+                      position: "insideLeft",
+                    }}
+                  />
+                  <ChartTooltip />
+                  <Bar dataKey="quantity" fill="var(--color-quantity)" />
+                  <Brush
+                    dataKey="date"
+                    height={30}
+                    stroke="#15803D"
+                    startIndex={1}
+                    endIndex={100}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
           </div>
         </CardContent>
       </Card>
+
       <Card className="p-8 w-full border rounded-lg shadow mt-8">
         <CardTitle className="text-lg font-semibold mb-4">
           Top 3 Most Purchased Products
         </CardTitle>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {topProducts.map((product, index) => (
               <Card
                 key={index}
@@ -225,8 +257,7 @@ export default function AllCustomerPurchaseHistory() {
               >
                 <CardTitle>{product.productName}</CardTitle>
                 <CardDescription>
-                  Variant: {product.productVariant}ml
-                  <br />
+                  Variant: {product.productVariant}ml <br />
                   Total Purchased: {product.totalQuantity}
                 </CardDescription>
                 <CardContent>
