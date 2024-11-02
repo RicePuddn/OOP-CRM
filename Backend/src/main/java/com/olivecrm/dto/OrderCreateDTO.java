@@ -9,6 +9,11 @@ public class OrderCreateDTO {
     private Double totalCost;
     private String salesType;
     private LocalDate salesDate;
+    
+    // New customer fields
+    private String zipcode;
+    private String firstName;
+    private String lastName;
 
     // Getters and setters
     public Integer getCustomerId() {
@@ -57,5 +62,30 @@ public class OrderCreateDTO {
 
     public void setSalesDate(LocalDate salesDate) {
         this.salesDate = salesDate;
+    }
+
+    // New getters and setters for customer fields
+    public String getZipcode() {
+        return zipcode;
+    }
+
+    public void setZipcode(String zipcode) {
+        this.zipcode = zipcode;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 }
