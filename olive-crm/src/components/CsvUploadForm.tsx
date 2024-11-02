@@ -16,15 +16,12 @@ interface UploadRecord {
 }
 
 interface ManualOrder {
-  customerId?: number;
+  customerId: number;
   productId: number;
   quantity: number;
   totalCost: number;
   salesType: string;
   salesDate: string;
-  zipcode?: string;
-  firstName?: string;
-  lastName?: string;
 }
 
 const CsvUploadForm: React.FC = () => {
@@ -32,15 +29,12 @@ const CsvUploadForm: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadHistory, setUploadHistory] = useState<UploadRecord[]>([]);
   const [manualOrder, setManualOrder] = useState<ManualOrder>({
-    customerId: undefined,
+    customerId: 0,
     productId: 0,
     quantity: 0,
     totalCost: 0,
     salesType: '',
-    salesDate: new Date().toISOString().split('T')[0],
-    zipcode: '',
-    firstName: '',
-    lastName: ''
+    salesDate: new Date().toISOString().split('T')[0]
   });
   const [orderStatus, setOrderStatus] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
@@ -59,7 +53,7 @@ const CsvUploadForm: React.FC = () => {
     setManualOrder(prev => ({
       ...prev,
       [name]: name === 'quantity' || name === 'totalCost' || name === 'customerId' || name === 'productId' 
-        ? value ? parseFloat(value) : undefined 
+        ? parseFloat(value) || 0 
         : value
     }));
   };
@@ -74,15 +68,12 @@ const CsvUploadForm: React.FC = () => {
       });
       // Reset form
       setManualOrder({
-        customerId: undefined,
+        customerId: 0,
         productId: 0,
         quantity: 0,
         totalCost: 0,
         salesType: '',
-        salesDate: new Date().toISOString().split('T')[0],
-        zipcode: '',
-        firstName: '',
-        lastName: ''
+        salesDate: new Date().toISOString().split('T')[0]
       });
     } catch (error) {
       setOrderStatus({
@@ -171,47 +162,15 @@ const CsvUploadForm: React.FC = () => {
             <form onSubmit={handleManualOrderSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="customerId">Customer ID (optional for new customers)</Label>
+                  <Label htmlFor="customerId">Customer ID</Label>
                   <Input
                     id="customerId"
                     name="customerId"
                     type="number"
+                    required
                     value={manualOrder.customerId || ''}
                     onChange={handleManualOrderChange}
                     placeholder="Enter customer ID"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="zipcode">Zip Code (optional)</Label>
-                  <Input
-                    id="zipcode"
-                    name="zipcode"
-                    type="text"
-                    value={manualOrder.zipcode || ''}
-                    onChange={handleManualOrderChange}
-                    placeholder="Enter zip code"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name (optional)</Label>
-                  <Input
-                    id="firstName"
-                    name="firstName"
-                    type="text"
-                    value={manualOrder.firstName || ''}
-                    onChange={handleManualOrderChange}
-                    placeholder="Enter first name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name (optional)</Label>
-                  <Input
-                    id="lastName"
-                    name="lastName"
-                    type="text"
-                    value={manualOrder.lastName || ''}
-                    onChange={handleManualOrderChange}
-                    placeholder="Enter last name"
                   />
                 </div>
                 <div className="space-y-2">
@@ -315,9 +274,7 @@ const CsvUploadForm: React.FC = () => {
                     <li>Sale Type</li>
                     <li>Digital (Yes/No)</li>
                     <li>Customer ID (numeric)</li>
-                    <li>Zip Code (optional)</li>
-                    <li>First Name (optional)</li>
-                    <li>Last Name (optional)</li>
+                    <li>Zip Code</li>
                     <li>Shipping Method</li>
                     <li>Product Name</li>
                     <li>Product Variant</li>
@@ -328,8 +285,6 @@ const CsvUploadForm: React.FC = () => {
                 </li>
                 <li>First row should contain column headers</li>
                 <li>All numeric fields should contain valid numbers</li>
-                <li>For new customers, only Customer ID is required (Zip Code, First Name, and Last Name are optional)</li>
-                <li>For existing customers, any provided fields will update their record</li>
               </ul>
 
               <p className="mt-4"><strong>Important Notes:</strong></p>
