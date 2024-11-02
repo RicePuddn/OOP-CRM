@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-public interface OrderRepository extends JpaRepository<Order, Long> {
+public interface OrderRepository extends JpaRepository<Order, Integer> {
         List<Order> findByCustomer_cID(int customerId);
 
         List<Order> findBySalesType(String salesType);
@@ -69,5 +69,4 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         // Method to find all orders by customer ID
         @Query("SELECT o FROM Order o WHERE o.customer.cID = :customerId")
         List<Order> findAllByCustomer_cID(@Param("customerId") Integer customerId);
-
 }

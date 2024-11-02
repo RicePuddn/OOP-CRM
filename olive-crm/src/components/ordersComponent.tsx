@@ -17,7 +17,6 @@ import { Button } from "./ui/button";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "./ui/calendar";
 import { cn } from "@/lib/utils";
-
 interface Filters {
   customerId: string;
   salesType: string;
@@ -74,6 +73,16 @@ async function getOrders(page = 0, size = 20, filters: Filters) {
     throw new Error("Failed to fetch orders");
   }
   return res.json();
+}
+
+async function deleteOrder(orderId: number) {
+  const response = await fetch(`http://localhost:8080/api/orders/${orderId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to delete order');
+  }
+  return true;
 }
 
 async function exportOrdersToCSV(filters: Filters) {
@@ -151,6 +160,17 @@ export default function OrdersTable() {
     } catch (error) {
       setOrders([]);
       setTotalPages(0);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId: number) => {
+    try {
+      await deleteOrder(orderId);
+      // Refresh the orders list after successful deletion
+      fetchOrders();
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      alert('Failed to delete order. Please try again.');
     }
   };
 
@@ -504,6 +524,9 @@ export default function OrdersTable() {
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Total Cost
                     </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -524,6 +547,14 @@ export default function OrdersTable() {
                       <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
                         ${order.totalCost.toFixed(2)}
                       </td>
+                      <td className="px-3 py-3 whitespace-nowrap text-sm">
+                        <Button
+                          onClick={() => handleDeleteOrder(order.id)}
+                          className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-500 transition-colors duration-200"
+                        >
+                          Delete
+                        </Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -531,7 +562,7 @@ export default function OrdersTable() {
             </div>
           </div>
           <div className="flex justify-between items-center p-4 border-t">
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
               <button
                 onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                 disabled={currentPage === 0}
@@ -539,6 +570,9 @@ export default function OrdersTable() {
               >
                 Previous
               </button>
+              <span className="text-sm text-gray-600">
+                Page {currentPage + 1}/{totalPages}
+              </span>
               <button
                 onClick={() =>
                   setCurrentPage(Math.min(totalPages - 1, currentPage + 1))
