@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import axios from "axios";
 import { motion } from "framer-motion";
 
@@ -13,10 +15,28 @@ interface UploadRecord {
   timestamp: Date;
 }
 
+interface ManualOrder {
+  customerId: number;
+  productId: number;
+  quantity: number;
+  totalCost: number;
+  salesType: string;
+  salesDate: string;
+}
+
 const CsvUploadForm: React.FC = () => {
   const [files, setFiles] = useState<FileList | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadHistory, setUploadHistory] = useState<UploadRecord[]>([]);
+  const [manualOrder, setManualOrder] = useState<ManualOrder>({
+    customerId: 0,
+    productId: 0,
+    quantity: 0,
+    totalCost: 0,
+    salesType: '',
+    salesDate: new Date().toISOString().split('T')[0]
+  });
+  const [orderStatus, setOrderStatus] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -26,6 +46,41 @@ const CsvUploadForm: React.FC = () => {
 
   const updateUploadHistory = (record: UploadRecord) => {
     setUploadHistory(prev => [record, ...prev]);
+  };
+
+  const handleManualOrderChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setManualOrder(prev => ({
+      ...prev,
+      [name]: name === 'quantity' || name === 'totalCost' || name === 'customerId' || name === 'productId' 
+        ? parseFloat(value) || 0 
+        : value
+    }));
+  };
+
+  const handleManualOrderSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await axios.post('http://localhost:8080/api/orders/manual', manualOrder);
+      setOrderStatus({
+        message: 'Order created successfully',
+        type: 'success'
+      });
+      // Reset form
+      setManualOrder({
+        customerId: 0,
+        productId: 0,
+        quantity: 0,
+        totalCost: 0,
+        salesType: '',
+        salesDate: new Date().toISOString().split('T')[0]
+      });
+    } catch (error) {
+      setOrderStatus({
+        message: error instanceof Error ? error.message : 'Error creating order',
+        type: 'error'
+      });
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -98,6 +153,106 @@ const CsvUploadForm: React.FC = () => {
       <div className="w-full px-6 py-8">
         <h3 className="text-gray-700 text-3xl font-medium">Update Orders</h3>
         
+        {/* Manual Order Entry Card */}
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle>Manual Order Entry</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleManualOrderSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="customerId">Customer ID</Label>
+                  <Input
+                    id="customerId"
+                    name="customerId"
+                    type="number"
+                    required
+                    value={manualOrder.customerId || ''}
+                    onChange={handleManualOrderChange}
+                    placeholder="Enter customer ID"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="productId">Product ID</Label>
+                  <Input
+                    id="productId"
+                    name="productId"
+                    type="number"
+                    required
+                    value={manualOrder.productId || ''}
+                    onChange={handleManualOrderChange}
+                    placeholder="Enter product ID"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="quantity">Quantity</Label>
+                  <Input
+                    id="quantity"
+                    name="quantity"
+                    type="number"
+                    required
+                    value={manualOrder.quantity || ''}
+                    onChange={handleManualOrderChange}
+                    placeholder="Enter quantity"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="totalCost">Total Cost</Label>
+                  <Input
+                    id="totalCost"
+                    name="totalCost"
+                    type="number"
+                    step="0.01"
+                    required
+                    value={manualOrder.totalCost || ''}
+                    onChange={handleManualOrderChange}
+                    placeholder="Enter total cost"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="salesType">Sales Type</Label>
+                  <select
+                    id="salesType"
+                    name="salesType"
+                    required
+                    value={manualOrder.salesType}
+                    onChange={handleManualOrderChange}
+                    className="w-full p-2 border rounded-md"
+                  >
+                    <option value="">Select sales type</option>
+                    <option value="Direct - B2B">Direct - B2B</option>
+                    <option value="Direct - B2C">Direct - B2C</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Consignment">Consignment</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="salesDate">Sales Date</Label>
+                  <Input
+                    id="salesDate"
+                    name="salesDate"
+                    type="date"
+                    required
+                    value={manualOrder.salesDate}
+                    onChange={handleManualOrderChange}
+                  />
+                </div>
+              </div>
+              <Button type="submit" className="w-full bg-green-800 hover:bg-green-700">
+                Create Order
+              </Button>
+              {orderStatus && (
+                <div className={`mt-2 p-2 rounded ${
+                  orderStatus.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  {orderStatus.message}
+                </div>
+              )}
+            </form>
+          </CardContent>
+        </Card>
+
         {/* Instructions Card */}
         <Card className="mt-4">
           <CardContent className="pt-6">
