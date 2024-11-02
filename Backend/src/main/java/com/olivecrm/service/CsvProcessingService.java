@@ -51,20 +51,22 @@ public class CsvProcessingService {
 
     private void processRow(String[] row) throws Exception {
         try {
-            // Extract data from the row
+            // Extract data from the row based on CSV structure:
+            // Row No.,Sale Date,Sale Type,Digital,Customer ID,ZipCode,Shipping Method,Product,Variant,Quantity,Price,Product Price
             String saleDate = row[1];
             String saleType = row[2];
             String digital = row[3];
             int customerId = Integer.parseInt(row[4]);
-            String zipCode = row[5];
+            String zipCode = row[5].trim().isEmpty() ? null : row[5];  // Optional
             String shippingMethod = row[6];
             String productName = row[7];
             String productVariant = row[8];
             int quantity = Integer.parseInt(row[9]);
-            double price = Double.parseDouble(row[10]);
-            double productPrice = Double.parseDouble(row[11]);
+            double price = Double.parseDouble(row[10].replace(",", ".")); // Handle both comma and dot decimals
+            double productPrice = Double.parseDouble(row[11].replace(",", ".")); // Handle both comma and dot decimals
 
-            logger.info("Extracted data: saleDate={}, customerId={}, productName={}, quantity={}", saleDate, customerId, productName, quantity);
+            logger.info("Extracted data: saleDate={}, customerId={}, productName={}, quantity={}, price={}, productPrice={}", 
+                       saleDate, customerId, productName, quantity, price, productPrice);
 
             // Update or create Customer
             Customer customer = entityManager.find(Customer.class, customerId);
@@ -72,11 +74,16 @@ public class CsvProcessingService {
                 logger.info("Creating new customer with ID: {}", customerId);
                 customer = new Customer();
                 customer.setCID(customerId);
-                customer.setZipcode(zipCode);
+                if (zipCode != null && !zipCode.trim().isEmpty()) {
+                    customer.setZipcode(zipCode);
+                }
                 entityManager.persist(customer);
             } else {
                 logger.info("Updating existing customer with ID: {}", customerId);
-                customer.setZipcode(zipCode);
+                // Only update zipcode if new value is provided and not empty
+                if (zipCode != null && !zipCode.trim().isEmpty()) {
+                    customer.setZipcode(zipCode);
+                }
                 customer = entityManager.merge(customer);
             }
             logger.info("Customer processed successfully");
