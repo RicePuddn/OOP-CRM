@@ -1,6 +1,7 @@
 package com.olivecrm.dto;
 
 public class TopProductDTO {
+    private int productId;
     private String productName;
     private long totalQuantity;
 
@@ -8,12 +9,21 @@ public class TopProductDTO {
     public TopProductDTO() {
     }
 
-    public TopProductDTO(String productName, long totalQuantity) {
+    public TopProductDTO(int productId, String productName, long totalQuantity) {
+        this.productId = productId;
         this.productName = productName;
         this.totalQuantity = totalQuantity;
     }
 
     // Getters and Setters
+    public int getProductId() {
+        return productId;
+    }
+
+    public void setProductId(int productId) {
+        this.productId = productId;
+    }
+
     public String getProductName() {
         return productName;
     }

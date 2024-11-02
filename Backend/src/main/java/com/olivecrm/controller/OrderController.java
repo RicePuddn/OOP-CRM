@@ -1,6 +1,7 @@
 package com.olivecrm.controller;
 
 import com.olivecrm.dto.CustomerSegmentDTO;
+import com.olivecrm.dto.OrderCreateDTO;
 import com.olivecrm.dto.ProductPurchaseHistoryDTO;
 import com.olivecrm.dto.TopProductDTO;
 import com.olivecrm.entity.Order;
@@ -22,11 +23,25 @@ import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/api/orders")
+@CrossOrigin(origins = "http://localhost:3000")
 public class OrderController {
     private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
 
     @Autowired
     private OrderService orderService;
+
+    @PostMapping("/manual")
+    public ResponseEntity<Order> createManualOrder(@RequestBody OrderCreateDTO orderDTO) {
+        logger.info("Received manual order creation request");
+        try {
+            Order createdOrder = orderService.createOrder(orderDTO);
+            logger.info("Successfully created manual order with ID: {}", createdOrder.getId());
+            return ResponseEntity.ok(createdOrder);
+        } catch (Exception e) {
+            logger.error("Error creating manual order", e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
     @GetMapping
     public ResponseEntity<Page<Order>> getAllOrders(Pageable pageable) {
@@ -118,38 +133,41 @@ public class OrderController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate singleDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
-        
+
         logger.info("Received CSV export request with filters");
-        
+
         try {
             // Get all orders matching the filters (without pagination)
             Page<Order> orders;
             if ("single".equals(dateFilterType) && singleDate != null) {
-                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, singleDate, null, null, Pageable.unpaged());
+                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, singleDate, null, null,
+                        Pageable.unpaged());
             } else if ("range".equals(dateFilterType) && startDate != null && endDate != null) {
-                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, startDate, endDate, Pageable.unpaged());
+                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, startDate, endDate,
+                        Pageable.unpaged());
             } else {
-                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, null, null, Pageable.unpaged());
+                orders = orderService.getOrdersByFilters(customerId, salesType, totalCost, null, null, null,
+                        Pageable.unpaged());
             }
 
             // Build CSV content
             StringBuilder csvContent = new StringBuilder();
             // Add CSV header
-            csvContent.append("Order ID,Customer ID,Product ID,Quantity,Total Cost,Order Method,Sales Date,Sales Type,Shipping Method\n");
+            csvContent.append(
+                    "Order ID,Customer ID,Product ID,Quantity,Total Cost,Order Method,Sales Date,Sales Type,Shipping Method\n");
 
             // Add data rows
             for (Order order : orders.getContent()) {
                 csvContent.append(String.format("%d,%d,%d,%d,%.2f,%s,%s,%s,%s\n",
-                    order.getId(),
-                    order.getCustomer().getCID(),  // Updated to use getCID()
-                    order.getProduct().getPID(),   // Updated to use getPID()
-                    order.getQuantity(),
-                    order.getTotalCost(),
-                    order.getOrderMethod(),
-                    order.getSalesDate(),
-                    order.getSalesType(),
-                    order.getShippingMethod()
-                ));
+                        order.getId(),
+                        order.getCustomer().getCID(),
+                        order.getProduct().getPID(),
+                        order.getQuantity(),
+                        order.getTotalCost(),
+                        order.getOrderMethod(),
+                        order.getSalesDate(),
+                        order.getSalesType(),
+                        order.getShippingMethod()));
             }
 
             // Prepare the response
@@ -206,5 +224,4 @@ public class OrderController {
     public ResponseEntity<List<CustomerSegmentDTO>> getMonetarySegments() {
         return ResponseEntity.ok(orderService.getMonetarySegments());
     }
-
 }
