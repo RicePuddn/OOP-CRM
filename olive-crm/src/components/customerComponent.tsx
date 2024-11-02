@@ -25,6 +25,9 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  BarChart,
+  Bar,
+  Brush,
 } from "recharts";
 import {
   Card,
@@ -34,6 +37,7 @@ import {
 } from "@/components/ui/card";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { ChartContainer, ChartTooltip } from "./ui/chart";
 
 interface ProductPurchaseHistoryDTO {
   purchaseCounts: number[];
@@ -243,32 +247,50 @@ export default function CustomerTopProducts() {
             <h3 className="text-lg font-semibold mb-4">
               Purchase History Graph
             </h3>
-            <ResponsiveContainer width="100%" height={400}>
-              <LineChart
-                data={chartData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                overflowX: "auto",
+                overflowY: "auto",
+              }}
+            >
+              <ChartContainer
+                config={{
+                  quantity: {
+                    label: "Quantity Purchased",
+                    color: "hsl(var(--chart-2))",
+                  },
+                }}
+                className="aspect-auto h-[400px] w-full"
               >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="date"
-                  label={{
-                    value: "Sales Date",
-                    position: "insideBottomRight",
-                    offset: -5,
-                  }}
-                />
-                <YAxis
-                  label={{
-                    value: "Quantity Purchased",
-                    angle: -90,
-                    position: "insideLeft",
-                  }}
-                />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="quantity" stroke="#82ca9d" />
-              </LineChart>
-            </ResponsiveContainer>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={chartData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="date"
+                      label={{
+                        value: "Sales Date",
+                        position: "insideBottom",
+                        offset: 3,
+                      }}
+                    />
+                    <YAxis
+                      label={{
+                        value: "Quantity Purchased",
+                        angle: -90,
+                        position: "insideLeft",
+                      }}
+                    />
+                    <ChartTooltip />
+                    <Bar dataKey="quantity" fill="var(--color-quantity)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </div>
           </div>
         )}
       </div>
