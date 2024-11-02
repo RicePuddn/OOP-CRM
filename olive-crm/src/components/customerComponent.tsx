@@ -128,7 +128,8 @@ export default function CustomerTopProducts() {
       }}
     >
       <div className="p-8 w-full overflow-auto">
-        <div className="p-8 mb-8 border rounded-lg shadow w-full bg-white">
+        <h3 className="text-gray-700 text-3xl font-medium">Customer</h3>
+        <div className="p-8 mb-8 border rounded-lg shadow w-full bg-white mt-4">
           <h2 className="text-xl font-bold mb-2">Customer Purchase Insights</h2>
           <div className="flex gap-2 mb-4">
             <Popover open={open} onOpenChange={setOpen}>
