@@ -43,6 +43,19 @@ public class OrderController {
         }
     }
 
+    @DeleteMapping("/{orderId}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable Integer orderId) {
+        logger.info("Received delete request for order ID: {}", orderId);
+        try {
+            orderService.deleteOrder(orderId);
+            logger.info("Successfully deleted order with ID: {}", orderId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error("Error deleting order with ID: {}", orderId, e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @GetMapping
     public ResponseEntity<Page<Order>> getAllOrders(Pageable pageable) {
         Page<Order> orders = orderService.getAllOrders(pageable);

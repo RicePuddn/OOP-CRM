@@ -96,6 +96,12 @@ public class OrderService {
             return orderRepository.save(order);
         }
 
+        public void deleteOrder(Integer orderId) {
+            orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + orderId));
+            orderRepository.deleteById(orderId);
+        }
+
         public List<TopProductDTO> getTopThreeMostPurchasedProducts(Integer customerId) {
                 List<Order> orders = orderRepository.findAllByCustomer_cID(customerId);
                 return orders.stream()
