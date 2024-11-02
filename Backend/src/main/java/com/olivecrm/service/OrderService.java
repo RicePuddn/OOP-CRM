@@ -35,49 +35,9 @@ public class OrderService {
         private ProductRepository productRepository;
 
         public Order createOrder(OrderCreateDTO orderDTO) {
-            Customer customer;
-            
-            // Try to find existing customer
-            if (orderDTO.getCustomerId() != null) {
-                customer = customerRepository.findById(orderDTO.getCustomerId())
-                    .orElse(null);
-                
-                // Update existing customer if new details provided
-                if (customer != null) {
-                    // Only update fields if they are provided and not empty
-                    if (orderDTO.getZipcode() != null && !orderDTO.getZipcode().trim().isEmpty()) {
-                        customer.setZipcode(orderDTO.getZipcode());
-                    }
-                    if (orderDTO.getFirstName() != null && !orderDTO.getFirstName().trim().isEmpty()) {
-                        customer.setFirst_name(orderDTO.getFirstName());
-                    }
-                    if (orderDTO.getLastName() != null && !orderDTO.getLastName().trim().isEmpty()) {
-                        customer.setLast_name(orderDTO.getLastName());
-                    }
-                    customer = customerRepository.save(customer);
-                }
-            } else {
-                customer = null;
-            }
-            
-            // Create new customer if not found
-            if (customer == null) {
-                customer = new Customer();
-                // Generate a new customer ID
-                Integer newCustomerId = customerRepository.findMaxCustomerId().orElse(0) + 1;
-                customer.setCID(newCustomerId);
-                // Only set fields if they are provided and not empty
-                if (orderDTO.getZipcode() != null && !orderDTO.getZipcode().trim().isEmpty()) {
-                    customer.setZipcode(orderDTO.getZipcode());
-                }
-                if (orderDTO.getFirstName() != null && !orderDTO.getFirstName().trim().isEmpty()) {
-                    customer.setFirst_name(orderDTO.getFirstName());
-                }
-                if (orderDTO.getLastName() != null && !orderDTO.getLastName().trim().isEmpty()) {
-                    customer.setLast_name(orderDTO.getLastName());
-                }
-                customer = customerRepository.save(customer);
-            }
+            // Find customer and product
+            Customer customer = customerRepository.findById(orderDTO.getCustomerId())
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
             
             Product product = productRepository.findById(orderDTO.getProductId())
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
