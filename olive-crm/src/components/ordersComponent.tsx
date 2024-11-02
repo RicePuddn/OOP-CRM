@@ -2,6 +2,21 @@
 
 import { motion } from "framer-motion";
 import React, { useState, useEffect } from "react";
+import { Input } from "./ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Button } from "./ui/button";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "./ui/calendar";
+import { cn } from "@/lib/utils";
 
 interface Filters {
   customerId: string;
@@ -24,8 +39,6 @@ interface Order {
   salesType: string;
   shippingMethod: string;
 }
-
-const SALES_TYPE_OPTIONS = ["Direct - B2B", "Consignment", "Marketing"];
 
 async function getOrders(page = 0, size = 20, filters: Filters) {
   const hasFilters = Object.values(filters).some((value) => value !== "");
@@ -202,18 +215,18 @@ export default function OrdersTable() {
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-gray-700 text-3xl font-medium">Orders</h3>
           <div className="flex gap-2">
-            <button
+            <Button
               onClick={handleExport}
               className="px-4 py-2 text-sm bg-green-700 text-white rounded hover:bg-green-600 transition-colors duration-200"
             >
               Export to CSV
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={toggleDropdown}
               className="px-4 py-2 text-sm bg-blue-700 text-white rounded hover:bg-blue-600 transition-colors duration-200"
             >
               {isDropdownOpen ? "Hide Filters" : "Show Filters"}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -233,7 +246,7 @@ export default function OrdersTable() {
                 >
                   Customer ID:
                 </label>
-                <input
+                <Input
                   type="number"
                   name="customerId"
                   value={filters.customerId}
@@ -249,19 +262,25 @@ export default function OrdersTable() {
                 >
                   Sales Type:
                 </label>
-                <select
-                  name="salesType"
+                <Select
                   value={filters.salesType}
-                  onChange={handleFilterChange}
-                  className="mt-1 px-3 py-2 border rounded w-full focus:outline-none focus:ring-1 focus:ring-gray-300"
+                  onValueChange={(value) =>
+                    setFilters((prev) => ({ ...prev, salesType: value }))
+                  }
                 >
-                  <option value="">Select Sales Type</option>
-                  {SALES_TYPE_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full mt-1">
+                    <SelectValue placeholder="Select sales type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Sales Type</SelectLabel>
+                      <SelectItem value="Direct - B2B">Direct - B2B</SelectItem>
+                      <SelectItem value="Direct - B2C">Direct - B2C</SelectItem>
+                      <SelectItem value="Marketing">Marketing</SelectItem>
+                      <SelectItem value="Consignment">Consignment</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <label
@@ -270,7 +289,7 @@ export default function OrdersTable() {
                 >
                   Total Cost:
                 </label>
-                <input
+                <Input
                   type="number"
                   name="totalCost"
                   value={filters.totalCost}
@@ -286,15 +305,26 @@ export default function OrdersTable() {
                 >
                   Date Filter:
                 </label>
-                <select
-                  name="dateFilterType"
+                <Select
                   value={filters.dateFilterType}
-                  onChange={handleFilterChange}
-                  className="mt-1 px-3 py-2 border rounded w-full focus:outline-none focus:ring-1 focus:ring-gray-300"
+                  onValueChange={(value) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      dateFilterType: value as "single" | "range",
+                    }))
+                  }
                 >
-                  <option value="single">Single Date</option>
-                  <option value="range">Date Range</option>
-                </select>
+                  <SelectTrigger className="w-full mt-1">
+                    <SelectValue placeholder="Select Date Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Date Type</SelectLabel>
+                      <SelectItem value="single">Single Date</SelectItem>
+                      <SelectItem value="range">Date Range</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
               {filters.dateFilterType === "single" ? (
                 <div>
@@ -304,61 +334,151 @@ export default function OrdersTable() {
                   >
                     Sales Date:
                   </label>
-                  <input
-                    type="date"
-                    name="singleDate"
-                    value={filters.singleDate}
-                    onChange={handleFilterChange}
-                    className="mt-1 px-3 py-2 border rounded w-full focus:outline-none focus:ring-1 focus:ring-gray-300"
-                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal mt-1",
+                          !filters.singleDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon />
+                        {filters.singleDate ? (
+                          <span>{filters.singleDate}</span>
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={
+                          filters.singleDate
+                            ? new Date(filters.singleDate)
+                            : undefined
+                        }
+                        onSelect={(date) =>
+                          setFilters((current) => ({
+                            ...current,
+                            singleDate: date
+                              ? new Date(
+                                  Date.UTC(
+                                    date.getFullYear(),
+                                    date.getMonth(),
+                                    date.getDate()
+                                  )
+                                )
+                                  .toISOString()
+                                  .split("T")[0]
+                              : "",
+                          }))
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
               ) : (
                 <>
                   <div>
                     <label
-                      htmlFor="startDate"
+                      htmlFor="dateRange"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Start Date:
+                      Date Range:
                     </label>
-                    <input
-                      type="date"
-                      name="startDate"
-                      value={filters.startDate}
-                      onChange={handleFilterChange}
-                      className="mt-1 px-3 py-2 border rounded w-full focus:outline-none focus:ring-1 focus:ring-gray-300"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="endDate"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      End Date:
-                    </label>
-                    <input
-                      type="date"
-                      name="endDate"
-                      value={filters.endDate}
-                      onChange={handleFilterChange}
-                      className="mt-1 px-3 py-2 border rounded w-full focus:outline-none focus:ring-1 focus:ring-gray-300"
-                    />
+                    <div className={cn("grid gap-2")}>
+                      <div className={cn("grid gap-2")}>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              id="date"
+                              variant={"outline"}
+                              className={cn(
+                                "w-full justify-start text-left font-normal mt-1",
+                                !filters.startDate &&
+                                  !filters.endDate &&
+                                  "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon />
+                              {filters.startDate ? (
+                                filters.endDate ? (
+                                  <>
+                                    {filters.startDate} - {filters.endDate}
+                                  </>
+                                ) : (
+                                  filters.startDate
+                                )
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              initialFocus
+                              mode="range"
+                              defaultMonth={
+                                filters.startDate
+                                  ? new Date(filters.startDate)
+                                  : undefined
+                              }
+                              selected={
+                                filters.startDate
+                                  ? {
+                                      from: new Date(filters.startDate),
+                                      to: filters.endDate
+                                        ? new Date(filters.endDate)
+                                        : undefined,
+                                    }
+                                  : undefined
+                              }
+                              onSelect={(range) =>
+                                setFilters((current) => ({
+                                  ...current,
+                                  startDate: range?.from
+                                    ? `${range.from.getFullYear()}-${String(
+                                        range.from.getMonth() + 1
+                                      ).padStart(2, "0")}-${String(
+                                        range.from.getDate()
+                                      ).padStart(2, "0")}`
+                                    : "",
+                                  endDate: range?.to
+                                    ? `${range.to.getFullYear()}-${String(
+                                        range.to.getMonth() + 1
+                                      ).padStart(2, "0")}-${String(
+                                        range.to.getDate()
+                                      ).padStart(2, "0")}`
+                                    : "",
+                                }))
+                              }
+                              numberOfMonths={2}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </div>
                   </div>
                 </>
               )}
-              <button
-                type="submit"
-                className="mt-4 px-4 py-2 text-sm bg-blue-700 text-white rounded hover:bg-blue-600 transition-colors duration-200"
-              >
-                Apply Filters
-              </button>
-              <button
+              <div></div>
+              <Button
                 type="button"
                 onClick={handleClearFilters}
                 className="mt-4 px-4 py-2 text-sm bg-gray-400 text-white rounded hover:bg-gray-300 transition-colors duration-200"
               >
                 Clear Filters
-              </button>
+              </Button>
+              <div></div>
+              <Button
+                type="submit"
+                className="mt-4 px-4 py-2 text-sm bg-blue-700 text-white rounded hover:bg-blue-600 transition-colors duration-200"
+              >
+                Apply Filters
+              </Button>
             </form>
           </div>
         )}
