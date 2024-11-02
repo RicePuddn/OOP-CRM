@@ -67,7 +67,7 @@ export default function AppSidebar() {
         items.push(
             {
                 title: "Newsletter",
-                url: "/newsletterAdmin",
+                url: "/newsletter-admin",
                 icon: Newspaper,
             },
             {

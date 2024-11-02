@@ -1,5 +1,5 @@
 import NewsletterPage from "@/components/newsletterAdmin";
 
-export default function newsletter() {
+export default function Home() {
     return <NewsletterPage />;
 }

@@ -1,6 +1,5 @@
 package com.olivecrm.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -11,6 +10,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "newsletter")
 public class Newsletter {
@@ -20,26 +21,58 @@ public class Newsletter {
     @Column(name = "newsID", nullable = false)
     private int newsID;
 
-    @Column(name = "title", nullable = false) private String title;
+    @Column(name = "title", nullable = false, unique = true)
+    private String title;
 
-    @Column(name = "content", nullable = false) private String content;
+    @Column(name = "target", nullable = false)
+    private String target;
+
+    @Column(name = "content", nullable = false)
+    private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "username", nullable = false)
+    @JoinColumn(name = "id", referencedColumnName = "id", nullable = false) // Foreign key references 'id' in Employee
     @JsonIgnore
     private Employee createdBy;
 
-    public int getId() { return newsID; }
+    // Getters and Setters
+    public int getNewsID() {
+        return newsID;
+    }
 
-    public String getTitle() { return title; }
+    public void setNewsID(int newsID) {
+        this.newsID = newsID;
+    }
 
-    public void setTitle(String title) { this.title = title; }
+    public String getTitle() {
+        return title;
+    }
 
-    public String getContent() { return content; }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-    public void setContent(String content) { this.content = content; }
+    public String getTarget() {
+        return target;
+    }
 
-    public Employee getCreatedBy() { return createdBy; }
+    public void setTarget(String target) {
+        this.target = target;
+    }
 
-    public void setCreatedBy(Employee createdBy) { this.createdBy = createdBy; }
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public Employee getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Employee createdBy) {
+        this.createdBy = createdBy;
+    }
 }

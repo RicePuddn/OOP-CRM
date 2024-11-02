@@ -19,39 +19,43 @@ import com.olivecrm.repository.EmployeeRepository;
 import com.olivecrm.service.NewsletterService;
 
 @RestController
-@RequestMapping("/newsletter")
+@RequestMapping("/api/newsletter")
 public class NewsletterController {
 
     @Autowired private NewsletterService newsletterService;
 
     @Autowired private EmployeeRepository employeeRepository;
 
-    // Create a new newsletter
     @PostMapping("/create")
-    public ResponseEntity<Newsletter>
-    createNewsletter(@RequestParam String title, @RequestParam String content,
-                     @RequestParam String username) {
-        // Find the employee by username
-        Employee employee =
-            employeeRepository.findByUsername(username).orElseThrow(
-                () -> new RuntimeException("Employee not found"));
+    public ResponseEntity<?> createNewsletter(
+        @RequestParam String title, @RequestParam String content,
+        @RequestParam String username) { 
+        try {
+            
+            Employee employee =
+                employeeRepository.findByUsername(username).orElseThrow(
+                    ()
+                        -> new RuntimeException(
+                            "Employee not found with username: " + username));
 
-        // Call the service to create the newsletter
-        Newsletter createdNewsletter =
-            newsletterService.createNewsletter(title, content, employee);
+            
+            Newsletter createdNewsletter =
+                newsletterService.createNewsletter(title, content, employee);
 
-        // Return the created newsletter
-        return ResponseEntity.ok(createdNewsletter);
+            
+            return ResponseEntity.ok(createdNewsletter);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                "Error creating newsletter: " + e.getMessage());
+        }
     }
 
-    // Get all newsletters
     @GetMapping("/all")
     public ResponseEntity<List<Newsletter>> getAllNewsletters() {
         List<Newsletter> newsletters = newsletterService.getAllNewsletters();
         return ResponseEntity.ok(newsletters);
     }
 
-    // Get a newsletter by ID
     @GetMapping("/{id}")
     public ResponseEntity<Newsletter> getNewsletterById(@PathVariable int id) {
         Newsletter newsletter = newsletterService.getNewsletterById(id);
@@ -63,25 +67,33 @@ public class NewsletterController {
         }
     }
 
-    // Update a newsletter
     @PutMapping("/update")
-    public ResponseEntity<Newsletter>
-    updateNewsletter(@RequestParam int id, @RequestParam String title,
-                     @RequestParam String content) {
-        Newsletter updatedNewsletter =
-            newsletterService.updateNewsletter(id, title, content);
+    public ResponseEntity<?> updateNewsletter(@RequestParam int id,
+                                              @RequestParam String title,
+                                              @RequestParam String content) {
+        try {
+            Newsletter updatedNewsletter =
+                newsletterService.updateNewsletter(id, title, content);
 
-        if (updatedNewsletter != null) {
-            return ResponseEntity.ok(updatedNewsletter);
-        } else {
-            return ResponseEntity.notFound().build();
+            if (updatedNewsletter != null) {
+                return ResponseEntity.ok(updatedNewsletter);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                "Error updating newsletter: " + e.getMessage());
         }
     }
 
-    // Delete a newsletter by ID
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteNewsletter(@PathVariable int id) {
-        newsletterService.deleteNewsletter(id);
-        return ResponseEntity.noContent().build(); // Return 204 No Content
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteNewsletter(@PathVariable int id) {
+        try {
+            newsletterService.deleteNewsletter(id);
+            return ResponseEntity.noContent().build(); // Return 204 No Content
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                "Error deleting newsletter: " + e.getMessage());
+        }
     }
 }

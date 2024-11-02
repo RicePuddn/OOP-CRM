@@ -23,6 +23,10 @@ public class NewsletterService {
             newsletterRepository.findById(id);
         return existingNewsletter.orElse(null);
     }
+    // Get newsletters by target
+    public List<Newsletter> getNewsletterByTarget(String target) {
+        return newsletterRepository.findByTarget(target);
+    }
     // Create newsletter
     public Newsletter createNewsletter(String title, String content,
                                        Employee createdBy) {

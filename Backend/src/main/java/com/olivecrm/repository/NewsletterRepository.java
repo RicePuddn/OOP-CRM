@@ -10,7 +10,10 @@ import com.olivecrm.entity.Newsletter;
 @Repository
 public interface NewsletterRepository
     extends JpaRepository<Newsletter, Integer> {
-    List<Newsletter> findByCreatedBy_Username(String username);
+
+    List<Newsletter> findByCreatedBy_Id(long id);
+
     List<Newsletter> findByTitle(String title);
-    
+
+    List<Newsletter> findByTarget(String target);
 }

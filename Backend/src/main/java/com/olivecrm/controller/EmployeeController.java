@@ -41,7 +41,6 @@ public class EmployeeController {
             return ResponseEntity.badRequest().body("Invalid role: " +
                                                     userDTO.getRole());
         } catch (Exception e) {
-
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -56,8 +55,8 @@ public class EmployeeController {
                 userDTO.getRole() != null ? mapRole(userDTO.getRole()) : null;
 
             Employee updateUser = employeeService.updateUser(
-                id, userDTO.getUsername(), userDTO.getFirst_name(), userDTO.getLast_name(),
-                userDTO.getPassword(), userRole);
+                id, userDTO.getUsername(), userDTO.getFirst_name(),
+                userDTO.getLast_name(), userDTO.getPassword(), userRole);
             return ResponseEntity.ok(updateUser);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
