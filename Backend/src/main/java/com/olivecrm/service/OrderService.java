@@ -1,16 +1,22 @@
 package com.olivecrm.service;
 
 import com.olivecrm.dto.CustomerSegmentDTO;
+import com.olivecrm.dto.OrderCreateDTO;
 import com.olivecrm.dto.ProductPurchaseHistoryDTO;
 import com.olivecrm.dto.TopProductDTO;
+import com.olivecrm.entity.Customer;
 import com.olivecrm.entity.Order;
+import com.olivecrm.entity.Product;
 import com.olivecrm.enums.CustomerSegmentType;
+import com.olivecrm.repository.CustomerRepository;
 import com.olivecrm.repository.OrderRepository;
+import com.olivecrm.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +28,74 @@ public class OrderService {
 
         @Autowired
         private OrderRepository orderRepository;
+
+        @Autowired
+        private CustomerRepository customerRepository;
+
+        @Autowired
+        private ProductRepository productRepository;
+
+        public Order createOrder(OrderCreateDTO orderDTO) {
+            Customer customer;
+            
+            // Try to find existing customer
+            if (orderDTO.getCustomerId() != null) {
+                customer = customerRepository.findById(orderDTO.getCustomerId())
+                    .orElse(null);
+                
+                // Update existing customer if new details provided
+                if (customer != null) {
+                    // Only update fields if they are provided and not empty
+                    if (orderDTO.getZipcode() != null && !orderDTO.getZipcode().trim().isEmpty()) {
+                        customer.setZipcode(orderDTO.getZipcode());
+                    }
+                    if (orderDTO.getFirstName() != null && !orderDTO.getFirstName().trim().isEmpty()) {
+                        customer.setFirst_name(orderDTO.getFirstName());
+                    }
+                    if (orderDTO.getLastName() != null && !orderDTO.getLastName().trim().isEmpty()) {
+                        customer.setLast_name(orderDTO.getLastName());
+                    }
+                    customer = customerRepository.save(customer);
+                }
+            } else {
+                customer = null;
+            }
+            
+            // Create new customer if not found
+            if (customer == null) {
+                customer = new Customer();
+                // Generate a new customer ID
+                Integer newCustomerId = customerRepository.findMaxCustomerId().orElse(0) + 1;
+                customer.setCID(newCustomerId);
+                // Only set fields if they are provided and not empty
+                if (orderDTO.getZipcode() != null && !orderDTO.getZipcode().trim().isEmpty()) {
+                    customer.setZipcode(orderDTO.getZipcode());
+                }
+                if (orderDTO.getFirstName() != null && !orderDTO.getFirstName().trim().isEmpty()) {
+                    customer.setFirst_name(orderDTO.getFirstName());
+                }
+                if (orderDTO.getLastName() != null && !orderDTO.getLastName().trim().isEmpty()) {
+                    customer.setLast_name(orderDTO.getLastName());
+                }
+                customer = customerRepository.save(customer);
+            }
+            
+            Product product = productRepository.findById(orderDTO.getProductId())
+                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+
+            // Create new order
+            Order order = new Order();
+            order.setCustomer(customer);
+            order.setProduct(product);
+            order.setQuantity(orderDTO.getQuantity());
+            order.setTotalCost(orderDTO.getTotalCost());
+            order.setSalesType(orderDTO.getSalesType());
+            order.setSalesDate(orderDTO.getSalesDate() != null ? orderDTO.getSalesDate() : LocalDate.now());
+            order.setOrderMethod("Online - Website");
+            order.setShippingMethod("Standard Delivery");
+
+            return orderRepository.save(order);
+        }
 
         private LocalDate getAnalysisReferenceDate() {
             LocalDate mostRecentOrder = orderRepository.findMostRecentOrderDate();

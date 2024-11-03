@@ -12,18 +12,5 @@ export default function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div
-      className="flex w-full h-screen items-center justify-center"
-      style={{
-        backgroundImage: "url('/images/background1.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
-        {children}
-      </div>
-    </div>
-  );
+  return <>{children}</>;
 }

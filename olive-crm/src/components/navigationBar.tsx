@@ -48,11 +48,6 @@ export default function AppSidebar() {
       icon: Home,
     },
     {
-      title: "Orders",
-      url: "/orders",
-      icon: ShoppingCart,
-    },
-    {
       title: "CSV Upload",
       url: "/csv-upload",
       icon: Upload,
@@ -77,10 +72,28 @@ export default function AppSidebar() {
       }
     );
   } else if (role === "MARKETING") {
+    items.push(
+      {
+        title: "Orders",
+        url: "/orders",
+        icon: ShoppingCart,
+      },
+      {
+        title: "Newsletter",
+        url: "/newsletter",
+        icon: Newspaper,
+      },
+      {
+        title: "Reports",
+        url: "/reports",
+        icon: BarChart,
+      }
+    );
+  } else if (role === "SALES") {
     items.push({
-      title: "Reports",
-      url: "/reports",
-      icon: BarChart,
+      title: "Orders",
+      url: "/orders",
+      icon: ShoppingCart,
     });
   }
   return (
