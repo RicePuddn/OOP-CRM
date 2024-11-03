@@ -262,7 +262,42 @@ export default function CustomerSegmentation() {
                     View Customer IDs
                   </summary>
                   <div className="mt-2 p-2 bg-gray-50 rounded text-black">
-                    {segment.customerIds.join(", ")}
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Customer ID
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Customer Name
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Top 3 Products (ID - Name - Price)
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {segment.customerDetails?.map((customer) => (
+                              <tr key={customer.id}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  {customer.id}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  {customer.name}
+                                </td>
+                                <td className="px-6 py-4 text-sm text-gray-900">
+                                  <ul>
+                                    {customer.topProducts.map((product, index) => (
+                                      <li key={index}>
+                                        {product.PID} - {product.productName} - ${product.individualPrice.toFixed(2)}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                   </div>
                 </details>
               </div>
@@ -270,61 +305,6 @@ export default function CustomerSegmentation() {
           ))}
         </div>
       </motion.section>
-      <div className="mt-4 grid grid-cols-1 gap-4">
-        {categorySegments.map(([type, segment]) => (
-          <div key={type} className="bg-white p-4 rounded-lg shadow">
-            <h4 className="text-lg font-semibold mb-2 text-black">{type}</h4>
-            <p className="text-black">
-              Number of customers: {segment.customerIds.length}
-            </p>
-            <div className="mt-2">
-              <details>
-                <summary className="cursor-pointer text-blue-500">
-                  View Customer Details
-                </summary>
-                <div className="mt-2 p-2 bg-gray-50 rounded">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Customer ID
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Customer Name
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Top 3 Products (ID - Name - Price)
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {segment.customerDetails?.map((customer) => (
-                        <tr key={customer.id}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {customer.id}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {customer.name}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">
-                            <ul>
-                              {customer.topProducts.map((product, index) => (
-                                <li key={index}>
-                                  {product.PID} - {product.productName} - ${product.individualPrice.toFixed(2)}
-                                </li>
-                              ))}
-                            </ul>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </details>
-            </div>
-          </div>
-        ))}
-      </div>
     );
   };
 
