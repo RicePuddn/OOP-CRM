@@ -78,6 +78,7 @@ export default function CustomerSegmentation() {
   const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
+    //getting all products
     const fetchProducts = async () => {
       try {
         const response = await fetch('http://localhost:8080/api/products', fetchOptions);
@@ -99,6 +100,7 @@ export default function CustomerSegmentation() {
     return product?.individualPrice;
   };
 
+  //getting customer top 3 products
   const fetchCustomerDetails = async (customerId: number): Promise<CustomerDetail | null> => {
     try {
       const response = await fetch(
@@ -120,6 +122,7 @@ export default function CustomerSegmentation() {
     }
   };
 
+  //getting the different segments
   const fetchAllSegments = async () => {
     setLoading(true);
     setError(null);
@@ -155,6 +158,7 @@ export default function CustomerSegmentation() {
     }
   };
 
+  //getting the data for the chart
   const getChartData = (category: "Recency" | "Frequency" | "Monetary"): ChartData<"pie"> => {
     const categorySegments = Object.entries(segments).filter(
       ([, segment]) => segment.segmentCategory === category
@@ -179,6 +183,7 @@ export default function CustomerSegmentation() {
     };
   };
 
+  //rendering the chart
   const chartOptions: ChartOptions<"pie"> = {
     responsive: true,
     maintainAspectRatio: false,
@@ -353,6 +358,7 @@ export default function CustomerSegmentation() {
     );
   };
 
+  //for the segmentlist
   const renderSegmentList = (category: "Recency" | "Frequency" | "Monetary") => {
     const categorySegments = Object.entries(segments).filter(
       ([, segment]) => segment.segmentCategory === category
