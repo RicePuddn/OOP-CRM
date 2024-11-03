@@ -84,7 +84,6 @@ export default function CustomerSegmentation() {
         if (!response.ok) throw new Error('Failed to fetch products');
         const productsData: Product[] = await response.json();
         setProducts(productsData);
-        console.log(fetchProducts);
       } catch (error) {
         console.error('Error fetching products:', error);
         setError('Failed to fetch products');
@@ -106,7 +105,6 @@ export default function CustomerSegmentation() {
         `http://localhost:8080/api/orders/customer/${customerId}/top-products`,
         fetchOptions
       )
-      console.log(fetchCustomerDetails);
       ;
       if (!response.ok) throw new Error(`Failed to fetch top products for customer ${customerId}`);
       const topProducts: TopProduct[] = await response.json();
