@@ -38,10 +38,11 @@ const Modal: React.FC<ModalProps> = ({
                     placeholder="Enter customer's email"
                 />
 
-                <h3 className="text-sm  mb-2">Email Content:</h3>
-                <pre className="border p-3 bg-gray-100 mb-4 text-sm overflow-auto max-h-60">
-                    {emailContent}
-                </pre>
+                <h3 className="text-sm mb-2">Email Content:</h3>
+                <div
+                    className="border p-3 bg-gray-100 mb-4 text-sm overflow-auto max-h-60"
+                    dangerouslySetInnerHTML={{ __html: emailContent }}
+                ></div>
 
                 <div className="flex justify-between">
                     <button

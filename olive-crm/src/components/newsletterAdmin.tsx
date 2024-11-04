@@ -368,9 +368,16 @@ const Newsletter: React.FC = () => {
                                 setSelectedTemplate(template);
                             }}
                         >
-                            <h3 className="text-lg font-bold mb-2">
+                            <h3 className="text-lg font-bold mb-1">
                                 {template.title}
                             </h3>
+
+                            <p className="text-sm text-gray-500 mb-1">
+                                Target: {template.target}
+                            </p>
+                            <p className="text-sm text-gray-500 mb-4">
+                                Created By: {template.username}
+                            </p>
                             <p className="text-sm text-gray-600 break-words">
                                 {getFirstLine(template.content)}
                             </p>

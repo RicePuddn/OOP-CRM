@@ -1,290 +1,211 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import EmailModal from "./ui/email-modal";
 import { motion } from "framer-motion";
 
+interface Template {
+    id: number;
+    title: string;
+    content: string;
+    target: string;
+    username: string;
+}
+
+interface Customer {
+    name: string;
+    products: { name: string; price: string }[];
+}
+
 export default function Newsletter() {
-  const [customerName, setCustomerName] = useState<string>("Customer Name");
-  const [productName1, setProductName1] = useState<string>("Product Name 1");
-  const [productPrice1, setProductPrice1] = useState<string>("Product Price");
-  const [discount1, setDiscount1] = useState<string>("Discount Percentage");
-  const [promoCode1, setPromoCode1] = useState<string>("Promo Code");
+    const [templates, setTemplates] = useState<Template[]>([]);
+    const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
+        null
+    );
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [receiverEmail, setReceiverEmail] = useState("");
+    const [emailContent, setEmailContent] = useState("");
+    const [editableFields, setEditableFields] = useState<string[]>([]);
+    const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+        null
+    );
+    const [customers, setCustomers] = useState<Customer[]>([
+        {
+            name: "John Doe",
+            products: [
+                { name: "Product A", price: "$100" },
+                { name: "Product B", price: "$150" },
+            ],
+        },
+        {
+            name: "Jane Smith",
+            products: [
+                { name: "Product X", price: "$200" },
+                { name: "Product Y", price: "$250" },
+            ],
+        },
+    ]);
 
-  const [productName2, setProductName2] = useState<string>("Product Name 2");
-  const [productPrice2, setProductPrice2] = useState<string>("Product Price");
-  const [discount2, setDiscount2] = useState<string>("Discount Percentage");
-  const [promoCode2, setPromoCode2] = useState<string>("Promo Code");
+    useEffect(() => {
+        const fetchTemplates = async () => {
+            try {
+                const response = await axios.get(
+                    "http://localhost:8080/api/newsletter/all"
+                );
+                setTemplates(response.data);
+            } catch (error) {
+                console.error("Error fetching templates:", error);
+            }
+        };
+        fetchTemplates();
+    }, []);
 
-  const [productName3, setProductName3] = useState<string>("Product Name 3");
-  const [productPrice3, setProductPrice3] = useState<string>("Product Price");
-  const [discount3, setDiscount3] = useState<string>("Discount Percentage");
-  const [promoCode3, setPromoCode3] = useState<string>("Promo Code");
+    const getFirstLine = (content: string) => {
+        if (!content) return "";
+        const plainText = content.replace(/<[^>]*>/g, ""); // Remove HTML tags
+        const match = plainText.match(/.*?\./); // Get text up to the first period
+        return match ? match[0] : plainText;
+    };
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [receiverEmail, setReceiverEmail] = useState("");
-  const [emailContent, setEmailContent] = useState("");
+    const handleTemplateClick = (template: Template) => {
+        setSelectedTemplate(template);
+        setEmailContent(template.content);
 
-  const handleBlur =
-    (setter: React.Dispatch<React.SetStateAction<string>>) =>
-    (e: React.FocusEvent<HTMLSpanElement>) =>
-      setter(e.target.textContent || "");
+        // Extract placeholders from the template content
+        const matches = template.content.match(/\[([^\]]+)\]/g) || [];
+        setEditableFields(matches.map((match) => match.replace(/[\[\]]/g, ""))); // Remove brackets
+    };
 
-  const handleSendEmail = async () => {
-    const emailContent = `
-Dear ${customerName},
+    const handleCustomerSelect = (customerName: string) => {
+        const customer = customers.find((c) => c.name === customerName);
+        setSelectedCustomer(customer);
 
-We've curated something special for you! 
-Based on your recent purchases and browsing history, 
-here are some exclusive offers and recommendations we think you'll love.
+        // Replace placeholders with customer details
+        let updatedContent = selectedTemplate?.content || "";
+        if (customer) {
+            updatedContent = updatedContent.replace(
+                "[Customer Name]",
+                customer.name
+            );
+            if (customer.products.length > 0) {
+                updatedContent = updatedContent.replace(
+                    "[Product Name]",
+                    customer.products[0].name
+                );
+                updatedContent = updatedContent.replace(
+                    "[Product Price]",
+                    customer.products[0].price
+                );
+            }
+        }
+        setEmailContent(updatedContent);
+    };
 
-Top Picks for You:
-1. ${productName1} 
-        Price: $${productPrice1}, 
-        Discount: ${discount1}% off with code ${promoCode1}
-2. ${productName2} 
-        Price: $${productPrice2}, 
-        Discount: ${discount2}% off with code ${promoCode2}
-3. ${productName3} 
-        Price: $${productPrice3}, 
-        Discount: ${discount3}% off with code ${promoCode3}
+    const handleSendEmail = () => {
+        setIsModalOpen(true);
+    };
 
-Take advantage of these personalized offers and discover more. 
-Shop now and enjoy the best deals tailored just for you!
-
-
-Warm regards,
-Marketing team
-        `;
-    setEmailContent(emailContent);
-    setIsModalOpen(true);
-  };
-  const sendEmail = async () => {
-    const encodedSubject = encodeURIComponent("Personalized Offers for You!");
-    const encodedMessage = encodeURIComponent(emailContent);
-
-    const apiUrl = `http://localhost:8080/api/send-email?to=${receiverEmail}&subject=${encodedSubject}&message=${encodedMessage}`;
-
-    try {
-      const response = await fetch(apiUrl);
-      if (response.ok) {
-        setIsModalOpen(false);
-        alert("Email sent successfully!");
-        setCustomerName("Customer Name");
-        setProductName1("Product Name 1");
-        setProductPrice1("Product Price");
-        setDiscount1("Discount Percentage");
-        setPromoCode1("Promo Code");
-
-        setProductName2("Product Name 2");
-        setProductPrice2("Product Price");
-        setDiscount2("Discount Percentage");
-        setPromoCode2("Promo Code");
-
-        setProductName3("Product Name 3");
-        setProductPrice3("Product Price");
-        setDiscount3("Discount Percentage");
-        setPromoCode3("Promo Code");
-      } else {
-        alert("Failed to send the email.");
-      }
-    } catch (error) {
-      console.error("Error sending email:", error);
-      alert("An error occurred while sending the email.");
-    }
-  };
-
-  return (
-    <motion.section
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{
-        opacity: 1,
-        scale: 1,
-        transition: { duration: 0.5 },
-      }}
-    >
-      <div className="w-full px-6 py-8">
-        <h3 className="text-gray-700 text-3xl font-medium">News Letter</h3>
-        <div className="mt-4">
-          <Card>
-            <CardHeader></CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <p>
-                  Dear{" "}
-                  <span
-                    contentEditable
-                    onBlur={handleBlur(setCustomerName)}
-                    className="border border-slate-400 rounded-sm p-1"
-                    suppressContentEditableWarning={true}
-                  >
-                    {customerName}
-                  </span>
-                  ,
-                </p>
-                <p>
-                  We&apos;ve curated something special for you! Based on your
-                  recent purchases and browsing history, here are some exclusive
-                  offers and recommendations we think you&apos;ll love.
-                </p>
-                <p>Top Picks for You:</p>
-                <ol className="list-decimal list-inside">
-                  <li className="p-2">
-                    <span
-                      contentEditable
-                      onBlur={handleBlur(setProductName1)}
-                      className="border border-slate-400 rounded-sm p-1"
-                      suppressContentEditableWarning={true}
-                    >
-                      {productName1}
-                    </span>
-                    <ul className="list-disc list-inside ml-3">
-                      <li className="p-2">
-                        Price: $
-                        <span
-                          contentEditable
-                          onBlur={handleBlur(setProductPrice1)}
-                          className="border border-slate-400 rounded-sm p-1 m-1"
-                          suppressContentEditableWarning={true}
-                        >
-                          {productPrice1}
-                        </span>
-                      </li>
-                      <li className="p-2">
-                        Discount:
-                        <span
-                          contentEditable
-                          onBlur={handleBlur(setDiscount1)}
-                          className="border border-slate-400 rounded-sm p-1 m-1"
-                          suppressContentEditableWarning={true}
-                        >
-                          {discount1}
-                        </span>
-                        % off with code
-                        <span
-                          contentEditable
-                          onBlur={handleBlur(setPromoCode1)}
-                          className="border border-slate-400 rounded-sm p-1 m-1"
-                          suppressContentEditableWarning={true}
-                        >
-                          {promoCode1}
-                        </span>
-                      </li>
-                    </ul>
-                  </li>
-                  <li className="p-2">
-                    <span
-                      contentEditable
-                      onBlur={handleBlur(setProductName2)}
-                      className="border border-slate-400 rounded-sm p-1"
-                      suppressContentEditableWarning={true}
-                    >
-                      {productName2}
-                    </span>
-                    <ul className="list-disc list-inside ml-3">
-                      <li className="p-2">
-                        Price: $
-                        <span
-                          contentEditable
-                          onBlur={handleBlur(setProductPrice2)}
-                          className="border border-slate-400 rounded-sm p-1 m-1"
-                          suppressContentEditableWarning={true}
-                        >
-                          {productPrice2}
-                        </span>
-                      </li>
-                      <li className="p-2">
-                        Discount:
-                        <span
-                          contentEditable
-                          onBlur={handleBlur(setDiscount2)}
-                          className="border border-slate-400 rounded-sm p-1 m-1"
-                          suppressContentEditableWarning={true}
-                        >
-                          {discount2}
-                        </span>
-                        % off with code
-                        <span
-                          contentEditable
-                          onBlur={handleBlur(setPromoCode2)}
-                          className="border border-slate-400 rounded-sm p-1 m-1"
-                          suppressContentEditableWarning={true}
-                        >
-                          {promoCode2}
-                        </span>
-                      </li>
-                    </ul>
-                  </li>
-                  <li className="p-2">
-                    <span
-                      contentEditable
-                      onBlur={handleBlur(setProductName3)}
-                      className="border border-slate-400 rounded-sm p-1"
-                      suppressContentEditableWarning={true}
-                    >
-                      {productName3}
-                    </span>
-                    <ul className="list-disc list-inside ml-3">
-                      <li className="p-2">
-                        Price: $
-                        <span
-                          contentEditable
-                          onBlur={handleBlur(setProductPrice3)}
-                          className="border border-slate-400 rounded-sm p-1 m-1"
-                          suppressContentEditableWarning={true}
-                        >
-                          {productPrice3}
-                        </span>
-                      </li>
-                      <li className="p-2">
-                        Discount:
-                        <span
-                          contentEditable
-                          onBlur={handleBlur(setDiscount3)}
-                          className="border border-slate-400 rounded-sm p-1 m-1"
-                          suppressContentEditableWarning={true}
-                        >
-                          {discount3}
-                        </span>
-                        % off with code
-                        <span
-                          contentEditable
-                          onBlur={handleBlur(setPromoCode3)}
-                          className="border border-slate-400 rounded-sm p-1 m-1"
-                          suppressContentEditableWarning={true}
-                        >
-                          {promoCode3}
-                        </span>
-                      </li>
-                    </ul>
-                  </li>
-                </ol>
-                <p>
-                  Take advantage of these personalized offers and discover more
-                  with Timperio. Shop now and enjoy the best deals tailored just
-                  for you!
-                </p>
-                <p>Warm regards,</p>
-                <p>Marketing team</p>
-              </div>
-            </CardContent>
-          </Card>
-          <button
-            className=" bg-green-800 hover:bg-green-900 text-white font-bold py-2 px-4 rounded-lg mt-5 ml-2"
-            onClick={handleSendEmail}
-          >
-            Send Email
-          </button>
-          <EmailModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onSendEmail={sendEmail}
-            emailContent={emailContent}
-            setReceiverEmail={setReceiverEmail}
-            receiverEmail={receiverEmail}
-          />
-        </div>
-      </div>
-    </motion.section>
-  );
+    return (
+        <motion.section
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1, transition: { duration: 0.5 } }}
+        >
+            <div className="w-full px-6 py-8">
+                {!selectedTemplate ? (
+                    // Grid layout for displaying templates
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        {templates.map((template) => (
+                            <div
+                                key={template.id}
+                                className="bg-white shadow-lg rounded-lg p-6 text-center transition-transform transform hover:scale-105 cursor-pointer"
+                                onClick={() => handleTemplateClick(template)}
+                            >
+                                <h3 className="text-lg font-bold mb-2">
+                                    {template.title}
+                                </h3>
+                                <p className="text-sm text-gray-500 mb-1">
+                                    Target: {template.target}
+                                </p>
+                                <p className="text-sm text-gray-500 mb-1">
+                                    Created By: {template.username}
+                                </p>
+                                <p className="text-sm text-gray-600 break-words mt-2">
+                                    {getFirstLine(template.content)}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    // Detailed view for the selected template
+                    <div>
+                        <Card>
+                            <CardHeader>
+                                <h3 className="text-xl font-bold ">
+                                    {selectedTemplate.title}
+                                </h3>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4">
+                                    {editableFields.includes(
+                                        "Customer Name"
+                                    ) && (
+                                        <div className="mb-4 flex items-center space-x-2">
+                                            <label
+                                                htmlFor="customer-select"
+                                                className="text-sm font-semibold"
+                                            >
+                                                Select Customer:
+                                            </label>
+                                            <select
+                                                id="customer-select"
+                                                className="border p-1 rounded"
+                                                onChange={(e) =>
+                                                    handleCustomerSelect(
+                                                        e.target.value
+                                                    )
+                                                }
+                                            >
+                                                <option value="">
+                                                    Select a customer
+                                                </option>
+                                                {customers.map((customer) => (
+                                                    <option
+                                                        key={customer.name}
+                                                        value={customer.name}
+                                                    >
+                                                        {customer.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+                                    <div
+                                        className="text-sm text-gray-600"
+                                        dangerouslySetInnerHTML={{
+                                            __html: emailContent,
+                                        }}
+                                    ></div>
+                                    <button
+                                        className="bg-green-800 hover:bg-green-900 text-white font-bold py-2 px-4 rounded-lg mt-5"
+                                        onClick={handleSendEmail}
+                                    >
+                                        Send Email
+                                    </button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <EmailModal
+                            isOpen={isModalOpen}
+                            onClose={() => setIsModalOpen(false)}
+                            onSendEmail={handleSendEmail}
+                            emailContent={emailContent}
+                            setReceiverEmail={setReceiverEmail}
+                            receiverEmail={receiverEmail}
+                        />
+                    </div>
+                )}
+            </div>
+        </motion.section>
+    );
 }
