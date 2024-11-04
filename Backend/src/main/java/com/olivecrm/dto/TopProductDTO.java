@@ -1,27 +1,29 @@
 package com.olivecrm.dto;
 
 public class TopProductDTO {
-    private int productId;
+    private Integer pID;
     private String productName;
     private long totalQuantity;
+    private double individualPrice;
 
     // Constructors
     public TopProductDTO() {
     }
 
-    public TopProductDTO(int productId, String productName, long totalQuantity) {
-        this.productId = productId;
+    public TopProductDTO(Integer pID, String productName, long totalQuantity, double individualPrice) {
+        this.pID = pID;
         this.productName = productName;
         this.totalQuantity = totalQuantity;
+        this.individualPrice = individualPrice;
     }
 
     // Getters and Setters
-    public int getProductId() {
-        return productId;
+    public Integer getPID() {
+        return pID;
     }
 
-    public void setProductId(int productId) {
-        this.productId = productId;
+    public void setPID(Integer pID) {
+        this.pID = pID;
     }
 
     public String getProductName() {
@@ -38,5 +40,13 @@ public class TopProductDTO {
 
     public void setTotalQuantity(long totalQuantity) {
         this.totalQuantity = totalQuantity;
+    }
+
+    public double getIndividualPrice() {
+        return individualPrice;
+    }
+
+    public void setIndividualPrice(double individualPrice) {
+        this.individualPrice = individualPrice;
     }
 }

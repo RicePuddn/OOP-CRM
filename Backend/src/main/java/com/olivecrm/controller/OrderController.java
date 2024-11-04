@@ -159,15 +159,16 @@ public class OrderController {
             // Add data rows
             for (Order order : orders.getContent()) {
                 csvContent.append(String.format("%d,%d,%d,%d,%.2f,%s,%s,%s,%s\n",
-                        order.getId(),
-                        order.getCustomer().getCID(),
-                        order.getProduct().getPID(),
-                        order.getQuantity(),
-                        order.getTotalCost(),
-                        order.getOrderMethod(),
-                        order.getSalesDate(),
-                        order.getSalesType(),
-                        order.getShippingMethod()));
+                    order.getId(),
+                    order.getCustomer().getCID(),
+                    order.getProduct().getPID(),
+                    order.getQuantity(),
+                    order.getTotalCost(),
+                    order.getOrderMethod(),
+                    order.getSalesDate(),
+                    order.getSalesType(),
+                    order.getShippingMethod()
+                ));
             }
 
             // Prepare the response
@@ -189,39 +190,46 @@ public class OrderController {
     }
 
     // Customer Segmentation Endpoints
-
-    @GetMapping("/segments/recency/active")
-    public ResponseEntity<CustomerSegmentDTO> getActiveCustomers() {
-        return ResponseEntity.ok(orderService.getActiveCustomers());
+    @GetMapping("/segments/recency")
+    public ResponseEntity<List<CustomerSegmentDTO>> getRecencySegments() {
+        logger.info("Fetching recency-based customer segments");
+        try {
+            List<CustomerSegmentDTO> segments = List.of(
+                orderService.getActiveCustomers(),    // Customers who made a purchase within last 30 days
+                orderService.getDormantCustomers(),   // Customers who haven't made a purchase in last 6 months
+                orderService.getReturningCustomers()  // Customers who recently made their first purchase in over a year
+            );
+            return ResponseEntity.ok(segments);
+        } catch (Exception e) {
+            logger.error("Error fetching recency segments", e);
+            return ResponseEntity.status(500).build();
+        }
     }
 
-    @GetMapping("/segments/recency/dormant")
-    public ResponseEntity<CustomerSegmentDTO> getDormantCustomers() {
-        return ResponseEntity.ok(orderService.getDormantCustomers());
-    }
-
-    @GetMapping("/segments/recency/returning")
-    public ResponseEntity<CustomerSegmentDTO> getReturningCustomers() {
-        return ResponseEntity.ok(orderService.getReturningCustomers());
-    }
-
-    @GetMapping("/segments/frequency/frequent")
-    public ResponseEntity<CustomerSegmentDTO> getFrequentCustomers() {
-        return ResponseEntity.ok(orderService.getFrequentCustomers());
-    }
-
-    @GetMapping("/segments/frequency/occasional")
-    public ResponseEntity<CustomerSegmentDTO> getOccasionalCustomers() {
-        return ResponseEntity.ok(orderService.getOccasionalCustomers());
-    }
-
-    @GetMapping("/segments/frequency/one-time")
-    public ResponseEntity<CustomerSegmentDTO> getOneTimeCustomers() {
-        return ResponseEntity.ok(orderService.getOneTimeCustomers());
+    @GetMapping("/segments/frequency")
+    public ResponseEntity<List<CustomerSegmentDTO>> getFrequencySegments() {
+        logger.info("Fetching frequency-based customer segments");
+        try {
+            List<CustomerSegmentDTO> segments = List.of(
+                orderService.getFrequentCustomers(),
+                orderService.getOccasionalCustomers(),
+                orderService.getOneTimeCustomers()
+            );
+            return ResponseEntity.ok(segments);
+        } catch (Exception e) {
+            logger.error("Error fetching frequency segments", e);
+            return ResponseEntity.status(500).build();
+        }
     }
 
     @GetMapping("/segments/monetary")
     public ResponseEntity<List<CustomerSegmentDTO>> getMonetarySegments() {
-        return ResponseEntity.ok(orderService.getMonetarySegments());
+        logger.info("Fetching monetary-based customer segments");
+        try {
+            return ResponseEntity.ok(orderService.getMonetarySegments());
+        } catch (Exception e) {
+            logger.error("Error fetching monetary segments", e);
+            return ResponseEntity.status(500).build();
+        }
     }
 }
