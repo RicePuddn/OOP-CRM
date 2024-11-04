@@ -1,9 +1,17 @@
+// Newsletter Component with Select Component for Customer List
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import EmailModal from "./ui/email-modal";
 import { motion } from "framer-motion";
+import {
+    Select,
+    SelectTrigger,
+    SelectContent,
+    SelectItem,
+    SelectValue,
+} from "./ui/select";
 
 interface Template {
     id: number;
@@ -61,13 +69,6 @@ export default function Newsletter() {
         fetchTemplates();
     }, []);
 
-    const getFirstLine = (content: string) => {
-        if (!content) return "";
-        const plainText = content.replace(/<[^>]*>/g, ""); // Remove HTML tags
-        const match = plainText.match(/.*?\./); // Get text up to the first period
-        return match ? match[0] : plainText;
-    };
-
     const handleTemplateClick = (template: Template) => {
         setSelectedTemplate(template);
         setEmailContent(template.content);
@@ -121,7 +122,7 @@ export default function Newsletter() {
                                 className="bg-white shadow-lg rounded-lg p-6 text-center transition-transform transform hover:scale-105 cursor-pointer"
                                 onClick={() => handleTemplateClick(template)}
                             >
-                                <h3 className="text-lg font-bold mb-2">
+                                <h3 className="text-md font-bold mb-2">
                                     {template.title}
                                 </h3>
                                 <p className="text-sm text-gray-500 mb-1">
@@ -130,14 +131,10 @@ export default function Newsletter() {
                                 <p className="text-sm text-gray-500 mb-1">
                                     Created By: {template.username}
                                 </p>
-                                <p className="text-sm text-gray-600 break-words mt-2">
-                                    {getFirstLine(template.content)}
-                                </p>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    // Detailed view for the selected template
                     <div>
                         <Card>
                             <CardHeader>
@@ -150,34 +147,35 @@ export default function Newsletter() {
                                     {editableFields.includes(
                                         "Customer Name"
                                     ) && (
-                                        <div className="mb-4 flex items-center space-x-2">
-                                            <label
-                                                htmlFor="customer-select"
-                                                className="text-sm font-semibold"
-                                            >
-                                                Select Customer:
-                                            </label>
-                                            <select
-                                                id="customer-select"
-                                                className="border p-1 rounded"
-                                                onChange={(e) =>
-                                                    handleCustomerSelect(
-                                                        e.target.value
-                                                    )
+                                        <div className="mb-4 flex items-center space-x-4 ">
+                                            <p className="text-sm font-semibold whitespace-nowrap">
+                                                Choose a customer:
+                                            </p>
+                                            <Select
+                                                onValueChange={
+                                                    handleCustomerSelect
                                                 }
                                             >
-                                                <option value="">
-                                                    Select a customer
-                                                </option>
-                                                {customers.map((customer) => (
-                                                    <option
-                                                        key={customer.name}
-                                                        value={customer.name}
-                                                    >
-                                                        {customer.name}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Select a customer" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {customers.map(
+                                                        (customer) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    customer.name
+                                                                }
+                                                                value={
+                                                                    customer.name
+                                                                }
+                                                            >
+                                                                {customer.name}
+                                                            </SelectItem>
+                                                        )
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                     )}
                                     <div
