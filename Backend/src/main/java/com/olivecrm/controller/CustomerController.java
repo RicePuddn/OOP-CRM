@@ -1,9 +1,12 @@
 package com.olivecrm.controller;
 
+import com.olivecrm.dto.CustomerSegmentDTO;
+import com.olivecrm.entity.Customer;
+import com.olivecrm.service.CustomerService;
+import com.olivecrm.service.OrderService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,11 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.olivecrm.dto.CustomerSegmentDTO;
-import com.olivecrm.entity.Customer;
-import com.olivecrm.service.CustomerService;
-import com.olivecrm.service.OrderService;
 
 @RestController
 @RequestMapping("/api/customers")
@@ -48,6 +46,8 @@ public class CustomerController {
     @GetMapping("/segment")
     public ResponseEntity<List<Customer>>
     getCustomersBySegment(@RequestParam String segmentType) {
+
+        System.out.println("Segment Type" + segmentType);
         List<Integer> customerIds;
         switch (segmentType.toUpperCase()) {
         case "ACTIVE":

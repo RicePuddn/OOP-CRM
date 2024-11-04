@@ -23,7 +23,16 @@ interface Template {
 
 interface Customer {
     name: string;
+    first_name: string;
+    last_name: string;
+    cid: number;
     products: { name: string; price: string }[];
+}
+
+interface Product {
+    name: string;
+    price: string;
+    quantity: number;
 }
 
 export default function Newsletter() {
@@ -38,22 +47,8 @@ export default function Newsletter() {
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
         null
     );
-    const [customers, setCustomers] = useState<Customer[]>([
-        {
-            name: "John Doe",
-            products: [
-                { name: "Product A", price: "$100" },
-                { name: "Product B", price: "$150" },
-            ],
-        },
-        {
-            name: "Jane Smith",
-            products: [
-                { name: "Product X", price: "$200" },
-                { name: "Product Y", price: "$250" },
-            ],
-        },
-    ]);
+    const [customers, setCustomers] = useState<Customer[]>([]);
+    const [topProducts, setTopProducts] = useState<Product[]>([]);
 
     useEffect(() => {
         const fetchTemplates = async () => {
@@ -69,6 +64,95 @@ export default function Newsletter() {
         fetchTemplates();
     }, []);
 
+    useEffect(() => {
+        const fetchCustomersBySegment = async (segmentType: string) => {
+            try {
+                const mappedSegment = mapSegmentName(segmentType.split(" ")[0]);
+                const response = await axios.get(
+                    `http://localhost:8080/api/customers/segment?segmentType=${mappedSegment}`
+                );
+                const customerNames = response.data.map(
+                    (customer: Customer) => ({
+                        name: `${customer.first_name} ${customer.last_name}`,
+                        first_name: customer.first_name,
+                        last_name: customer.last_name,
+                        cid: customer.cid,
+                        products: customer.products,
+                    })
+                );
+                setCustomers([
+                    {
+                        name: "All",
+                        first_name: "",
+                        last_name: "",
+                        cid: 0,
+                        products: [],
+                    },
+                    ...customerNames,
+                ]);
+            } catch (error) {
+                console.error("Error fetching customers by segment:", error);
+            }
+        };
+
+        if (selectedTemplate) {
+            fetchCustomersBySegment(selectedTemplate.target);
+        }
+    }, [selectedTemplate]);
+
+    useEffect(() => {
+        const fetchTopProducts = async () => {
+            if (selectedCustomer && selectedCustomer.cid !== 0) {
+                try {
+                    const response = await axios.get(
+                        `http://localhost:8080/api/orders/customer/${selectedCustomer.cid}/top-products`
+                    );
+                    setTopProducts(response.data);
+                    console.log("Top products:", response.data);
+                } catch (error) {
+                    console.error("Error fetching top products:", error);
+                }
+            } else {
+                setTopProducts([]);
+            }
+        };
+
+        fetchTopProducts();
+    }, [selectedCustomer]);
+
+    useEffect(() => {
+        if (
+            selectedCustomer &&
+            selectedCustomer.cid !== 0 &&
+            topProducts.length > 0
+        ) {
+            console.log(
+                "Handling selected customer with top products:",
+                topProducts
+            );
+
+            let updatedContent = selectedTemplate?.content || "";
+
+            updatedContent = updatedContent.replace(
+                "[Customer Name]",
+                selectedCustomer.name
+            );
+
+            topProducts.forEach((product, index) => {
+                updatedContent = updatedContent.replace(
+                    `[Product Name ${index + 1}]`,
+                    product.productName
+                );
+                updatedContent = updatedContent.replace(
+                    `[Product Price ${index + 1}]`,
+                    product.individualPrice.toString()
+                );
+            });
+
+            setEmailContent(updatedContent);
+        }
+    }, [topProducts, selectedCustomer]);
+
     const handleTemplateClick = (template: Template) => {
         setSelectedTemplate(template);
         setEmailContent(template.content);
@@ -77,34 +161,49 @@ export default function Newsletter() {
         const matches = template.content.match(/\[([^\]]+)\]/g) || [];
         setEditableFields(matches.map((match) => match.replace(/[\[\]]/g, ""))); // Remove brackets
     };
-
     const handleCustomerSelect = (customerName: string) => {
         const customer = customers.find((c) => c.name === customerName);
         setSelectedCustomer(customer);
 
-        // Replace placeholders with customer details
-        let updatedContent = selectedTemplate?.content || "";
         if (customer) {
-            updatedContent = updatedContent.replace(
-                "[Customer Name]",
-                customer.name
-            );
-            if (customer.products.length > 0) {
-                updatedContent = updatedContent.replace(
-                    "[Product Name]",
-                    customer.products[0].name
-                );
-                updatedContent = updatedContent.replace(
-                    "[Product Price]",
-                    customer.products[0].price
-                );
-            }
+            console.log("Selected customer:", customer);
+        } else {
+            console.log("No customer selected or found.");
         }
+    };
+    const handleInputChange = (field: string, value: string) => {
+        const regex = new RegExp(`\\[${field}\\]`, "g");
+        let updatedContent = emailContent.replace(regex, value);
         setEmailContent(updatedContent);
     };
 
     const handleSendEmail = () => {
         setIsModalOpen(true);
+    };
+
+    const mapSegmentName = (targetSegment: string) => {
+        switch (targetSegment.toLowerCase()) {
+            case "active":
+                return "ACTIVE";
+            case "dormant":
+                return "DORMANT";
+            case "returning":
+                return "RETURNING";
+            case "frequent shoppers":
+                return "FREQUENT";
+            case "occasional shoppers":
+                return "OCCASIONAL";
+            case "one-time buyers":
+                return "ONETIME";
+            case "high-value customers":
+                return "HIGHVALUE";
+            case "mid-tier customers":
+                return "MIDTIER";
+            case "low-spend customers":
+                return "LOWSPEND";
+            default:
+                return targetSegment;
+        }
     };
 
     return (
@@ -161,10 +260,11 @@ export default function Newsletter() {
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {customers.map(
-                                                        (customer) => (
+                                                        (customer, index) => (
                                                             <SelectItem
                                                                 key={
-                                                                    customer.name
+                                                                    customer.name +
+                                                                    index
                                                                 }
                                                                 value={
                                                                     customer.name
