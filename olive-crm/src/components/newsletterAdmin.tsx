@@ -7,7 +7,13 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import NewsletterComposition from "./ui/newsletterComposition";
 import Cookies from "js-cookie";
-import { cookies } from "next/headers";
+import {
+    Select,
+    SelectTrigger,
+    SelectContent,
+    SelectItem,
+    SelectValue,
+} from "./ui/select";
 
 interface Template {
     id: number;
@@ -16,6 +22,19 @@ interface Template {
     target: string;
     username: string;
 }
+
+const CUSTOMER_SEGMENTS = [
+    "All",
+    "Active Customers",
+    "Dormant Customers",
+    "Returning Customers",
+    "Frequent Shoppers",
+    "Occasional Shoppers",
+    "One-time Buyers",
+    "High-Value Customers",
+    "Mid-Tier Customers",
+    "Low-Spend Customers",
+];
 
 const Newsletter: React.FC = () => {
     const [templates, setTemplates] = useState<Template[]>([]);
@@ -34,7 +53,7 @@ const Newsletter: React.FC = () => {
                 const response = await axios.get(
                     "http://localhost:8080/api/newsletter/all"
                 );
-                console.log("Fetched templates:", response.data); // Check if username is present
+                console.log("Fetched templates:", response.data);
                 setTemplates(response.data);
             } catch (error) {
                 console.error("Error fetching templates:", error);
@@ -130,7 +149,6 @@ const Newsletter: React.FC = () => {
             setIsEditing(false);
 
             try {
-                // Include `id` in the URL path
                 await axios.put(
                     `http://localhost:8080/api/newsletter/update/${selectedTemplate.id}`,
                     {
@@ -176,21 +194,11 @@ const Newsletter: React.FC = () => {
         }
     };
 
-    const getFirstLine = (content: string | undefined) => {
-        if (!content) {
-            return "";
-        }
-
-        const plainText = content.replace(/<[^>]*>/g, "");
-        const match = plainText.match(/.*?\./);
-        return match ? match[0] : plainText;
-    };
-
     const loggedInUsername = Cookies.get("username");
     console.log("loggedInUsername: ", loggedInUsername);
 
     return (
-        <div className="p-4">
+        <div className="p-10">
             {isComposing ? (
                 <NewsletterComposition
                     onSave={(title, target, content) =>
@@ -204,7 +212,7 @@ const Newsletter: React.FC = () => {
                     onCancel={handleCancelComposition}
                 />
             ) : selectedTemplate ? (
-                <div className="bg-white shadow-lg rounded-lg p-6">
+                <div className="bg-white shadow-lg rounded-xl p-10 ">
                     <div className="flex justify-between mb-4">
                         <button
                             onClick={() => setSelectedTemplate(null)}
@@ -239,21 +247,46 @@ const Newsletter: React.FC = () => {
                             selectedTemplate.title
                         )}
                     </h2>
-                    <label className="font-bold text-gray-700">Target:</label>
-                    <div className="text-gray-700 mb-4">
-                        {isEditing ? (
-                            <input
-                                type="text"
-                                value={editableTarget}
-                                onChange={(e) =>
-                                    setEditableTarget(e.target.value)
-                                }
-                                className="w-full border border-gray-300 rounded p-2 mb-4"
-                            />
-                        ) : (
-                            selectedTemplate.target
+                    <div className="flex items-center justify-between mb-4">
+                        {!isEditing && (
+                            <label className="font-bold text-gray-700 mr-4">
+                                Target Customer Segment:
+                            </label>
                         )}
+                        <div className="text-gray-700 flex-1">
+                            {isEditing ? (
+                                <Select
+                                    onValueChange={(value) =>
+                                        setEditableTarget(value)
+                                    }
+                                >
+                                    <SelectTrigger className="w-full border border-gray-300 rounded p-2">
+                                        <SelectValue
+                                            placeholder={
+                                                editableTarget ||
+                                                "Select a customer segment"
+                                            }
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {CUSTOMER_SEGMENTS.map(
+                                            (segment, index) => (
+                                                <SelectItem
+                                                    key={index}
+                                                    value={segment}
+                                                >
+                                                    {segment}
+                                                </SelectItem>
+                                            )
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            ) : (
+                                <span>{selectedTemplate.target}</span>
+                            )}
+                        </div>
                     </div>
+
                     <div className="text-gray-700 mb-4">
                         {isEditing ? (
                             <ReactQuill
@@ -335,7 +368,7 @@ const Newsletter: React.FC = () => {
 
                     {!isEditing &&
                         selectedTemplate.username === loggedInUsername && (
-                            <div className="flex justify-center mt-4">
+                            <div className="flex mt-4">
                                 <button
                                     onClick={() => {
                                         handleDeleteTemplate(
@@ -368,18 +401,15 @@ const Newsletter: React.FC = () => {
                                 setSelectedTemplate(template);
                             }}
                         >
-                            <h3 className="text-lg font-bold mb-1">
+                            <h3 className="text-lg font-bold mb-2">
                                 {template.title}
                             </h3>
 
-                            <p className="text-sm text-gray-500 mb-1">
+                            <p className="text-sm text-gray-500 mb-2">
                                 Target: {template.target}
                             </p>
                             <p className="text-sm text-gray-500 mb-4">
                                 Created By: {template.username}
-                            </p>
-                            <p className="text-sm text-gray-600 break-words">
-                                {getFirstLine(template.content)}
                             </p>
                         </div>
                     ))}

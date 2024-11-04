@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import { Info } from "lucide-react";
+import {
+    Select,
+    SelectTrigger,
+    SelectContent,
+    SelectItem,
+    SelectValue,
+} from "./select"; // Adjust the path as needed
 
 interface NewsletterCompositionProps {
     onSave: (title: string, target: string, content: string) => void;
@@ -14,6 +22,19 @@ const NewsletterComposition: React.FC<NewsletterCompositionProps> = ({
     const [title, setTitle] = useState("");
     const [target, setTarget] = useState("");
     const [content, setContent] = useState("");
+
+    const CUSTOMER_SEGMENTS = [
+        "All",
+        "Active Customers",
+        "Dormant Customers",
+        "Returning Customers",
+        "Frequent Shoppers",
+        "Occasional Shoppers",
+        "One-time Buyers",
+        "High-Value Customers",
+        "Mid-Tier Customers",
+        "Low-Spend Customers",
+    ];
 
     const handleSave = () => {
         if (
@@ -75,7 +96,18 @@ const NewsletterComposition: React.FC<NewsletterCompositionProps> = ({
 
     return (
         <div className="p-4 bg-white shadow-lg rounded-lg">
-            <h2 className="text-2xl font-bold mb-4">Compose Newsletter</h2>
+            <h2 className="text-2xl font-bold mb-4 flex items-center">
+                Compose Newsletter
+                <div className="relative group ml-2">
+                    <Info className="text-gray-500 cursor-pointer" />
+                    <span className="absolute left-0 ml-6 w-64 p-2 rounded bg-green-800 text-white text-xs shadow-lg opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                        Mark editable fields with square brackets. E.g.,
+                        [Customer Name], [Product Name], [Product Price]. For
+                        multiple products, use numbers such as [Product Name 1].
+                    </span>
+                </div>
+            </h2>
+
             <label className="font-bold text-gray-700">Title:</label>
             <input
                 type="text"
@@ -85,13 +117,18 @@ const NewsletterComposition: React.FC<NewsletterCompositionProps> = ({
                 className="w-full border border-gray-300 rounded p-2 mb-4"
             />
             <label className="font-bold text-gray-700">Customer Segment:</label>
-            <input
-                type="text"
-                value={target}
-                onChange={(e) => setTarget(e.target.value)}
-                placeholder="Target Customer Segmentation"
-                className="w-full border border-gray-300 rounded p-2 mb-4"
-            />
+            <Select onValueChange={(value) => setTarget(value)}>
+                <SelectTrigger className="w-full border border-gray-300 rounded p-2 mb-4">
+                    <SelectValue placeholder="Select a customer segment" />
+                </SelectTrigger>
+                <SelectContent>
+                    {CUSTOMER_SEGMENTS.map((segment, index) => (
+                        <SelectItem key={index} value={segment}>
+                            {segment}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
             <label className="font-bold text-gray-700">Content:</label>
             <ReactQuill
                 value={content}
