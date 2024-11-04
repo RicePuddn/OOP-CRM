@@ -11,6 +11,8 @@ public class Customer {
 
     @Id
     private int cID;
+    
+    @Column(nullable = true)
     private String zipcode;
 
     @Column(name = "first_name", nullable = true)

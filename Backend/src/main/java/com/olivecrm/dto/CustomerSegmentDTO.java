@@ -1,16 +1,19 @@
 package com.olivecrm.dto;
 
 import java.util.List;
+import com.olivecrm.enums.CustomerSegmentType;
 
 public class CustomerSegmentDTO {
     private List<Integer> customerIds;
-    private String segmentType;
+    private CustomerSegmentType segmentType;
     private String segmentCategory;
+    private int customerCount;
 
-    public CustomerSegmentDTO(List<Integer> customerIds, String segmentType, String segmentCategory) {
+    public CustomerSegmentDTO(List<Integer> customerIds, CustomerSegmentType segmentType, String segmentCategory) {
         this.customerIds = customerIds;
         this.segmentType = segmentType;
         this.segmentCategory = segmentCategory;
+        this.customerCount = customerIds != null ? customerIds.size() : 0;
     }
 
     public List<Integer> getCustomerIds() {
@@ -19,13 +22,14 @@ public class CustomerSegmentDTO {
 
     public void setCustomerIds(List<Integer> customerIds) {
         this.customerIds = customerIds;
+        this.customerCount = customerIds != null ? customerIds.size() : 0;
     }
 
-    public String getSegmentType() {
+    public CustomerSegmentType getSegmentType() {
         return segmentType;
     }
 
-    public void setSegmentType(String segmentType) {
+    public void setSegmentType(CustomerSegmentType segmentType) {
         this.segmentType = segmentType;
     }
 
@@ -35,5 +39,9 @@ public class CustomerSegmentDTO {
 
     public void setSegmentCategory(String segmentCategory) {
         this.segmentCategory = segmentCategory;
+    }
+
+    public int getCustomerCount() {
+        return customerCount;
     }
 }

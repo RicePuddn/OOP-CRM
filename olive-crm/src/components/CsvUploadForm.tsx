@@ -7,21 +7,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import axios from "axios";
 import { motion } from "framer-motion";
+import {
+  Select,
+  SelectContent,
+  SelectValue,
+  SelectTrigger,
+  SelectItem,
+  SelectLabel,
+} from "./ui/select";
+import { SelectGroup } from "@radix-ui/react-select";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { cn } from "@/lib/utils";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "./ui/calendar";
 
 interface UploadRecord {
   filename: string;
-  status: 'success' | 'error';
+  status: "success" | "error";
   message: string;
   timestamp: Date;
 }
 
 interface ManualOrder {
-  customerId: number;
+  customerId?: number;
   productId: number;
   quantity: number;
   totalCost: number;
   salesType: string;
   salesDate: string;
+  zipcode?: string;
+  firstName?: string;
+  lastName?: string;
 }
 
 const CsvUploadForm: React.FC = () => {
@@ -29,14 +45,20 @@ const CsvUploadForm: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadHistory, setUploadHistory] = useState<UploadRecord[]>([]);
   const [manualOrder, setManualOrder] = useState<ManualOrder>({
-    customerId: 0,
+    customerId: undefined,
     productId: 0,
     quantity: 0,
     totalCost: 0,
-    salesType: '',
-    salesDate: new Date().toISOString().split('T')[0]
+    salesType: "",
+    salesDate: new Date().toISOString().split("T")[0],
+    zipcode: "",
+    firstName: "",
+    lastName: "",
   });
-  const [orderStatus, setOrderStatus] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+  const [orderStatus, setOrderStatus] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -45,40 +67,52 @@ const CsvUploadForm: React.FC = () => {
   };
 
   const updateUploadHistory = (record: UploadRecord) => {
-    setUploadHistory(prev => [record, ...prev]);
+    setUploadHistory((prev) => [record, ...prev]);
   };
 
-  const handleManualOrderChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleManualOrderChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setManualOrder(prev => ({
+    setManualOrder((prev) => ({
       ...prev,
-      [name]: name === 'quantity' || name === 'totalCost' || name === 'customerId' || name === 'productId' 
-        ? parseFloat(value) || 0 
-        : value
+      [name]:
+        name === "quantity" ||
+        name === "totalCost" ||
+        name === "customerId" ||
+        name === "productId"
+          ? value
+            ? parseFloat(value)
+            : undefined
+          : value,
     }));
   };
 
   const handleManualOrderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:8080/api/orders/manual', manualOrder);
+      await axios.post("http://localhost:8080/api/orders/manual", manualOrder);
       setOrderStatus({
-        message: 'Order created successfully',
-        type: 'success'
+        message: "Order created successfully",
+        type: "success",
       });
       // Reset form
       setManualOrder({
-        customerId: 0,
+        customerId: undefined,
         productId: 0,
         quantity: 0,
         totalCost: 0,
-        salesType: '',
-        salesDate: new Date().toISOString().split('T')[0]
+        salesType: "",
+        salesDate: new Date().toISOString().split("T")[0],
+        zipcode: "",
+        firstName: "",
+        lastName: "",
       });
     } catch (error) {
       setOrderStatus({
-        message: error instanceof Error ? error.message : 'Error creating order',
-        type: 'error'
+        message:
+          error instanceof Error ? error.message : "Error creating order",
+        type: "error",
       });
     }
   };
@@ -87,10 +121,10 @@ const CsvUploadForm: React.FC = () => {
     event.preventDefault();
     if (!files || files.length === 0) {
       updateUploadHistory({
-        filename: '',
-        status: 'error',
-        message: 'Please select at least one file',
-        timestamp: new Date()
+        filename: "",
+        status: "error",
+        message: "Please select at least one file",
+        timestamp: new Date(),
       });
       return;
     }
@@ -104,36 +138,35 @@ const CsvUploadForm: React.FC = () => {
       formData.append("file", file);
 
       try {
-        await axios.post(
-          "http://localhost:8080/api/upload-csv",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
+        await axios.post("http://localhost:8080/api/upload-csv", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
 
         updateUploadHistory({
           filename: file.name,
-          status: 'success',
-          message: 'File uploaded successfully',
-          timestamp: new Date()
+          status: "success",
+          message: "File uploaded successfully",
+          timestamp: new Date(),
         });
       } catch (error) {
         updateUploadHistory({
           filename: file.name,
-          status: 'error',
-          message: error instanceof Error ? error.message : 'Error uploading file',
-          timestamp: new Date()
+          status: "error",
+          message:
+            error instanceof Error ? error.message : "Error uploading file",
+          timestamp: new Date(),
         });
       }
     }
 
     setUploading(false);
     // Clear file input
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    if (fileInput) fileInput.value = '';
+    const fileInput = document.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement;
+    if (fileInput) fileInput.value = "";
     setFiles(null);
   };
 
@@ -152,7 +185,7 @@ const CsvUploadForm: React.FC = () => {
     >
       <div className="w-full px-6 py-8">
         <h3 className="text-gray-700 text-3xl font-medium">Update Orders</h3>
-        
+
         {/* Manual Order Entry Card */}
         <Card className="mt-4">
           <CardHeader>
@@ -162,15 +195,49 @@ const CsvUploadForm: React.FC = () => {
             <form onSubmit={handleManualOrderSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="customerId">Customer ID</Label>
+                  <Label htmlFor="customerId">
+                    Customer ID (optional for new customers)
+                  </Label>
                   <Input
                     id="customerId"
                     name="customerId"
                     type="number"
-                    required
-                    value={manualOrder.customerId || ''}
+                    value={manualOrder.customerId || ""}
                     onChange={handleManualOrderChange}
                     placeholder="Enter customer ID"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="zipcode">Zip Code (optional)</Label>
+                  <Input
+                    id="zipcode"
+                    name="zipcode"
+                    type="text"
+                    value={manualOrder.zipcode || ""}
+                    onChange={handleManualOrderChange}
+                    placeholder="Enter zip code"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name (optional)</Label>
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    value={manualOrder.firstName || ""}
+                    onChange={handleManualOrderChange}
+                    placeholder="Enter first name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name (optional)</Label>
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    value={manualOrder.lastName || ""}
+                    onChange={handleManualOrderChange}
+                    placeholder="Enter last name"
                   />
                 </div>
                 <div className="space-y-2">
@@ -180,7 +247,7 @@ const CsvUploadForm: React.FC = () => {
                     name="productId"
                     type="number"
                     required
-                    value={manualOrder.productId || ''}
+                    value={manualOrder.productId || ""}
                     onChange={handleManualOrderChange}
                     placeholder="Enter product ID"
                   />
@@ -192,7 +259,7 @@ const CsvUploadForm: React.FC = () => {
                     name="quantity"
                     type="number"
                     required
-                    value={manualOrder.quantity || ''}
+                    value={manualOrder.quantity || ""}
                     onChange={handleManualOrderChange}
                     placeholder="Enter quantity"
                   />
@@ -205,47 +272,100 @@ const CsvUploadForm: React.FC = () => {
                     type="number"
                     step="0.01"
                     required
-                    value={manualOrder.totalCost || ''}
+                    value={manualOrder.totalCost || ""}
                     onChange={handleManualOrderChange}
                     placeholder="Enter total cost"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="salesType">Sales Type</Label>
-                  <select
-                    id="salesType"
-                    name="salesType"
-                    required
+                  <Select
                     value={manualOrder.salesType}
-                    onChange={handleManualOrderChange}
-                    className="w-full p-2 border rounded-md"
+                    onValueChange={(value: string) =>
+                      setManualOrder((prev) => ({
+                        ...prev,
+                        salesType: value,
+                      }))
+                    }
+                    required
                   >
-                    <option value="">Select sales type</option>
-                    <option value="Direct - B2B">Direct - B2B</option>
-                    <option value="Direct - B2C">Direct - B2C</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Consignment">Consignment</option>
-                  </select>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select sales type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Sales Type</SelectLabel>
+                        <SelectItem value="Direct - B2B">
+                          Direct - B2B
+                        </SelectItem>
+                        <SelectItem value="Direct - B2C">
+                          Direct - B2C
+                        </SelectItem>
+                        <SelectItem value="Marketing">Marketing</SelectItem>
+                        <SelectItem value="Consignment">Consignment</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="salesDate">Sales Date</Label>
-                  <Input
-                    id="salesDate"
-                    name="salesDate"
-                    type="date"
-                    required
-                    value={manualOrder.salesDate}
-                    onChange={handleManualOrderChange}
-                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !manualOrder.salesDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon />
+                        <span>{manualOrder.salesDate}</span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={
+                          manualOrder.salesDate
+                            ? new Date(manualOrder.salesDate)
+                            : undefined
+                        }
+                        onSelect={(date) =>
+                          setManualOrder((current) => ({
+                            ...current,
+                            salesDate: date
+                              ? new Date(
+                                  Date.UTC(
+                                    date.getFullYear(),
+                                    date.getMonth(),
+                                    date.getDate()
+                                  )
+                                )
+                                  .toISOString()
+                                  .split("T")[0]
+                              : "",
+                          }))
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
-              <Button type="submit" className="w-full bg-green-800 hover:bg-green-700">
+              <Button
+                type="submit"
+                className="w-full bg-green-800 hover:bg-green-700"
+              >
                 Create Order
               </Button>
               {orderStatus && (
-                <div className={`mt-2 p-2 rounded ${
-                  orderStatus.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
+                <div
+                  className={`mt-2 p-2 rounded ${
+                    orderStatus.type === "success"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
+                >
                   {orderStatus.message}
                 </div>
               )}
@@ -256,25 +376,39 @@ const CsvUploadForm: React.FC = () => {
         {/* Instructions Card */}
         <Card className="mt-4">
           <CardContent className="pt-6">
-            <h4 className="text-lg font-medium mb-3">CSV Upload Instructions</h4>
+            <h4 className="text-lg font-medium mb-3">
+              CSV Upload Instructions
+            </h4>
             <div className="space-y-2 text-sm text-gray-600">
-              <p><strong>What you can do:</strong></p>
+              <p>
+                <strong>What you can do:</strong>
+              </p>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Upload multiple CSV files at once, using Ctrl or Shift to select multiple files.</li>
+                <li>
+                  Upload multiple CSV files at once, using Ctrl or Shift to
+                  select multiple files.
+                </li>
                 <li>View upload status for each file</li>
                 <li>Clear the upload history</li>
               </ul>
-              
-              <p className="mt-4"><strong>CSV File Requirements:</strong></p>
+
+              <p className="mt-4">
+                <strong>CSV File Requirements:</strong>
+              </p>
               <ul className="list-disc pl-5 space-y-1">
                 <li>Files must be in CSV format (.csv extension)</li>
-                <li>Required columns:
+                <li>
+                  Required columns:
                   <ul className="list-[circle] pl-5 mt-1">
-                    <li>Sale Date (format: DD/MM/YYYY or MM/DD/YYYY or YYYY-MM-DD)</li>
+                    <li>
+                      Sale Date (format: DD/MM/YYYY or MM/DD/YYYY or YYYY-MM-DD)
+                    </li>
                     <li>Sale Type</li>
                     <li>Digital (Yes/No)</li>
                     <li>Customer ID (numeric)</li>
-                    <li>Zip Code</li>
+                    <li>Zip Code (optional)</li>
+                    <li>First Name (optional)</li>
+                    <li>Last Name (optional)</li>
                     <li>Shipping Method</li>
                     <li>Product Name</li>
                     <li>Product Variant</li>
@@ -285,14 +419,28 @@ const CsvUploadForm: React.FC = () => {
                 </li>
                 <li>First row should contain column headers</li>
                 <li>All numeric fields should contain valid numbers</li>
+                <li>
+                  For new customers, only Customer ID is required (Zip Code,
+                  First Name, and Last Name are optional)
+                </li>
+                <li>
+                  For existing customers, any provided fields will update their
+                  record
+                </li>
               </ul>
 
-              <p className="mt-4"><strong>Important Notes:</strong></p>
+              <p className="mt-4">
+                <strong>Important Notes:</strong>
+              </p>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Please remain on this page while files are being uploaded</li>
+                <li>
+                  Please remain on this page while files are being uploaded
+                </li>
                 <li>Files are processed one at a time</li>
                 <li>Large files may take longer to process</li>
-                <li>If you encounter errors, check the file format and try again</li>
+                <li>
+                  If you encounter errors, check the file format and try again
+                </li>
               </ul>
             </div>
           </CardContent>
@@ -307,7 +455,7 @@ const CsvUploadForm: React.FC = () => {
             <CardContent>
               <form onSubmit={handleSubmit}>
                 <div className="mb-4">
-                  <input
+                  <Input
                     type="file"
                     accept=".csv"
                     multiple
@@ -317,7 +465,7 @@ const CsvUploadForm: React.FC = () => {
                     file:rounded-full file:border-0
                     file:text-sm file:font-semibold
                     file:bg-green-50 file:text-green-700
-                    hover:file:bg-green-100"
+                    hover:file:bg-green-100 h-full file:cursor-pointer border-0 shadow-none"
                   />
                   <p className="mt-2 text-sm text-gray-500">
                     Please remain on this page while files are being uploaded.
@@ -351,21 +499,23 @@ const CsvUploadForm: React.FC = () => {
                       <div
                         key={index}
                         className={`p-3 rounded-lg ${
-                          record.status === 'success'
-                            ? 'bg-green-50 border border-green-200'
-                            : 'bg-red-50 border border-red-200'
+                          record.status === "success"
+                            ? "bg-green-50 border border-green-200"
+                            : "bg-red-50 border border-red-200"
                         }`}
                       >
                         <div className="flex justify-between items-start">
                           <div>
                             <p className="font-medium">
-                              {record.filename || 'Upload Attempt'}
+                              {record.filename || "Upload Attempt"}
                             </p>
-                            <p className={`text-sm ${
-                              record.status === 'success'
-                                ? 'text-green-600'
-                                : 'text-red-600'
-                            }`}>
+                            <p
+                              className={`text-sm ${
+                                record.status === "success"
+                                  ? "text-green-600"
+                                  : "text-red-600"
+                              }`}
+                            >
                               {record.message}
                             </p>
                           </div>

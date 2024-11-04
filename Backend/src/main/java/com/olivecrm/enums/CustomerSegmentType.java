@@ -1,10 +1,10 @@
 package com.olivecrm.enums;
 
 public enum CustomerSegmentType {
-    // Recency
-    ACTIVE("Active", "Recency"),
-    DORMANT("Dormant", "Recency"),
-    RETURNING("Returning", "Recency"),
+    // Recency - based on last purchase
+    ACTIVE("Active - Purchased within last 30 days", "Recency"),
+    DORMANT("Dormant - No purchase in last 6 months", "Recency"),
+    RETURNING("Returning - First purchase in over a year", "Recency"),
 
     // Frequency
     FREQUENT("Frequent", "Frequency"),
