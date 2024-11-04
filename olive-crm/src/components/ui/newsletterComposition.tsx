@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import ReactQuill, { Quill } from "react-quill";
+import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
 interface NewsletterCompositionProps {
@@ -16,38 +16,61 @@ const NewsletterComposition: React.FC<NewsletterCompositionProps> = ({
     const [content, setContent] = useState("");
 
     const handleSave = () => {
+        if (
+            title.trim() === "" ||
+            target.trim() === "" ||
+            content.trim() === ""
+        ) {
+            alert("Please fill in all fields.");
+            return;
+        }
         onSave(title, target, content);
     };
 
+    const handleEditorChange = (value: string) => {
+        setContent(value);
+    };
+
+    // Updated toolbar modules
     const modules = {
         toolbar: [
-            [{ header: [1, 2, 3, 4, 5, 6, false] }],
-            ["bold", "italic", "underline", "strike"],
-            [{ color: [] }, { background: [] }],
-            [{ list: "ordered" }, { list: "bullet" }],
-            [{ align: [] }],
-            ["blockquote", "code-block"],
+            [{ header: "1" }, { header: "2" }, { font: [] }],
+            [{ size: [] }],
+            ["bold", "italic", "underline", "strike", "blockquote"],
+            [
+                { list: "ordered" },
+                { list: "bullet" },
+                { indent: "-1" },
+                { indent: "+1" },
+            ],
             ["link", "image", "video"],
             ["clean"],
+            [
+                { align: "" },
+                { align: "center" },
+                { align: "right" },
+                { align: "justify" },
+            ],
         ],
     };
 
+    // Updated formats
     const formats = [
         "header",
+        "font",
+        "size",
         "bold",
         "italic",
         "underline",
         "strike",
-        "color",
-        "background",
+        "blockquote",
         "list",
         "bullet",
-        "align",
-        "blockquote",
-        "code-block",
+        "indent",
         "link",
         "image",
         "video",
+        "align",
     ];
 
     return (
@@ -72,7 +95,7 @@ const NewsletterComposition: React.FC<NewsletterCompositionProps> = ({
             <label className="font-bold text-gray-700">Content:</label>
             <ReactQuill
                 value={content}
-                onChange={setContent}
+                onChange={handleEditorChange}
                 modules={modules}
                 formats={formats}
                 placeholder="Type your content here..."

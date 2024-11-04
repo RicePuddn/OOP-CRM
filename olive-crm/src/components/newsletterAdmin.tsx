@@ -3,13 +3,18 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FilePenLine } from "lucide-react";
-import { Editor } from "@tinymce/tinymce-react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import NewsletterComposition from "./ui/newsletterComposition";
+import Cookies from "js-cookie";
+import { cookies } from "next/headers";
 
 interface Template {
-    newsID: number;
+    id: number;
     title: string;
     content: string;
+    target: string;
+    username: string;
 }
 
 const Newsletter: React.FC = () => {
@@ -21,14 +26,15 @@ const Newsletter: React.FC = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editableTitle, setEditableTitle] = useState("");
     const [editableContent, setEditableContent] = useState("");
+    const [editableTarget, setEditableTarget] = useState("");
 
-    // Fetch templates from the API
     useEffect(() => {
         const fetchTemplates = async () => {
             try {
                 const response = await axios.get(
                     "http://localhost:8080/api/newsletter/all"
                 );
+                console.log("Fetched templates:", response.data); // Check if username is present
                 setTemplates(response.data);
             } catch (error) {
                 console.error("Error fetching templates:", error);
@@ -43,23 +49,49 @@ const Newsletter: React.FC = () => {
         setIsComposing(true);
     };
 
-    const handleSaveTemplate = async (title: string, content: string) => {
-        const newTemplate = { newsID: Date.now(), title, content };
+    const handleSaveTemplate = async ({
+        title,
+        content,
+        target,
+    }: Omit<Template, "id">) => {
+        const username = Cookies.get("username");
 
-        // Update UI immediately
-        setTemplates([...templates, newTemplate]);
-        setIsComposing(false);
+        if (!username) {
+            alert("Username not found. Please login again.");
+            return;
+        }
 
-        // API call to save the new template
+        const newTemplate: Template = {
+            id: Date.now(),
+            title,
+            content,
+            target,
+            username,
+        };
+
         try {
-            await axios.post("http://localhost:8080/api/newsletter/create", {
-                title,
-                content,
-            });
-            alert("Template saved successfully!");
+            await axios.post(
+                "http://localhost:8080/api/newsletter/create",
+                {
+                    title,
+                    content,
+                    username,
+                    target,
+                },
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    withCredentials: true,
+                }
+            );
+
+            setTemplates([...templates, newTemplate]);
+            setIsComposing(false);
+            alert("Template created successfully!");
         } catch (error) {
-            console.error("Error saving template:", error);
-            alert("Failed to save the template.");
+            console.error("Error create template:", error);
+            alert("Failed to create the template.");
         }
     };
 
@@ -72,6 +104,7 @@ const Newsletter: React.FC = () => {
         if (selectedTemplate) {
             setEditableTitle(selectedTemplate.title);
             setEditableContent(selectedTemplate.content);
+            setEditableTarget(selectedTemplate.target);
             setIsEditing(true);
         }
     };
@@ -82,11 +115,13 @@ const Newsletter: React.FC = () => {
                 ...selectedTemplate,
                 title: editableTitle,
                 content: editableContent,
+                username: selectedTemplate.username,
+                target: editableTarget,
             };
-
+            console.log("selectedTemplate: ", selectedTemplate);
             setTemplates((prevTemplates) =>
                 prevTemplates.map((template) =>
-                    template.newsID === selectedTemplate.newsID
+                    template.id === selectedTemplate.id
                         ? updatedTemplate
                         : template
                 )
@@ -94,13 +129,20 @@ const Newsletter: React.FC = () => {
             setSelectedTemplate(updatedTemplate);
             setIsEditing(false);
 
-            // Make an API call to update the template in the backend
             try {
+                // Include `id` in the URL path
                 await axios.put(
-                    `http://localhost:8080/api/newsletter/update?id=${selectedTemplate.newsID}`,
+                    `http://localhost:8080/api/newsletter/update/${selectedTemplate.id}`,
                     {
                         title: editableTitle,
                         content: editableContent,
+                        username: selectedTemplate.username,
+                        target: editableTarget,
+                    },
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
                     }
                 );
                 alert("Template updated successfully!");
@@ -115,17 +157,50 @@ const Newsletter: React.FC = () => {
         setIsEditing(false);
     };
 
-    // Helper function to get the first sentence of content
-    const getFirstLine = (content: string) => {
-        const match = content.match(/.*?(?:\.\s|$)/); // Match up to the first period followed by space or end
-        return match ? match[0] : content;
+    const handleDeleteTemplate = async (templateId: number) => {
+        try {
+            await axios.delete(
+                `http://localhost:8080/api/newsletter/delete/${templateId}`,
+                {
+                    withCredentials: true,
+                }
+            );
+            setTemplates(
+                templates.filter((template) => template.id !== templateId)
+            );
+            setSelectedTemplate(null);
+            alert("Template deleted successfully!");
+        } catch (error) {
+            console.error("Error deleting template:", error);
+            alert("Failed to delete the template.");
+        }
     };
+
+    const getFirstLine = (content: string | undefined) => {
+        if (!content) {
+            return "";
+        }
+
+        const plainText = content.replace(/<[^>]*>/g, "");
+        const match = plainText.match(/.*?\./);
+        return match ? match[0] : plainText;
+    };
+
+    const loggedInUsername = Cookies.get("username");
+    console.log("loggedInUsername: ", loggedInUsername);
 
     return (
         <div className="p-4">
             {isComposing ? (
                 <NewsletterComposition
-                    onSave={handleSaveTemplate}
+                    onSave={(title, target, content) =>
+                        handleSaveTemplate({
+                            title,
+                            target,
+                            content,
+                            username: Cookies.get("username") || "",
+                        })
+                    }
                     onCancel={handleCancelComposition}
                 />
             ) : selectedTemplate ? (
@@ -133,15 +208,21 @@ const Newsletter: React.FC = () => {
                     <div className="flex justify-between mb-4">
                         <button
                             onClick={() => setSelectedTemplate(null)}
-                            className="text-2xl"
+                            className="text-xl"
                         >
                             &larr;
                         </button>
                         {!isEditing && (
-                            <FilePenLine
-                                onClick={startEditing}
-                                className="h-6 w-6 text-black cursor-pointer mr-3"
-                            />
+                            <>
+                                {console.log(
+                                    "selectedtemplate username" +
+                                        selectedTemplate.username
+                                )}
+                                <FilePenLine
+                                    onClick={startEditing}
+                                    className="h-6 w-6 text-black cursor-pointer mr-3"
+                                />
+                            </>
                         )}
                     </div>
                     <h2 className="text-2xl font-bold mb-4">
@@ -158,27 +239,74 @@ const Newsletter: React.FC = () => {
                             selectedTemplate.title
                         )}
                     </h2>
+                    <label className="font-bold text-gray-700">Target:</label>
                     <div className="text-gray-700 mb-4">
                         {isEditing ? (
-                            <Editor
-                                apiKey="whnj4jyxxe0cyg9z1oh4ripnr09j8m7v73ujqir4fboablwq"
-                                value={editableContent}
-                                init={{
-                                    height: 400,
-                                    menubar: false,
-                                    plugins: [
-                                        "advlist autolink lists link image charmap print preview anchor",
-                                        "searchreplace visualblocks code fullscreen",
-                                        "insertdatetime media table paste code help wordcount",
-                                    ],
-                                    toolbar:
-                                        "undo redo | formatselect | bold italic backcolor | \
-                                        alignleft aligncenter alignright alignjustify | \
-                                        bullist numlist outdent indent | removeformat | help",
-                                }}
-                                onEditorChange={(content) =>
-                                    setEditableContent(content)
+                            <input
+                                type="text"
+                                value={editableTarget}
+                                onChange={(e) =>
+                                    setEditableTarget(e.target.value)
                                 }
+                                className="w-full border border-gray-300 rounded p-2 mb-4"
+                            />
+                        ) : (
+                            selectedTemplate.target
+                        )}
+                    </div>
+                    <div className="text-gray-700 mb-4">
+                        {isEditing ? (
+                            <ReactQuill
+                                value={editableContent}
+                                onChange={setEditableContent}
+                                modules={{
+                                    toolbar: [
+                                        [
+                                            { header: "1" },
+                                            { header: "2" },
+                                            { font: [] },
+                                        ],
+                                        [{ size: [] }],
+                                        [
+                                            "bold",
+                                            "italic",
+                                            "underline",
+                                            "strike",
+                                            "blockquote",
+                                        ],
+                                        [
+                                            { list: "ordered" },
+                                            { list: "bullet" },
+                                            { indent: "-1" },
+                                            { indent: "+1" },
+                                        ],
+                                        ["link", "image", "video"],
+                                        ["clean"],
+                                        [
+                                            { align: "" },
+                                            { align: "center" },
+                                            { align: "right" },
+                                            { align: "justify" },
+                                        ],
+                                    ],
+                                }}
+                                formats={[
+                                    "header",
+                                    "font",
+                                    "size",
+                                    "bold",
+                                    "italic",
+                                    "underline",
+                                    "strike",
+                                    "blockquote",
+                                    "list",
+                                    "bullet",
+                                    "indent",
+                                    "link",
+                                    "image",
+                                    "video",
+                                    "align",
+                                ]}
                             />
                         ) : (
                             <div
@@ -204,6 +332,22 @@ const Newsletter: React.FC = () => {
                             </button>
                         </div>
                     )}
+
+                    {!isEditing &&
+                        selectedTemplate.username === loggedInUsername && (
+                            <div className="flex justify-center mt-4">
+                                <button
+                                    onClick={() => {
+                                        handleDeleteTemplate(
+                                            selectedTemplate.id
+                                        );
+                                    }}
+                                    className="bg-red-600 text-white py-2 px-4 rounded "
+                                >
+                                    Delete Template
+                                </button>{" "}
+                            </div>
+                        )}
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -215,17 +359,19 @@ const Newsletter: React.FC = () => {
                         <p className="mt-4 font-bold">Add New Template</p>
                     </div>
 
-                    {/* Render Template List */}
                     {templates.map((template) => (
                         <div
-                            key={template.newsID}
+                            key={template.id}
                             className="bg-white shadow-lg rounded-lg p-6 text-center transition-transform transform hover:scale-105 cursor-pointer"
-                            onClick={() => setSelectedTemplate(template)}
+                            onClick={() => {
+                                console.log("Selected template:", template);
+                                setSelectedTemplate(template);
+                            }}
                         >
                             <h3 className="text-lg font-bold mb-2">
                                 {template.title}
                             </h3>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-600 break-words">
                                 {getFirstLine(template.content)}
                             </p>
                         </div>
