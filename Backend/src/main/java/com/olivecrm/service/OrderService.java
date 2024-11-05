@@ -94,12 +94,9 @@ public class OrderService {
             order.setOrderMethod("Online - Website");
             order.setShippingMethod("Standard Delivery");
 
-            return orderRepository.save(order);
-        }
+            Order savedOrder = orderRepository.save(order);
 
-        private LocalDate getAnalysisReferenceDate() {
-            LocalDate mostRecentOrder = orderRepository.findMostRecentOrderDate();
-            return mostRecentOrder != null ? mostRecentOrder : LocalDate.now();
+            return savedOrder;
         }
 
         public List<TopProductDTO> getTopThreeMostPurchasedProducts(Integer customerId) {
@@ -197,50 +194,51 @@ public class OrderService {
         }
 
         // Recency-based segmentation
+        private LocalDate getAnalysisReferenceDate() {
+            LocalDate mostRecentOrder = orderRepository.findMostRecentOrderDate();
+            return mostRecentOrder != null ? mostRecentOrder : LocalDate.now();
+        }
+    
+        // Updated recency-based segmentation methods
         public CustomerSegmentDTO getActiveCustomers() {
-                LocalDate referenceDate = getAnalysisReferenceDate();
-                LocalDate thirtyDaysAgo = referenceDate.minusDays(30);
-                List<Integer> customerIds = orderRepository.findActiveCustomers(thirtyDaysAgo);
-                return new CustomerSegmentDTO(customerIds, CustomerSegmentType.ACTIVE, "Recency");
+            LocalDate referenceDate = getAnalysisReferenceDate();
+            LocalDate thirtyDaysAgo = referenceDate.minusDays(30);
+            
+            List<Integer> customerIds = orderRepository.findActiveCustomers(
+                thirtyDaysAgo,
+                referenceDate
+            );
+            return new CustomerSegmentDTO(customerIds, CustomerSegmentType.ACTIVE, "Recency");
         }
-
-        public CustomerSegmentDTO getDormantCustomers() {
-                LocalDate referenceDate = getAnalysisReferenceDate();
-                LocalDate sixMonthsAgo = referenceDate.minusMonths(6);
-                
-                // Get base dormant customers
-                List<Integer> dormantCustomers = orderRepository.findDormantCustomers(sixMonthsAgo);
-                
-                // Get active customers to exclude
-                List<Integer> activeCustomers = getActiveCustomers().getCustomerIds();
-                
-                // Get returning customers to exclude
-                List<Integer> returningCustomers = getReturningCustomers().getCustomerIds();
-                
-                // Remove active and returning customers from dormant list
-                dormantCustomers.removeAll(activeCustomers);
-                dormantCustomers.removeAll(returningCustomers);
-                
-                return new CustomerSegmentDTO(dormantCustomers, CustomerSegmentType.DORMANT, "Recency");
-        }
-
+    
         public CustomerSegmentDTO getReturningCustomers() {
-                LocalDate referenceDate = getAnalysisReferenceDate();
-                LocalDate oneYearAgo = referenceDate.minusYears(1);
-                LocalDate twoYearsAgo = referenceDate.minusYears(2);
-                
-                // Get base returning customers
-                List<Integer> returningCustomers = orderRepository.findReturningCustomers(oneYearAgo, twoYearsAgo);
-                
-                // Get active customers to exclude
-                List<Integer> activeCustomers = getActiveCustomers().getCustomerIds();
-                
-                // Remove active customers from returning list
-                returningCustomers.removeAll(activeCustomers);
-                
-                return new CustomerSegmentDTO(returningCustomers, CustomerSegmentType.RETURNING, "Recency");
+            LocalDate referenceDate = getAnalysisReferenceDate();
+            LocalDate thirtyDaysAgo = referenceDate.minusDays(30);
+            LocalDate oneYearAgo = referenceDate.minusYears(1);
+            
+            List<Integer> returningCustomers = orderRepository.findReturningCustomers(
+                thirtyDaysAgo,
+                oneYearAgo,
+                referenceDate
+            );
+            
+            return new CustomerSegmentDTO(returningCustomers, CustomerSegmentType.RETURNING, "Recency");
         }
-
+    
+        public CustomerSegmentDTO getDormantCustomers() {
+            LocalDate referenceDate = getAnalysisReferenceDate();
+            
+            // Get all three customer lists using the reference date
+            List<Integer> allCustomers = orderRepository.findAllCustomersWithPurchases(referenceDate);
+            List<Integer> activeCustomers = getActiveCustomers().getCustomerIds();
+            List<Integer> returningCustomers = getReturningCustomers().getCustomerIds();
+            
+            // Remove active and returning customers to get dormant ones
+            allCustomers.removeAll(activeCustomers);
+            allCustomers.removeAll(returningCustomers);
+            
+            return new CustomerSegmentDTO(allCustomers, CustomerSegmentType.DORMANT, "Recency");
+        }
         // Updated Frequency-based segmentation for lifetime analysis
         public CustomerSegmentDTO getFrequentCustomers() {
                 List<Integer> customerIds = orderRepository.findFrequentCustomers();

@@ -42,16 +42,32 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         LocalDate findMostRecentOrderDate();
 
         // Recency Queries
-        @Query("SELECT DISTINCT o.customer.cID FROM Order o WHERE o.salesDate >= :thirtyDaysAgo")
-        List<Integer> findActiveCustomers(@Param("thirtyDaysAgo") LocalDate thirtyDaysAgo);
+        @Query("SELECT DISTINCT o.customer.cID FROM Order o " +
+           "WHERE o.salesDate >= :thirtyDaysAgo " +
+           "AND o.salesDate <= :referenceDate")
+       List<Integer> findActiveCustomers(
+              @Param("thirtyDaysAgo") LocalDate thirtyDaysAgo,
+              @Param("referenceDate") LocalDate referenceDate);
 
-        @Query("SELECT DISTINCT o.customer.cID FROM Order o WHERE o.salesDate <= :sixMonthsAgo")
-        List<Integer> findDormantCustomers(@Param("sixMonthsAgo") LocalDate sixMonthsAgo);
+       @Query("SELECT DISTINCT o.customer.cID FROM Order o " +
+              "WHERE o.salesDate > :thirtyDaysAgo " +
+              "AND o.salesDate <= :oneYearAgo " +
+              "AND o.salesDate <= :referenceDate " +
+              "AND o.customer.cID NOT IN (" +
+              "    SELECT o2.customer.cID FROM Order o2 " +
+              "    WHERE o2.salesDate > :thirtyDaysAgo " +
+              "    AND o2.salesDate <= :referenceDate" +
+              ")")
+       List<Integer> findReturningCustomers(
+              @Param("thirtyDaysAgo") LocalDate thirtyDaysAgo,
+              @Param("oneYearAgo") LocalDate oneYearAgo,
+              @Param("referenceDate") LocalDate referenceDate
+       );
 
-        @Query("SELECT DISTINCT o.customer.cID FROM Order o WHERE o.salesDate <= :oneYearAgo AND o.salesDate > :twoYearsAgo")
-        List<Integer> findReturningCustomers(
-                        @Param("oneYearAgo") LocalDate oneYearAgo,
-                        @Param("twoYearsAgo") LocalDate twoYearsAgo);
+       // Updated query to get all customers with purchases up to reference date
+       @Query("SELECT DISTINCT o.customer.cID FROM Order o WHERE o.salesDate <= :referenceDate")
+       List<Integer> findAllCustomersWithPurchases(@Param("referenceDate") LocalDate referenceDate);
+
 
         // Updated Frequency Queries for lifetime analysis
         @Query("SELECT DISTINCT c.cID FROM Order o1 " +
