@@ -44,6 +44,8 @@ export default function Newsletter() {
     const [receiverEmail, setReceiverEmail] = useState("");
     const [emailContent, setEmailContent] = useState("");
     const [editableFields, setEditableFields] = useState<string[]>([]);
+    const [baseContent, setBaseContent] = useState("");
+
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
         null
     );
@@ -153,14 +155,6 @@ export default function Newsletter() {
         }
     }, [topProducts, selectedCustomer]);
 
-    const handleTemplateClick = (template: Template) => {
-        setSelectedTemplate(template);
-        setEmailContent(template.content);
-
-        // Extract placeholders from the template content
-        const matches = template.content.match(/\[([^\]]+)\]/g) || [];
-        setEditableFields(matches.map((match) => match.replace(/[\[\]]/g, ""))); // Remove brackets
-    };
     const handleCustomerSelect = (customerName: string) => {
         const customer = customers.find((c) => c.name === customerName);
         setSelectedCustomer(customer);
@@ -172,12 +166,82 @@ export default function Newsletter() {
         }
     };
     const handleInputChange = (field: string, value: string) => {
-        const regex = new RegExp(`\\[${field}\\]`, "g");
-        let updatedContent = emailContent.replace(regex, value);
-        setEmailContent(updatedContent);
+        if (
+            !field.toLowerCase().includes("product name") &&
+            !field.toLowerCase().includes("product price") &&
+            !field.toLowerCase().includes("customer name")
+        ) {
+            const regex = new RegExp(`\\[${field}\\]`, "g");
+            setEmailContent((prevContent) => prevContent.replace(regex, value));
+        }
     };
 
-    const handleSendEmail = () => {
+    const handleTemplateClick = (template: Template) => {
+        setSelectedTemplate(template);
+        setBaseContent(template.content);
+        setEmailContent(template.content);
+
+        const matches = template.content.match(/\[([^\]]+)\]/g) || [];
+        setEditableFields(matches.map((match) => match.replace(/[\[\]]/g, "")));
+    };
+
+    const parseHtmlToText = (html) => {
+        let text = html.replace(/<br\s*\/?>/gi, "\n");
+
+        text = text.replace(/<\/?p>/gi, "\n");
+
+        text = text.replace(/<p class="ql-indent-1">/gi, "\n    ");
+
+        text = text.replace(/<[^>]*>/g, "");
+
+        text = text.replace(/\n\s*\n\s*\n/g, "\n\n");
+
+        text = text.trim();
+
+        return text;
+    };
+
+    const sendEmail = async () => {
+        if (!receiverEmail || !emailContent) {
+            console.error("Receiver email or email content is missing.");
+            return;
+        }
+
+        try {
+            const formattedContent = parseHtmlToText(emailContent);
+
+            if (formattedContent.length > 1800) {
+                console.warn("Email content is too long for a GET request.");
+                alert("Email content is too long for a GET request.");
+                return;
+            }
+
+            const encodedSubject = encodeURIComponent(
+                selectedTemplate?.title || "Newsletter"
+            );
+            const encodedMessage = encodeURIComponent(formattedContent);
+
+            const apiUrl = `http://localhost:8080/api/send-email?to=${encodeURIComponent(
+                receiverEmail
+            )}&subject=${encodedSubject}&message=${encodedMessage}`;
+
+            const response = await axios.get(apiUrl);
+
+            if (response.status === 200) {
+                console.log("Email sent successfully:", response.data);
+                alert("Email sent successfully!");
+            } else {
+                console.error("Error sending email:", response.data);
+                alert("Failed to send email.");
+            }
+        } catch (error) {
+            console.error("Error during email sending:", error);
+            alert("An error occurred while trying to send the email.");
+        }
+    };
+
+    const handleSendEmail = async () => {
+        await sendEmail();
         setIsModalOpen(true);
     };
 
@@ -278,12 +342,54 @@ export default function Newsletter() {
                                             </Select>
                                         </div>
                                     )}
-                                    <div
-                                        className="text-sm text-gray-600"
-                                        dangerouslySetInnerHTML={{
-                                            __html: emailContent,
-                                        }}
-                                    ></div>
+                                    <div className="flex flex-wrap gap-2 items-center">
+                                        {editableFields.map((field) => {
+                                            if (
+                                                !field
+                                                    .toLowerCase()
+                                                    .includes("product name") &&
+                                                !field
+                                                    .toLowerCase()
+                                                    .includes(
+                                                        "product price"
+                                                    ) &&
+                                                !field
+                                                    .toLowerCase()
+                                                    .includes("customer name")
+                                            ) {
+                                                return (
+                                                    <span
+                                                        key={field}
+                                                        contentEditable
+                                                        onBlur={(e) =>
+                                                            handleInputChange(
+                                                                field,
+                                                                e.target
+                                                                    .textContent ||
+                                                                    ""
+                                                            )
+                                                        }
+                                                        className="border border-slate-400 rounded-sm p-1 mx-1"
+                                                        suppressContentEditableWarning={
+                                                            true
+                                                        }
+                                                    >
+                                                        [{field}]
+                                                    </span>
+                                                );
+                                            }
+                                            return null;
+                                        })}
+                                    </div>
+
+                                    {emailContent && (
+                                        <div
+                                            className="text-sm text-gray-600"
+                                            dangerouslySetInnerHTML={{
+                                                __html: emailContent,
+                                            }}
+                                        ></div>
+                                    )}
                                     <button
                                         className="bg-green-800 hover:bg-green-900 text-white font-bold py-2 px-4 rounded-lg mt-5"
                                         onClick={handleSendEmail}
