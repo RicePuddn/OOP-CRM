@@ -52,6 +52,8 @@ export default function Newsletter() {
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [topProducts, setTopProducts] = useState<Product[]>([]);
 
+    const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
+
     useEffect(() => {
         const fetchTemplates = async () => {
             try {
@@ -128,12 +130,7 @@ export default function Newsletter() {
             selectedCustomer.cid !== 0 &&
             topProducts.length > 0
         ) {
-            console.log(
-                "Handling selected customer with top products:",
-                topProducts
-            );
-
-            let updatedContent = selectedTemplate?.content || "";
+            let updatedContent = baseContent;
 
             updatedContent = updatedContent.replace(
                 "[Customer Name]",
@@ -151,9 +148,14 @@ export default function Newsletter() {
                 );
             });
 
+            Object.entries(fieldValues).forEach(([field, value]) => {
+                const regex = new RegExp(`\\[${field}\\]`, "g");
+                updatedContent = updatedContent.replace(regex, value);
+            });
+
             setEmailContent(updatedContent);
         }
-    }, [topProducts, selectedCustomer]);
+    }, [topProducts, selectedCustomer, fieldValues, baseContent]);
 
     const handleCustomerSelect = (customerName: string) => {
         const customer = customers.find((c) => c.name === customerName);
@@ -171,8 +173,20 @@ export default function Newsletter() {
             !field.toLowerCase().includes("product price") &&
             !field.toLowerCase().includes("customer name")
         ) {
-            const regex = new RegExp(`\\[${field}\\]`, "g");
-            setEmailContent((prevContent) => prevContent.replace(regex, value));
+            setFieldValues((prev) => ({
+                ...prev,
+                [field]: value,
+            }));
+            let updatedContent = baseContent;
+
+            Object.entries({ ...fieldValues, [field]: value }).forEach(
+                ([fieldName, fieldValue]) => {
+                    const regex = new RegExp(`\\[${fieldName}\\]`, "g");
+                    updatedContent = updatedContent.replace(regex, fieldValue);
+                }
+            );
+
+            setEmailContent(updatedContent);
         }
     };
 
@@ -180,6 +194,7 @@ export default function Newsletter() {
         setSelectedTemplate(template);
         setBaseContent(template.content);
         setEmailContent(template.content);
+        setFieldValues({});
 
         const matches = template.content.match(/\[([^\]]+)\]/g) || [];
         setEditableFields(matches.map((match) => match.replace(/[\[\]]/g, "")));
@@ -374,7 +389,8 @@ export default function Newsletter() {
                                                             true
                                                         }
                                                     >
-                                                        [{field}]
+                                                        {fieldValues[field] ||
+                                                            `[${field}]`}
                                                     </span>
                                                 );
                                             }
