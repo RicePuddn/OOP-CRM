@@ -10,8 +10,11 @@ export default function SalesMetricsPage() {
   const role = Cookies.get("role");
 
   useEffect(() => {
-    if (role) {
+    if (role === "SALES" || role === "MARKETING") {
       router.push("/dashboard");
+    }
+    if (role === "ADMIN") {
+      router.push("/admin");
     }
   }, [role, router]);
 
