@@ -11,6 +11,7 @@ CREATE TABLE ORDERS (
     shipping_method VARCHAR(255) NOT NULL
 );
 CREATE TABLE EMPLOYEES (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) PRIMARY KEY,
     first_name VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL,
@@ -24,6 +25,14 @@ CREATE TABLE PRODUCT (
     individualPrice DECIMAL(10, 2)
 );
 CREATE TABLE CUSTOMER (
-    cID INT PRIMARY KEY,
-    zipcode VARCHAR(10)
+    cID INT PRIMARY KEY AUTO_INCREMENT,
+    zipcode VARCHAR(10),
+    cName VARCHAR(255) NOT NULL,
+);
+CREATE TABLE newsletter (
+	newsID int NOT NULL auto_increment primary key,
+    title varchar(255) NOT NULL unique,
+	username VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL, 
+    FOREIGN KEY (username) REFERENCES employees(username)
 );

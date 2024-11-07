@@ -3,9 +3,7 @@ package com.olivecrm.controller;
 import com.olivecrm.dto.EmployeeDTO;
 import com.olivecrm.entity.Employee;
 import com.olivecrm.service.EmployeeService;
-
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,8 +55,8 @@ public class EmployeeController {
                 userDTO.getRole() != null ? mapRole(userDTO.getRole()) : null;
 
             Employee updateUser = employeeService.updateUser(
-                id, userDTO.getUsername(), userDTO.getFirst_name(), userDTO.getLast_name(),
-                userDTO.getPassword(), userRole);
+                id, userDTO.getUsername(), userDTO.getFirst_name(),
+                userDTO.getLast_name(), userDTO.getPassword(), userRole);
             return ResponseEntity.ok(updateUser);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
