@@ -33,6 +33,32 @@ public class OrderService {
 
     @Autowired private ProductRepository productRepository;
 
+    public static class SalesMetrics {
+        private long totalSales;
+        private double totalAmount;
+        private double averageOrderValue;
+
+        public SalesMetrics(List<Order> orders) {
+            this.totalSales = orders.size();
+            this.totalAmount = orders.stream()
+                    .mapToDouble(Order::getTotalCost)
+                    .sum();
+            this.averageOrderValue = totalSales > 0 ? totalAmount / totalSales : 0;
+        }
+
+        public long getTotalSales() {
+            return totalSales;
+        }
+
+        public double getTotalAmount() {
+            return totalAmount;
+        }
+
+        public double getAverageOrderValue() {
+            return averageOrderValue;
+        }
+    }
+
     public Order createOrder(OrderCreateDTO orderDTO) {
         Customer customer;
 
@@ -194,12 +220,27 @@ public class OrderService {
     }
 
     public Page<Order>
-    getOrdersByFilters(Integer customerId, String salesType, Double totalCost,
+    getOrdersByFilters(Integer customerId, String salesType, List<Integer> productIds,
                        LocalDate singleDate, LocalDate startDate,
                        LocalDate endDate, Pageable pageable) {
-        return orderRepository.findByFilters(customerId, salesType, totalCost,
+        return orderRepository.findByFilters(customerId, salesType, productIds,
                                              singleDate, startDate, endDate,
                                              pageable);
+    }
+
+    public SalesMetrics getMetrics(Integer customerId, String salesType, List<Integer> productIds, LocalDate startDate, LocalDate endDate) {
+        // Get all orders without pagination for metrics calculation
+        Page<Order> filteredOrders = getOrdersByFilters(
+            customerId,
+            salesType,
+            productIds,
+            null,  // singleDate
+            startDate,
+            endDate,
+            Pageable.unpaged());
+        List<Order> orders = filteredOrders.getContent();
+        
+        return new SalesMetrics(orders);
     }
 
     // Recency-based segmentation

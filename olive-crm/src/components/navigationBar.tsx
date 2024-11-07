@@ -10,6 +10,7 @@ import {
     User2,
     UserRoundCog,
     UsersRound,
+    LineChart,
 } from "lucide-react";
 
 import {
@@ -87,6 +88,14 @@ export default function AppSidebar() {
                 title: "Newsletter",
                 url: "/newsletter-marketing",
                 icon: Newspaper,
+            }
+        );
+    } else if (role === "SALES") {
+        items.push(
+            {
+                title: "Sales Metrics",
+                url: "/sales-metrics",
+                icon: LineChart,
             }
         );
     }
