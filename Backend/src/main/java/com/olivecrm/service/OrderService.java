@@ -194,10 +194,10 @@ public class OrderService {
     }
 
     // Recency-based segmentation
+    
+    // Always use current date as reference point
     private LocalDate getAnalysisReferenceDate() {
-        // Get the most recent order date from the repository
-        LocalDate mostRecentOrder = orderRepository.findMostRecentOrderDate();
-        return mostRecentOrder != null ? mostRecentOrder : LocalDate.now();
+        return LocalDate.now();
     }
 
     // Updated recency-based segmentation methods
