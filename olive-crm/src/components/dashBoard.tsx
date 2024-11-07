@@ -246,7 +246,7 @@ export default function AllCustomerPurchaseHistory() {
           <CardContent>
             <div
               style={{
-                width: "100%",
+                width: "full",
                 height: "100%",
                 overflowX: "auto",
                 overflowY: "auto",
@@ -361,7 +361,7 @@ export default function AllCustomerPurchaseHistory() {
             </div>
             <div
               style={{
-                width: "100%",
+                width: "full",
                 height: "100%",
                 overflowX: "auto",
                 overflowY: "auto",
