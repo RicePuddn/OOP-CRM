@@ -49,17 +49,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
               @Param("thirtyDaysAgo") LocalDate thirtyDaysAgo,
               @Param("referenceDate") LocalDate referenceDate);
 
-       @Query("SELECT DISTINCT o.customer.cID FROM Order o " +
-              "WHERE o.salesDate > :thirtyDaysAgo " +
-              "AND o.salesDate <= :oneYearAgo " +
-              "AND o.salesDate <= :referenceDate " +
-              "AND o.customer.cID NOT IN (" +
-              "    SELECT o2.customer.cID FROM Order o2 " +
-              "    WHERE o2.salesDate > :thirtyDaysAgo " +
-              "    AND o2.salesDate <= :referenceDate" +
-              ")")
+       @Query("SELECT DISTINCT c.cID FROM Order o " +
+              "JOIN o.customer c " +
+              "GROUP BY c.cID " +
+              "HAVING COUNT(o) > 1 " +  // More than one order
+              "AND MAX(o.salesDate) <= :referenceDate " +  // Up to reference date
+              "AND MAX(o.salesDate) >= :oneYearAgo")  // At least one order in last year
        List<Integer> findReturningCustomers(
-              @Param("thirtyDaysAgo") LocalDate thirtyDaysAgo,
               @Param("oneYearAgo") LocalDate oneYearAgo,
               @Param("referenceDate") LocalDate referenceDate
        );

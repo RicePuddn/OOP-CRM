@@ -194,11 +194,22 @@ public class OrderController {
     public ResponseEntity<List<CustomerSegmentDTO>> getRecencySegments() {
         logger.info("Fetching recency-based customer segments");
         try {
+            // Get returning customers first to ensure they're properly identified
+            CustomerSegmentDTO returningCustomers = orderService.getReturningCustomers();
+            CustomerSegmentDTO activeCustomers = orderService.getActiveCustomers();
+            CustomerSegmentDTO dormantCustomers = orderService.getDormantCustomers();
+            
             List<CustomerSegmentDTO> segments = List.of(
-                orderService.getActiveCustomers(),    // Customers who made a purchase within last 30 days
-                orderService.getDormantCustomers(),   // Customers who haven't made a purchase in last 6 months
-                orderService.getReturningCustomers()  // Customers who recently made their first purchase in over a year
+                activeCustomers,
+                returningCustomers,
+                dormantCustomers
             );
+            
+            logger.info("Found {} active, {} returning, and {} dormant customers",
+                activeCustomers.getCustomerCount(),
+                returningCustomers.getCustomerCount(),
+                dormantCustomers.getCustomerCount());
+                
             return ResponseEntity.ok(segments);
         } catch (Exception e) {
             logger.error("Error fetching recency segments", e);

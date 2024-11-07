@@ -4,7 +4,7 @@ public enum CustomerSegmentType {
     // Recency - based on last purchase
     ACTIVE("Active - Purchased within last 30 days", "Recency"),
     DORMANT("Dormant - No purchase in last 6 months", "Recency"),
-    RETURNING("Returning - First purchase in over a year", "Recency"),
+    RETURNING("Returning - Has purchases in last year but none in last 30 days", "Recency"),
 
     // Frequency
     FREQUENT("Frequent", "Frequency"),
