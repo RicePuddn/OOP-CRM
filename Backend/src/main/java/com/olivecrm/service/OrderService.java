@@ -35,8 +35,6 @@ public class OrderService {
     @Autowired
     private ProductRepository productRepository;
 
-
-
     public static class SalesMetrics {
         private long totalSales;
         private double totalAmount;
@@ -62,8 +60,6 @@ public class OrderService {
             return averageOrderValue;
         }
     }
-
-
 
     public Order createOrder(OrderCreateDTO orderDTO) {
         Customer customer;
@@ -214,23 +210,19 @@ public class OrderService {
     public Page<Order> getOrdersByFilters(
                     Integer customerId,
                     String salesType,
-                    Double totalCost,
+                    List<Integer> productIds,
                     LocalDate singleDate,
                     LocalDate startDate,
                     LocalDate endDate,
                     Pageable pageable) {
-            return orderRepository.findByFilters(customerId, salesType, totalCost, singleDate, startDate, endDate,
+            return orderRepository.findByFilters(customerId, salesType, productIds, singleDate, startDate, endDate,
                             pageable);
     }
 
-    // Recency-based segmentation
-    
-    // Always use current date as reference point
     private LocalDate getAnalysisReferenceDate() {
         return LocalDate.now();
     }
 
-    // Updated recency-based segmentation methods
     public CustomerSegmentDTO getActiveCustomers() {
         LocalDate referenceDate = getAnalysisReferenceDate();
         LocalDate thirtyDaysAgo = referenceDate.minusDays(30);
@@ -254,7 +246,6 @@ public class OrderService {
         return new CustomerSegmentDTO(returningCustomers, CustomerSegmentType.RETURNING, "Recency");
     }
 
-
     public SalesMetrics getMetrics(Integer customerId, String salesType, List<Integer> productIds, LocalDate startDate, LocalDate endDate) {
         // Get all orders without pagination for metrics calculation
         Page<Order> filteredOrders = getOrdersByFilters(
@@ -269,7 +260,6 @@ public class OrderService {
         
         return new SalesMetrics(orders);
     }
-
 
     public CustomerSegmentDTO getDormantCustomers() {
         LocalDate referenceDate = getAnalysisReferenceDate();
@@ -286,7 +276,6 @@ public class OrderService {
         return new CustomerSegmentDTO(allCustomers, CustomerSegmentType.DORMANT, "Recency");
     }
 
-    // Updated Frequency-based segmentation for lifetime analysis
     public CustomerSegmentDTO getFrequentCustomers() {
             List<Integer> customerIds = orderRepository.findFrequentCustomers();
             return new CustomerSegmentDTO(customerIds, CustomerSegmentType.FREQUENT, "Frequency");
@@ -320,78 +309,77 @@ public class OrderService {
             return new CustomerSegmentDTO(customerIds, CustomerSegmentType.ONE_TIME, "Frequency");
     }
 
-        // Monetary-based segmentation with edge case handling
-        public List<CustomerSegmentDTO> getMonetarySegments() {
-                List<Object[]> customerSpending = orderRepository.getCustomerTotalSpending();
-                List<CustomerSegmentDTO> segments = new ArrayList<>();
+    public List<CustomerSegmentDTO> getMonetarySegments() {
+            List<Object[]> customerSpending = orderRepository.getCustomerTotalSpending();
+            List<CustomerSegmentDTO> segments = new ArrayList<>();
 
-                // Handle empty or null case
-                if (customerSpending == null || customerSpending.isEmpty()) {
-                    // Return empty segments for all monetary types
-                    segments.add(new CustomerSegmentDTO(
-                            new ArrayList<>(),
-                            CustomerSegmentType.HIGH_VALUE,
-                            "Monetary"));
-                    segments.add(new CustomerSegmentDTO(
-                            new ArrayList<>(),
-                            CustomerSegmentType.MID_TIER,
-                            "Monetary"));
-                    segments.add(new CustomerSegmentDTO(
-                            new ArrayList<>(),
-                            CustomerSegmentType.LOW_SPEND,
-                            "Monetary"));
-                    return segments;
-                }
-
-                // Sort customers by spending
-                List<Integer> sortedCustomers = customerSpending.stream()
-                        .sorted((a, b) -> ((Double) b[1]).compareTo((Double) a[1]))
-                        .map(arr -> (Integer) arr[0])
-                        .collect(Collectors.toList());
-
-                int totalCustomers = sortedCustomers.size();
-
-                // Calculate segment sizes with minimum of 1
-                int topTenPercent = Math.max(1, (int) Math.ceil(totalCustomers * 0.1));
-                int bottomTwentyPercent = Math.max(1, (int) Math.ceil(totalCustomers * 0.2));
-
-                // Adjust indices to prevent overlap for small customer counts
-                if (totalCustomers <= 5) {
-                    // For very small numbers, split evenly
-                    topTenPercent = 1;
-                    bottomTwentyPercent = 1;
-                }
-
-                // Ensure midTier has at least one customer if possible
-                int midTierStart = Math.min(topTenPercent, totalCustomers);
-                int midTierEnd = Math.max(midTierStart, 
-                                        Math.min(totalCustomers - bottomTwentyPercent, totalCustomers - 1));
-
-                // High-Value (top 10% or at least 1 customer)
+            // Handle empty or null case
+            if (customerSpending == null || customerSpending.isEmpty()) {
+                // Return empty segments for all monetary types
                 segments.add(new CustomerSegmentDTO(
-                        sortedCustomers.subList(0, midTierStart),
+                        new ArrayList<>(),
                         CustomerSegmentType.HIGH_VALUE,
                         "Monetary"));
-
-                // Mid-Tier
-                if (midTierStart < midTierEnd) {
-                    segments.add(new CustomerSegmentDTO(
-                            sortedCustomers.subList(midTierStart, midTierEnd),
-                            CustomerSegmentType.MID_TIER,
-                            "Monetary"));
-                } else {
-                    segments.add(new CustomerSegmentDTO(
-                            new ArrayList<>(),
-                            CustomerSegmentType.MID_TIER,
-                            "Monetary"));
-                }
-
-                // Low-Spend (bottom 20% or at least 1 customer)
                 segments.add(new CustomerSegmentDTO(
-                        sortedCustomers.subList(Math.max(midTierEnd, 0), totalCustomers),
+                        new ArrayList<>(),
+                        CustomerSegmentType.MID_TIER,
+                        "Monetary"));
+                segments.add(new CustomerSegmentDTO(
+                        new ArrayList<>(),
                         CustomerSegmentType.LOW_SPEND,
                         "Monetary"));
-
                 return segments;
-        }
+            }
+
+            // Sort customers by spending
+            List<Integer> sortedCustomers = customerSpending.stream()
+                    .sorted((a, b) -> ((Double) b[1]).compareTo((Double) a[1]))
+                    .map(arr -> (Integer) arr[0])
+                    .collect(Collectors.toList());
+
+            int totalCustomers = sortedCustomers.size();
+
+            // Calculate segment sizes with minimum of 1
+            int topTenPercent = Math.max(1, (int) Math.ceil(totalCustomers * 0.1));
+            int bottomTwentyPercent = Math.max(1, (int) Math.ceil(totalCustomers * 0.2));
+
+            // Adjust indices to prevent overlap for small customer counts
+            if (totalCustomers <= 5) {
+                // For very small numbers, split evenly
+                topTenPercent = 1;
+                bottomTwentyPercent = 1;
+            }
+
+            // Ensure midTier has at least one customer if possible
+            int midTierStart = Math.min(topTenPercent, totalCustomers);
+            int midTierEnd = Math.max(midTierStart, 
+                                    Math.min(totalCustomers - bottomTwentyPercent, totalCustomers - 1));
+
+            // High-Value (top 10% or at least 1 customer)
+            segments.add(new CustomerSegmentDTO(
+                    sortedCustomers.subList(0, midTierStart),
+                    CustomerSegmentType.HIGH_VALUE,
+                    "Monetary"));
+
+            // Mid-Tier
+            if (midTierStart < midTierEnd) {
+                segments.add(new CustomerSegmentDTO(
+                        sortedCustomers.subList(midTierStart, midTierEnd),
+                        CustomerSegmentType.MID_TIER,
+                        "Monetary"));
+            } else {
+                segments.add(new CustomerSegmentDTO(
+                        new ArrayList<>(),
+                        CustomerSegmentType.MID_TIER,
+                        "Monetary"));
+            }
+
+            // Low-Spend (bottom 20% or at least 1 customer)
+            segments.add(new CustomerSegmentDTO(
+                    sortedCustomers.subList(Math.max(midTierEnd, 0), totalCustomers),
+                    CustomerSegmentType.LOW_SPEND,
+                    "Monetary"));
+
+            return segments;
+    }
 }
