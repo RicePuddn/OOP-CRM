@@ -32,6 +32,9 @@ const LoginForm: React.FC = () => {
         Cookies.set("role", response.data.role, { expires: 1 }); // Set role with 1-day expiration
         Cookies.set("username", response.data.username, { expires: 1 }); // Set username with 1-day expiration
         console.log(response.data.role, response.data.username);
+        if (response.data.role === "ADMIN") {
+          router.push("/admin");
+        }
         router.push("/dashboard"); // Redirect to the dashboard after successful login
       } else {
         console.error("Failed to log in user");

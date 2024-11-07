@@ -17,17 +17,12 @@ import {
 } from "@/components/ui/popover";
 import axios from "axios";
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  Legend,
   ResponsiveContainer,
   BarChart,
   Bar,
-  Brush,
 } from "recharts";
 import {
   Card,
@@ -45,7 +40,7 @@ interface ProductPurchaseHistoryDTO {
 }
 
 interface TopProductDTO {
-  productId: number;
+  pid: number;
   productName: string;
   totalQuantity: number;
 }
@@ -220,9 +215,9 @@ export default function CustomerTopProducts() {
                     <CardContent>
                       <Image
                         src={
-                          imageError[product.productId]
+                          imageError[product.pid]
                             ? "/images/products/oil.jpg"
-                            : `/images/products/${product.productId}.jpg`
+                            : `/images/products/${product.pid}.jpg`
                         }
                         height="500"
                         width="500"
@@ -230,7 +225,7 @@ export default function CustomerTopProducts() {
                         onError={() =>
                           setImageError((prev) => ({
                             ...prev,
-                            [product.productId]: true,
+                            [product.pid]: true,
                           }))
                         }
                       ></Image>
@@ -264,31 +259,29 @@ export default function CustomerTopProducts() {
                 }}
                 className="aspect-auto h-[400px] w-full"
               >
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={chartData}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="date"
-                      label={{
-                        value: "Sales Date",
-                        position: "insideBottom",
-                        offset: 3,
-                      }}
-                    />
-                    <YAxis
-                      label={{
-                        value: "Quantity Purchased",
-                        angle: -90,
-                        position: "insideLeft",
-                      }}
-                    />
-                    <ChartTooltip />
-                    <Bar dataKey="quantity" fill="var(--color-quantity)" />
-                  </BarChart>
-                </ResponsiveContainer>
+                <BarChart
+                  data={chartData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                    label={{
+                      value: "Sales Date",
+                      position: "insideBottom",
+                      offset: 3,
+                    }}
+                  />
+                  <YAxis
+                    label={{
+                      value: "Quantity Purchased",
+                      angle: -90,
+                      position: "insideLeft",
+                    }}
+                  />
+                  <ChartTooltip />
+                  <Bar dataKey="quantity" fill="var(--color-quantity)" />
+                </BarChart>
               </ChartContainer>
             </div>
           </div>
