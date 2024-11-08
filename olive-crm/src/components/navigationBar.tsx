@@ -131,6 +131,11 @@ export default function AppSidebar() {
         title: "Customers",
         url: "/customers",
         icon: UsersRound,
+      },
+      {
+        title: "Sales Metrics",
+        url: "/sales-metrics",
+        icon: BarChart,
       }
     );
   }

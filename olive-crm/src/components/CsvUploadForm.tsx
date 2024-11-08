@@ -404,7 +404,7 @@ const CsvUploadForm: React.FC = () => {
                       Sale Date (format: DD/MM/YYYY or MM/DD/YYYY or YYYY-MM-DD)
                     </li>
                     <li>Sale Type</li>
-                    <li>Digital (Yes/No)</li>
+                    <li>Digital (Online - Website/Offline)</li>
                     <li>Customer ID (numeric)</li>
                     <li>Zip Code (optional)</li>
                     <li>First Name (optional)</li>
