@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Button } from "./ui/button";
+import { EditCustomerDialog } from "./ui/edit-customer-dialog";
 
 interface Filters {
   customerId: string;
@@ -26,7 +27,12 @@ interface Filters {
 
 interface Order {
   id: number;
-  customer: { cid: number };
+  customer: { 
+    cid: number;
+    first_name?: string;
+    last_name?: string;
+    zipcode?: string;
+  };
   product: { productName: string };
   quantity: number;
   totalCost: number;
@@ -130,6 +136,13 @@ export default function OrdersTable() {
     endDate: "",
   });
   const [applyFilter, setApplyFilter] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<{
+    id: number;
+    first_name: string;
+    last_name: string;
+    zipcode: string;
+  } | null>(null);
 
   const fetchOrders = async () => {
     try {
@@ -156,7 +169,6 @@ export default function OrdersTable() {
         method: 'DELETE',
       });
       if (response.ok) {
-        // Refresh the orders list after successful deletion
         fetchOrders();
       } else {
         console.error('Failed to delete order');
@@ -165,6 +177,28 @@ export default function OrdersTable() {
     } catch (error) {
       console.error('Error deleting order:', error);
       alert('Error deleting order. Please try again.');
+    }
+  };
+
+  const handleEditCustomer = async (customerId: number, data: { first_name: string; last_name: string; zipcode: string }) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/customers/${customerId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        fetchOrders(); // Refresh the orders list to show updated customer details
+      } else {
+        console.error('Failed to update customer');
+        alert('Failed to update customer. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error updating customer:', error);
+      alert('Error updating customer. Please try again.');
     }
   };
 
@@ -463,7 +497,22 @@ export default function OrdersTable() {
                       <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
                         ${order.totalCost.toFixed(2)}
                       </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-sm">
+                      <td className="px-3 py-3 whitespace-nowrap text-sm space-x-2">
+                        <Button
+                          onClick={() => {
+                            setSelectedCustomer({
+                              id: order.customer.cid,
+                              first_name: order.customer.first_name || '',
+                              last_name: order.customer.last_name || '',
+                              zipcode: order.customer.zipcode || ''
+                            });
+                            setEditDialogOpen(true);
+                          }}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          size="sm"
+                        >
+                          Edit
+                        </Button>
                         <Button
                           onClick={() => handleDeleteOrder(order.id)}
                           className="bg-red-600 hover:bg-red-700 text-white"
@@ -515,6 +564,23 @@ export default function OrdersTable() {
           </div>
         </div>
       </div>
+
+      {selectedCustomer && (
+        <EditCustomerDialog
+          isOpen={editDialogOpen}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedCustomer(null);
+          }}
+          customerId={selectedCustomer.id}
+          onSave={handleEditCustomer}
+          initialData={{
+            first_name: selectedCustomer.first_name,
+            last_name: selectedCustomer.last_name,
+            zipcode: selectedCustomer.zipcode
+          }}
+        />
+      )}
     </motion.section>
   );
 }

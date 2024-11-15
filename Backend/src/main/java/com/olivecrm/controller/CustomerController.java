@@ -9,11 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/customers")
@@ -32,6 +28,21 @@ public class CustomerController {
             String fullName =
                 customer.getFirst_name() + " " + customer.getLast_name();
             return ResponseEntity.ok(fullName);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{cid}")
+    public ResponseEntity<Customer> updateCustomer(@PathVariable("cid") int cid, @RequestBody Customer updatedCustomer) {
+        Optional<Customer> customerOptional = customerService.findCustomerById(cid);
+        if (customerOptional.isPresent()) {
+            Customer customer = customerOptional.get();
+            customer.setFirst_name(updatedCustomer.getFirst_name());
+            customer.setLast_name(updatedCustomer.getLast_name());
+            customer.setZipcode(updatedCustomer.getZipcode());
+            Customer savedCustomer = customerService.saveCustomer(customer);
+            return ResponseEntity.ok(savedCustomer);
         } else {
             return ResponseEntity.notFound().build();
         }

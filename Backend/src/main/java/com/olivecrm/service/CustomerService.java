@@ -25,4 +25,8 @@ public class CustomerService {
     public List<Customer> findCustomersByIds(List<Integer> customerIds) {
         return customerRepository.findAllById(customerIds);
     }
+
+    public Customer saveCustomer(Customer customer) {
+        return customerRepository.save(customer);
+    }
 }
