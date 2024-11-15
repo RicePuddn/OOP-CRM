@@ -42,6 +42,7 @@ interface ManualOrder {
 
 const CsvUploadForm: React.FC = () => {
   const [files, setFiles] = useState<FileList | null>(null);
+  const [customerNameFiles, setCustomerNameFiles] = useState<FileList | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadHistory, setUploadHistory] = useState<UploadRecord[]>([]);
   const [manualOrder, setManualOrder] = useState<ManualOrder>({
@@ -63,6 +64,12 @@ const CsvUploadForm: React.FC = () => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       setFiles(event.target.files);
+    }
+  };
+
+  const handleCustomerNameFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      setCustomerNameFiles(event.target.files);
     }
   };
 
@@ -168,6 +175,59 @@ const CsvUploadForm: React.FC = () => {
     ) as HTMLInputElement;
     if (fileInput) fileInput.value = "";
     setFiles(null);
+  };
+
+  const handleCustomerNamesSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!customerNameFiles || customerNameFiles.length === 0) {
+      updateUploadHistory({
+        filename: "",
+        status: "error",
+        message: "Please select at least one file",
+        timestamp: new Date(),
+      });
+      return;
+    }
+
+    setUploading(true);
+
+    // Process files sequentially
+    for (let i = 0; i < customerNameFiles.length; i++) {
+      const file = customerNameFiles[i];
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        await axios.post("http://localhost:8080/api/upload-customer-names-csv", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        updateUploadHistory({
+          filename: file.name,
+          status: "success",
+          message: "Customer names CSV file uploaded successfully",
+          timestamp: new Date(),
+        });
+      } catch (error) {
+        updateUploadHistory({
+          filename: file.name,
+          status: "error",
+          message:
+            error instanceof Error ? error.message : "Error uploading file",
+          timestamp: new Date(),
+        });
+      }
+    }
+
+    setUploading(false);
+    // Clear file input
+    const fileInput = document.querySelector(
+      '#customerNamesFileInput'
+    ) as HTMLInputElement;
+    if (fileInput) fileInput.value = "";
+    setCustomerNameFiles(null);
   };
 
   const clearHistory = () => {
@@ -395,11 +455,14 @@ const CsvUploadForm: React.FC = () => {
               <p className="mt-4">
                 <strong>CSV File Requirements:</strong>
               </p>
+              <p className="mt-2">
+                <strong>Standard CSV Format:</strong>
+              </p>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Files must be in CSV format (.csv extension)</li>
                 <li>
                   Required columns:
                   <ul className="list-[circle] pl-5 mt-1">
+                    <li>Row No.</li>
                     <li>
                       Sale Date (format: DD/MM/YYYY or MM/DD/YYYY or YYYY-MM-DD)
                     </li>
@@ -407,8 +470,6 @@ const CsvUploadForm: React.FC = () => {
                     <li>Digital (Online - Website/Offline)</li>
                     <li>Customer ID (numeric)</li>
                     <li>Zip Code (optional)</li>
-                    <li>First Name (optional)</li>
-                    <li>Last Name (optional)</li>
                     <li>Shipping Method</li>
                     <li>Product Name</li>
                     <li>Product Variant</li>
@@ -417,11 +478,45 @@ const CsvUploadForm: React.FC = () => {
                     <li>Product Price (numeric)</li>
                   </ul>
                 </li>
+              </ul>
+
+              <p className="mt-2">
+                <strong>Customer Names CSV Format:</strong>
+              </p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>
+                  Required columns:
+                  <ul className="list-[circle] pl-5 mt-1">
+                    <li>Row No.</li>
+                    <li>
+                      Sale Date (format: DD/MM/YYYY or MM/DD/YYYY or YYYY-MM-DD)
+                    </li>
+                    <li>Sale Type</li>
+                    <li>Digital (Online - Website/Offline)</li>
+                    <li>Customer ID (numeric)</li>
+                    <li>First Name</li>
+                    <li>Last Name</li>
+                    <li>Zip Code (optional)</li>
+                    <li>Shipping Method</li>
+                    <li>Product Name</li>
+                    <li>Product Variant</li>
+                    <li>Quantity (numeric)</li>
+                    <li>Price (numeric)</li>
+                    <li>Product Price (numeric)</li>
+                  </ul>
+                </li>
+              </ul>
+
+              <p className="mt-4">
+                <strong>General Requirements:</strong>
+              </p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Files must be in CSV format (.csv extension)</li>
                 <li>First row should contain column headers</li>
                 <li>All numeric fields should contain valid numbers</li>
                 <li>
-                  For new customers, only Customer ID is required (Zip Code,
-                  First Name, and Last Name are optional)
+                  For new customers, only Customer ID is required (other fields
+                  are optional)
                 </li>
                 <li>
                   For existing customers, any provided fields will update their
@@ -446,11 +541,11 @@ const CsvUploadForm: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Upload Card */}
+        {/* Standard CSV Upload Card */}
         <div className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>CSV Upload</CardTitle>
+              <CardTitle>Standard CSV Upload</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit}>
@@ -468,7 +563,7 @@ const CsvUploadForm: React.FC = () => {
                     hover:file:bg-green-100 h-full file:cursor-pointer border-0 shadow-none"
                   />
                   <p className="mt-2 text-sm text-gray-500">
-                    Please remain on this page while files are being uploaded.
+                    Upload standard format CSV files here.
                   </p>
                 </div>
                 <Button
@@ -476,61 +571,101 @@ const CsvUploadForm: React.FC = () => {
                   disabled={uploading}
                   className="bg-green-800 hover:bg-green-700"
                 >
-                  {uploading ? "Uploading..." : "Upload CSV Files"}
+                  {uploading ? "Uploading..." : "Upload Standard CSV Files"}
                 </Button>
               </form>
-
-              {/* Upload History */}
-              {uploadHistory.length > 0 && (
-                <div className="mt-6">
-                  <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-lg font-medium">Upload History</h4>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={clearHistory}
-                      className="text-sm"
-                    >
-                      Clear History
-                    </Button>
-                  </div>
-                  <div className="space-y-3 max-h-60 overflow-y-auto">
-                    {uploadHistory.map((record, index) => (
-                      <div
-                        key={index}
-                        className={`p-3 rounded-lg ${
-                          record.status === "success"
-                            ? "bg-green-50 border border-green-200"
-                            : "bg-red-50 border border-red-200"
-                        }`}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-medium">
-                              {record.filename || "Upload Attempt"}
-                            </p>
-                            <p
-                              className={`text-sm ${
-                                record.status === "success"
-                                  ? "text-green-600"
-                                  : "text-red-600"
-                              }`}
-                            >
-                              {record.message}
-                            </p>
-                          </div>
-                          <span className="text-xs text-gray-500">
-                            {record.timestamp.toLocaleTimeString()}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>
+
+        {/* Customer Names CSV Upload Card */}
+        <div className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Customer Names CSV Upload</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleCustomerNamesSubmit}>
+                <div className="mb-4">
+                  <Input
+                    id="customerNamesFileInput"
+                    type="file"
+                    accept=".csv"
+                    multiple
+                    onChange={handleCustomerNameFileChange}
+                    className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-50 file:text-blue-700
+                    hover:file:bg-blue-100 h-full file:cursor-pointer border-0 shadow-none"
+                  />
+                  <p className="mt-2 text-sm text-gray-500">
+                    Upload CSV files with customer names here.
+                  </p>
+                </div>
+                <Button
+                  type="submit"
+                  disabled={uploading}
+                  className="bg-blue-800 hover:bg-blue-700"
+                >
+                  {uploading ? "Uploading..." : "Upload Customer Names CSV Files"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Upload History */}
+        {uploadHistory.length > 0 && (
+          <Card className="mt-4">
+            <CardContent className="pt-6">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="text-lg font-medium">Upload History</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearHistory}
+                  className="text-sm"
+                >
+                  Clear History
+                </Button>
+              </div>
+              <div className="space-y-3 max-h-60 overflow-y-auto">
+                {uploadHistory.map((record, index) => (
+                  <div
+                    key={index}
+                    className={`p-3 rounded-lg ${
+                      record.status === "success"
+                        ? "bg-green-50 border border-green-200"
+                        : "bg-red-50 border border-red-200"
+                    }`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-medium">
+                          {record.filename || "Upload Attempt"}
+                        </p>
+                        <p
+                          className={`text-sm ${
+                            record.status === "success"
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {record.message}
+                        </p>
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        {record.timestamp.toLocaleTimeString()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </motion.section>
   );
