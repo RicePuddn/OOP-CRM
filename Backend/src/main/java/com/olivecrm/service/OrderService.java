@@ -34,6 +34,12 @@ public class OrderService {
     @Autowired
     private ProductRepository productRepository;
 
+    public void deleteOrder(Integer orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + orderId));
+        orderRepository.delete(order);
+    }
+
     public static class SalesMetrics {
         private long totalSales;
         private double totalAmount;

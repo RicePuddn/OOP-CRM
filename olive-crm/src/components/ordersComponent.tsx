@@ -150,6 +150,24 @@ export default function OrdersTable() {
     }
   };
 
+  const handleDeleteOrder = async (orderId: number) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/orders/${orderId}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        // Refresh the orders list after successful deletion
+        fetchOrders();
+      } else {
+        console.error('Failed to delete order');
+        alert('Failed to delete order. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      alert('Error deleting order. Please try again.');
+    }
+  };
+
   useEffect(() => {
     fetchOrders();
   }, [currentPage, applyFilter]);
@@ -422,6 +440,9 @@ export default function OrdersTable() {
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Total Cost
                     </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -441,6 +462,15 @@ export default function OrdersTable() {
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
                         ${order.totalCost.toFixed(2)}
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap text-sm">
+                        <Button
+                          onClick={() => handleDeleteOrder(order.id)}
+                          className="bg-red-600 hover:bg-red-700 text-white"
+                          size="sm"
+                        >
+                          Delete
+                        </Button>
                       </td>
                     </tr>
                   ))}
