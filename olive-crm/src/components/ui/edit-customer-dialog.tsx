@@ -46,6 +46,18 @@ export function EditCustomerDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
+            <label htmlFor="customer_id" className="block text-sm font-medium text-gray-700">
+              Customer ID
+            </label>
+            <Input
+              id="customer_id"
+              name="customer_id"
+              value={customerId}
+              disabled
+              className="mt-1 bg-gray-100 text-black disabled:text-black disabled:opacity-100"
+            />
+          </div>
+          <div>
             <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
               First Name
             </label>
