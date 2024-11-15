@@ -31,7 +31,7 @@ interface Filters {
   customerId?: number;
   salesType?: string;
   productIds?: number[];
-  dateFilterType?: 'single' | 'range';
+  dateFilterType?: "single" | "range";
   singleDate?: string;
   startDate?: string;
   endDate?: string;
@@ -39,20 +39,21 @@ interface Filters {
 
 async function getSalesMetrics(filters: Filters) {
   const queryParams = new URLSearchParams();
-  if (filters.customerId) queryParams.append('customerId', filters.customerId.toString());
-  if (filters.salesType) queryParams.append('salesType', filters.salesType);
+  if (filters.customerId)
+    queryParams.append("customerId", filters.customerId.toString());
+  if (filters.salesType) queryParams.append("salesType", filters.salesType);
   if (filters.productIds && filters.productIds.length > 0) {
-    filters.productIds.forEach(id => {
-      queryParams.append('productIds', id.toString());
+    filters.productIds.forEach((id) => {
+      queryParams.append("productIds", id.toString());
     });
   }
   if (filters.dateFilterType) {
-    queryParams.append('dateFilterType', filters.dateFilterType);
-    if (filters.dateFilterType === 'single' && filters.singleDate) {
-      queryParams.append('singleDate', filters.singleDate);
-    } else if (filters.dateFilterType === 'range') {
-      if (filters.startDate) queryParams.append('startDate', filters.startDate);
-      if (filters.endDate) queryParams.append('endDate', filters.endDate);
+    queryParams.append("dateFilterType", filters.dateFilterType);
+    if (filters.dateFilterType === "single" && filters.singleDate) {
+      queryParams.append("singleDate", filters.singleDate);
+    } else if (filters.dateFilterType === "range") {
+      if (filters.startDate) queryParams.append("startDate", filters.startDate);
+      if (filters.endDate) queryParams.append("endDate", filters.endDate);
     }
   }
 
@@ -67,7 +68,7 @@ async function getSalesMetrics(filters: Filters) {
 }
 
 async function getProducts(): Promise<Product[]> {
-  const res = await fetch('http://localhost:8080/api/products', {
+  const res = await fetch("http://localhost:8080/api/products", {
     cache: "no-store",
   });
   if (!res.ok) {
@@ -80,15 +81,17 @@ export default function SalesMetrics() {
   const [metrics, setMetrics] = useState<SalesMetrics>({
     totalSales: 0,
     totalAmount: 0,
-    averageOrderValue: 0
+    averageOrderValue: 0,
   });
   const [filters, setFilters] = useState<Filters>({
-    dateFilterType: 'range'
+    dateFilterType: "range",
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
-  const [selectedProducts, setSelectedProducts] = useState<Set<number>>(new Set());
+  const [selectedProducts, setSelectedProducts] = useState<Set<number>>(
+    new Set()
+  );
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
@@ -131,18 +134,24 @@ export default function SalesMetrics() {
 
     // Update filters with selected product IDs
     const selectedIds = Array.from(newSelected);
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      productIds: selectedIds.length > 0 ? selectedIds : undefined
+      productIds: selectedIds.length > 0 ? selectedIds : undefined,
     }));
   };
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleFilterChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [name]: value === "" ? undefined : 
-        (name === "customerId") ? Number(value) : value
+      [name]:
+        value === ""
+          ? undefined
+          : name === "customerId"
+          ? Number(value)
+          : value,
     }));
   };
 
@@ -153,7 +162,7 @@ export default function SalesMetrics() {
 
   const clearFilters = () => {
     setSelectedProducts(new Set());
-    setFilters({ dateFilterType: 'range' });
+    setFilters({ dateFilterType: "range" });
     fetchMetrics();
     setDropdownOpen(false);
   };
@@ -175,10 +184,12 @@ export default function SalesMetrics() {
   }
 
   return (
-    <div className="flex flex-col h-screen w-full bg-gray-100">
+    <div className="flex flex-col h-full w-full bg-gray-100">
       <div className="flex-grow overflow-auto">
         <div className="h-full w-full px-6 py-8 flex flex-col">
-          <h3 className="text-gray-700 text-3xl font-medium mb-6">Sales Performance Metrics</h3>
+          <h3 className="text-gray-700 text-3xl font-medium mb-6">
+            Sales Performance Metrics
+          </h3>
 
           {/* Filters Section */}
           <Card className="p-6 bg-white shadow-lg rounded-lg mb-6">
@@ -207,15 +218,20 @@ export default function SalesMetrics() {
               </div>
               <div>
                 <Label>Product Filter</Label>
-                <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+                <DropdownMenu
+                  open={dropdownOpen}
+                  onOpenChange={setDropdownOpen}
+                >
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="w-full justify-start">
-                      {selectedProducts.size === 0 
-                        ? "Select products" 
-                        : `${selectedProducts.size} product${selectedProducts.size === 1 ? '' : 's'} selected`}
+                      {selectedProducts.size === 0
+                        ? "Select products"
+                        : `${selectedProducts.size} product${
+                            selectedProducts.size === 1 ? "" : "s"
+                          } selected`}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-80 max-h-96 overflow-auto">
+                  <DropdownMenuContent className="w-full max-h-96 overflow-auto">
                     {products.map((product) => (
                       <DropdownMenuItem
                         key={product.pid}
@@ -255,7 +271,7 @@ export default function SalesMetrics() {
                   <option value="range">Date Range</option>
                 </select>
               </div>
-              {filters.dateFilterType === 'single' ? (
+              {filters.dateFilterType === "single" ? (
                 <div>
                   <Label htmlFor="singleDate">Date</Label>
                   <Input
@@ -292,7 +308,10 @@ export default function SalesMetrics() {
               )}
             </div>
             <div className="flex gap-4 mt-4">
-              <Button onClick={applyFilters} className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button
+                onClick={applyFilters}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
                 Apply Filters
               </Button>
               <Button onClick={clearFilters} variant="outline">
@@ -310,7 +329,9 @@ export default function SalesMetrics() {
                 </div>
                 <div>
                   <p className="text-gray-500 text-sm">Total Number of Sales</p>
-                  <p className="text-2xl font-bold text-gray-700">{metrics.totalSales}</p>
+                  <p className="text-2xl font-bold text-gray-700">
+                    {metrics.totalSales}
+                  </p>
                 </div>
               </div>
             </Card>
@@ -323,7 +344,8 @@ export default function SalesMetrics() {
                 <div>
                   <p className="text-gray-500 text-sm">Total Sales Amount</p>
                   <p className="text-2xl font-bold text-gray-700">
-                    ${metrics.totalAmount.toLocaleString(undefined, {
+                    $
+                    {metrics.totalAmount.toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
@@ -340,7 +362,8 @@ export default function SalesMetrics() {
                 <div>
                   <p className="text-gray-500 text-sm">Average Order Value</p>
                   <p className="text-2xl font-bold text-gray-700">
-                    ${metrics.averageOrderValue.toLocaleString(undefined, {
+                    $
+                    {metrics.averageOrderValue.toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
