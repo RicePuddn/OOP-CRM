@@ -47,8 +47,8 @@ interface TopProductDTO {
 
 interface Customer {
     zipcode: string;
-    first_name: string;
-    last_name: string;
+    first_name: string | null;
+    last_name: string | null;
     cid: number;
 }
 
@@ -124,16 +124,21 @@ export default function CustomerTopProducts() {
 
         try {
             setError(null);
+            const updatedData = {
+                first_name: selectedCustomer.first_name || null,
+                last_name: selectedCustomer.last_name || null,
+            };
+
             await axios.put(
                 `http://localhost:8080/api/customers/${selectedCustomer.cid}`,
-                selectedCustomer
+                updatedData
             );
             alert("Customer details updated successfully.");
 
             setCustomerId((prev) =>
                 prev.map((customer) =>
                     customer.cid === selectedCustomer.cid
-                        ? { ...customer, ...selectedCustomer }
+                        ? { ...customer, ...updatedData }
                         : customer
                 )
             );
@@ -261,11 +266,11 @@ export default function CustomerTopProducts() {
                                 </label>
                                 <input
                                     type="text"
-                                    value={selectedCustomer.first_name}
+                                    value={selectedCustomer.first_name || ""}
                                     onChange={(e) =>
                                         setSelectedCustomer({
                                             ...selectedCustomer,
-                                            first_name: e.target.value,
+                                            first_name: e.target.value || null,
                                         })
                                     }
                                     className="border border-gray-200 rounded-md p-2 w-fit text-sm shadow"
@@ -278,17 +283,18 @@ export default function CustomerTopProducts() {
                                 </label>
                                 <input
                                     type="text"
-                                    value={selectedCustomer.last_name}
+                                    value={selectedCustomer.last_name || ""}
                                     onChange={(e) =>
                                         setSelectedCustomer({
                                             ...selectedCustomer,
-                                            last_name: e.target.value,
+                                            last_name: e.target.value || null,
                                         })
                                     }
                                     className="border border-gray-200 rounded-md p-2 w-fit text-sm shadow"
                                     placeholder="Enter last name"
                                 />
                             </div>
+
                             <div className="w-fit">
                                 <button
                                     className="bg-green-700 text-white hover:bg-green-600 py-2 px-4 rounded-md text-sm"
