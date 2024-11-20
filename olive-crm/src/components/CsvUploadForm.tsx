@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -41,8 +42,11 @@ interface ManualOrder {
 }
 
 const CsvUploadForm: React.FC = () => {
+  const { toast } = useToast();
   const [files, setFiles] = useState<FileList | null>(null);
-  const [customerNameFiles, setCustomerNameFiles] = useState<FileList | null>(null);
+  const [customerNameFiles, setCustomerNameFiles] = useState<FileList | null>(
+    null
+  );
   const [uploading, setUploading] = useState(false);
   const [uploadHistory, setUploadHistory] = useState<UploadRecord[]>([]);
   const [manualOrder, setManualOrder] = useState<ManualOrder>({
@@ -67,7 +71,9 @@ const CsvUploadForm: React.FC = () => {
     }
   };
 
-  const handleCustomerNameFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCustomerNameFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     if (event.target.files) {
       setCustomerNameFiles(event.target.files);
     }
@@ -102,6 +108,11 @@ const CsvUploadForm: React.FC = () => {
       setOrderStatus({
         message: "Order created successfully",
         type: "success",
+      });
+      toast({
+        title: "Order Entry Created Successfully",
+        description: "Successful manual entry creation",
+        variant: "success",
       });
       // Reset form
       setManualOrder({
@@ -149,6 +160,12 @@ const CsvUploadForm: React.FC = () => {
           headers: {
             "Content-Type": "multipart/form-data",
           },
+        });
+        toast({
+          title: "Standard File Upload Successful",
+          description:
+            "Successfully uploaded standard CSV file with no customer names",
+          variant: "success",
         });
 
         updateUploadHistory({
@@ -198,12 +215,20 @@ const CsvUploadForm: React.FC = () => {
       formData.append("file", file);
 
       try {
-        await axios.post("http://localhost:8080/api/upload-customer-names-csv", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+        await axios.post(
+          "http://localhost:8080/api/upload-customer-names-csv",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        toast({
+          title: "Customer Named File Upload Successful",
+          description: "Successfully uploaded Customer Named CSV file",
+          variant: "success",
         });
-
         updateUploadHistory({
           filename: file.name,
           status: "success",
@@ -224,7 +249,7 @@ const CsvUploadForm: React.FC = () => {
     setUploading(false);
     // Clear file input
     const fileInput = document.querySelector(
-      '#customerNamesFileInput'
+      "#customerNamesFileInput"
     ) as HTMLInputElement;
     if (fileInput) fileInput.value = "";
     setCustomerNameFiles(null);
@@ -609,7 +634,9 @@ const CsvUploadForm: React.FC = () => {
                   disabled={uploading}
                   className="bg-blue-800 hover:bg-blue-700"
                 >
-                  {uploading ? "Uploading..." : "Upload Customer Names CSV Files"}
+                  {uploading
+                    ? "Uploading..."
+                    : "Upload Customer Names CSV Files"}
                 </Button>
               </form>
             </CardContent>

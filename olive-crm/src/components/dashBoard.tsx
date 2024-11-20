@@ -59,6 +59,7 @@ interface TopProduct {
 
 export default function AllCustomerPurchaseHistory() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
   const [totalCustomers, setTotalCustomers] = useState<number>(0);
   const [totalOrders, setTotalOrders] = useState<number>(0);
   const [averageOrderValue, setAverageOrderValue] = useState<number>(0);
@@ -126,15 +127,18 @@ export default function AllCustomerPurchaseHistory() {
       } catch (error) {
         console.error("Error fetching orders:", error);
         setError("Failed to fetch orders. Please try again later.");
+      } finally {
+        setLoading(false);
       }
     };
     fetchAllOrders();
   }, []);
 
-  const chartData = orders.map((order) => ({
-    date: format(parseISO(order.salesDate), "yyyy-MM-dd"),
-    quantity: order.quantity,
-  }));
+  const chartData =
+    orders.map((order) => ({
+      date: format(parseISO(order.salesDate), "yyyy-MM-dd"),
+      quantity: order.quantity,
+    })) ?? [];
 
   const chartProductData = orders
     .filter(
@@ -153,6 +157,13 @@ export default function AllCustomerPurchaseHistory() {
     });
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-700"></div>
+      </div>
+    );
+  }
   return (
     <motion.section
       initial={{ opacity: 0, scale: 0.8 }}
@@ -169,72 +180,74 @@ export default function AllCustomerPurchaseHistory() {
             At a Glance
           </CardTitle>
           <CardContent>
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 w-full">
-              <Card className=" transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-blue-100">
-                  <CardTitle className="text-sm font-medium text-blue-800">
-                    Total Customers
-                  </CardTitle>
-                  <Users className="h-4 w-4 text-blue-800" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-blue-800">
-                    {totalCustomers}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Total customers that have made a purchase
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-green-100">
-                  <CardTitle className="text-sm font-medium text-green-800">
-                    Total Orders
-                  </CardTitle>
-                  <ShoppingCart className="h-4 w-4 text-green-800" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-800">
-                    {totalOrders}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    All orders made
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-yellow-100">
-                  <CardTitle className="text-sm font-medium text-yellow-800">
-                    Average Order Value
-                  </CardTitle>
-                  <BarChart className="h-4 w-4 text-yellow-800" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-yellow-800">
-                    {formatCurrency(averageOrderValue)}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    How much a typical customer spends
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-purple-100">
-                  <CardTitle className="text-sm font-medium text-purple-800">
-                    Total Revenue
-                  </CardTitle>
-                  <BarChart className="h-4 w-4 text-purple-800" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-purple-800">
-                    {formatCurrency(totalRevenue)}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Total revenue made from orders
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+            {totalCustomers > 0 && totalOrders > 0 && totalRevenue > 0 && (
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 w-full">
+                <Card className=" transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-blue-100">
+                    <CardTitle className="text-sm font-medium text-blue-800">
+                      Total Customers
+                    </CardTitle>
+                    <Users className="h-4 w-4 text-blue-800" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-blue-800">
+                      {totalCustomers}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Total customers that have made a purchase
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card className="transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-green-100">
+                    <CardTitle className="text-sm font-medium text-green-800">
+                      Total Orders
+                    </CardTitle>
+                    <ShoppingCart className="h-4 w-4 text-green-800" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-800">
+                      {totalOrders}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      All orders made
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card className="transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-yellow-100">
+                    <CardTitle className="text-sm font-medium text-yellow-800">
+                      Average Order Value
+                    </CardTitle>
+                    <BarChart className="h-4 w-4 text-yellow-800" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-yellow-800">
+                      {formatCurrency(averageOrderValue)}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      How much a typical customer spends
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card className="transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-purple-100">
+                    <CardTitle className="text-sm font-medium text-purple-800">
+                      Total Revenue
+                    </CardTitle>
+                    <BarChart className="h-4 w-4 text-purple-800" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-purple-800">
+                      {formatCurrency(totalRevenue)}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Total revenue made from orders
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -244,57 +257,59 @@ export default function AllCustomerPurchaseHistory() {
           </CardTitle>
           {error && <p className="text-red-500 mb-4">{error}</p>}
           <CardContent>
-            <div
-              style={{
-                width: "full",
-                height: "100%",
-                overflowX: "auto",
-                overflowY: "auto",
-              }}
-            >
-              <ChartContainer
-                config={{
-                  quantity: {
-                    label: "Quantity Purchased",
-                    color: "hsl(var(--chart-2))",
-                  },
+            {chartData.length > 0 && (
+              <div
+                style={{
+                  width: "full",
+                  height: "100%",
+                  overflowX: "auto",
+                  overflowY: "auto",
                 }}
-                className="aspect-auto h-[400px] w-full"
               >
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={chartData}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="date"
-                      label={{
-                        value: "Sales Date",
-                        position: "insideBottom",
-                        offset: 3,
-                      }}
-                    />
-                    <YAxis
-                      label={{
-                        value: "Quantity Purchased",
-                        angle: -90,
-                        position: "insideLeft",
-                      }}
-                    />
-                    <ChartTooltip />
-                    <Bar dataKey="quantity" fill="var(--color-quantity)" />
-                    <Brush
-                      dataKey="date"
-                      height={30}
-                      stroke="#15803D"
-                      startIndex={1}
-                      endIndex={100}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </div>
+                <ChartContainer
+                  config={{
+                    quantity: {
+                      label: "Quantity Purchased",
+                      color: "hsl(var(--chart-2))",
+                    },
+                  }}
+                  className="aspect-auto h-[400px] w-full"
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={chartData}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="date"
+                        label={{
+                          value: "Sales Date",
+                          position: "insideBottom",
+                          offset: 3,
+                        }}
+                      />
+                      <YAxis
+                        label={{
+                          value: "Quantity Purchased",
+                          angle: -90,
+                          position: "insideLeft",
+                        }}
+                      />
+                      <ChartTooltip />
+                      <Bar dataKey="quantity" fill="var(--color-quantity)" />
+                      <Brush
+                        dataKey="date"
+                        height={30}
+                        stroke="#15803D"
+                        startIndex={1}
+                        endIndex={100}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -303,38 +318,40 @@ export default function AllCustomerPurchaseHistory() {
             Top 3 Most Purchased Products
           </CardTitle>
           <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {topProducts.map((product, index) => (
-                <Card
-                  key={index}
-                  className="p-4 border rounded-lg transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl"
-                >
-                  <CardTitle>{product.productName}</CardTitle>
-                  <CardDescription>
-                    Variant: {product.productVariant}ml <br />
-                    Total Purchased: {product.totalQuantity}
-                  </CardDescription>
-                  <CardContent>
-                    <Image
-                      src={
-                        imageError[product.pid]
-                          ? "/images/products/oil.jpg"
-                          : `/images/products/${product.pid}.jpg`
-                      }
-                      height="500"
-                      width="500"
-                      alt={"Product Image"}
-                      onError={() =>
-                        setImageError((prev) => ({
-                          ...prev,
-                          [product.pid]: true,
-                        }))
-                      }
-                    ></Image>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {topProducts && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {topProducts.map((product, index) => (
+                  <Card
+                    key={index}
+                    className="p-4 border rounded-lg transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl"
+                  >
+                    <CardTitle>{product.productName}</CardTitle>
+                    <CardDescription>
+                      Variant: {product.productVariant}ml <br />
+                      Total Purchased: {product.totalQuantity}
+                    </CardDescription>
+                    <CardContent>
+                      <Image
+                        src={
+                          imageError[product.pid]
+                            ? "/images/products/oil.jpg"
+                            : `/images/products/${product.pid}.jpg`
+                        }
+                        height="500"
+                        width="500"
+                        alt={"Product Image"}
+                        onError={() =>
+                          setImageError((prev) => ({
+                            ...prev,
+                            [product.pid]: true,
+                          }))
+                        }
+                      ></Image>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
         <Card className="p-8 w-full border rounded-lg shadow mt-8">
@@ -359,51 +376,53 @@ export default function AllCustomerPurchaseHistory() {
                 </SelectContent>
               </Select>
             </div>
-            <div
-              style={{
-                width: "full",
-                height: "100%",
-                overflowX: "auto",
-                overflowY: "auto",
-              }}
-            >
-              <ChartContainer
-                config={{
-                  quantity: {
-                    label: "Quantity Purchased",
-                    color: "hsl(var(--chart-2))",
-                  },
+            {selectedProduct && (
+              <div
+                style={{
+                  width: "full",
+                  height: "100%",
+                  overflowX: "auto",
+                  overflowY: "auto",
                 }}
-                className="aspect-auto h-[400px] w-full"
               >
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={selectedProduct ? chartProductData : []}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="date"
-                      label={{
-                        value: "Sales Date",
-                        position: "insideBottom",
-                        offset: 3,
-                      }}
-                    />
-                    <YAxis
-                      label={{
-                        value: "Quantity Purchased",
-                        angle: -90,
-                        position: "insideLeft",
-                      }}
-                    />
-                    <ChartTooltip />
-                    <Bar dataKey="quantity" fill="var(--color-quantity)" />
-                    <Brush dataKey="date" height={30} stroke="#15803D" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </div>
+                <ChartContainer
+                  config={{
+                    quantity: {
+                      label: "Quantity Purchased",
+                      color: "hsl(var(--chart-2))",
+                    },
+                  }}
+                  className="aspect-auto h-[400px] w-full"
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={selectedProduct ? chartProductData : []}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="date"
+                        label={{
+                          value: "Sales Date",
+                          position: "insideBottom",
+                          offset: 3,
+                        }}
+                      />
+                      <YAxis
+                        label={{
+                          value: "Quantity Purchased",
+                          angle: -90,
+                          position: "insideLeft",
+                        }}
+                      />
+                      <ChartTooltip />
+                      <Bar dataKey="quantity" fill="var(--color-quantity)" />
+                      <Brush dataKey="date" height={30} stroke="#15803D" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

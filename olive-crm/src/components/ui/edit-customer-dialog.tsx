@@ -45,13 +45,15 @@ export function EditCustomerDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Customer Details</DialogTitle>
+          <DialogTitle className="text-black">
+            Edit Customer Details
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label
               htmlFor="customer_id"
-              className="block text-sm font-medium text-white"
+              className="block text-sm font-medium text-black"
             >
               Customer ID
             </label>
@@ -66,7 +68,7 @@ export function EditCustomerDialog({
           <div>
             <label
               htmlFor="first_name"
-              className="block text-sm font-medium text-white"
+              className="block text-sm font-medium text-black"
             >
               First Name
             </label>
@@ -81,7 +83,7 @@ export function EditCustomerDialog({
           <div>
             <label
               htmlFor="last_name"
-              className="block text-sm font-medium text-white"
+              className="block text-sm font-medium text-black"
             >
               Last Name
             </label>
@@ -96,7 +98,7 @@ export function EditCustomerDialog({
           <div>
             <label
               htmlFor="zipcode"
-              className="block text-sm font-medium text-white"
+              className="block text-sm font-medium text-black"
             >
               Zip Code
             </label>

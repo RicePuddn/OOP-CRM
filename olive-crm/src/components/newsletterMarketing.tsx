@@ -1,4 +1,3 @@
-// Newsletter Component with Select Component for Customer List
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
@@ -38,7 +37,7 @@ interface Product {
     quantity: number;
 }
 
-export default function Newsletter() {
+const Newsletter: React.FC = () => {
     const [templates, setTemplates] = useState<Template[]>([]);
     const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
         null
@@ -178,7 +177,7 @@ export default function Newsletter() {
                 const regex = new RegExp(`\\[${field}\\]`, "g");
                 updatedContent = updatedContent.replace(regex, value);
             });
-
+            console.log("Updated Content:", updatedContent);
             setEmailContent(updatedContent);
         }
     }, [topProducts, selectedCustomer, fieldValues, baseContent]);
@@ -331,7 +330,13 @@ export default function Newsletter() {
             animate={{ opacity: 1, scale: 1, transition: { duration: 0.5 } }}
         >
             <div className="w-full px-6 py-3"></div>
-            {!selectedTemplate ? (
+
+            
+            {templates.length === 0 ? (
+                <div className="text-center text-gray-500 text-lg">
+                    No Template Available
+                </div>
+            ) :!selectedTemplate ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 ml-5 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {templates.map((template) => (
                         <div
@@ -477,4 +482,5 @@ export default function Newsletter() {
             )}
         </motion.section>
     );
-}
+};
+export default Newsletter;
