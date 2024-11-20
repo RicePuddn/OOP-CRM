@@ -90,7 +90,7 @@ export default function AppSidebar() {
         icon: ShoppingCart,
       },
       {
-        title: "CSV Upload",
+        title: "Upload",
         url: "/csv-upload",
         icon: Upload,
       },
@@ -123,7 +123,7 @@ export default function AppSidebar() {
         icon: ShoppingCart,
       },
       {
-        title: "CSV Upload",
+        title: "Upload",
         url: "/csv-upload",
         icon: Upload,
       },
