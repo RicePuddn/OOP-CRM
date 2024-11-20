@@ -24,7 +24,6 @@ interface Template {
 }
 
 const CUSTOMER_SEGMENTS = [
-  "All",
   "Active Customers",
   "Dormant Customers",
   "Returning Customers",
