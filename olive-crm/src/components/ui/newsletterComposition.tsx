@@ -1,14 +1,31 @@
 import React, { useState } from "react";
-import ReactQuill from "react-quill";
+
 import "react-quill/dist/quill.snow.css";
 import { Info } from "lucide-react";
-import {
-    Select,
-    SelectTrigger,
-    SelectContent,
-    SelectItem,
-    SelectValue,
-} from "./select"; // Adjust the path as needed
+const Select = dynamic(() => import("./select").then((mod) => mod.Select), {
+    ssr: false,
+});
+const SelectTrigger = dynamic(
+    () => import("./select").then((mod) => mod.SelectTrigger),
+    { ssr: false }
+);
+const SelectContent = dynamic(
+    () => import("./select").then((mod) => mod.SelectContent),
+    { ssr: false }
+);
+const SelectItem = dynamic(
+    () => import("./select").then((mod) => mod.SelectItem),
+    { ssr: false }
+);
+const SelectValue = dynamic(
+    () => import("./select").then((mod) => mod.SelectValue),
+    { ssr: false }
+);
+
+import dynamic from "next/dynamic";
+
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+
 import {
     Tooltip,
     TooltipContent,

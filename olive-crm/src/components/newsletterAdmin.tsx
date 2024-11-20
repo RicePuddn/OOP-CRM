@@ -3,17 +3,33 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FilePenLine } from "lucide-react";
-import ReactQuill from "react-quill";
+
 import "react-quill/dist/quill.snow.css";
 import NewsletterComposition from "./ui/newsletterComposition";
 import Cookies from "js-cookie";
-import {
-    Select,
-    SelectTrigger,
-    SelectContent,
-    SelectItem,
-    SelectValue,
-} from "./ui/select";
+import dynamic from "next/dynamic";
+
+const Select = dynamic(() => import("./ui/select").then((mod) => mod.Select), {
+    ssr: false,
+});
+const SelectTrigger = dynamic(
+    () => import("./ui/select").then((mod) => mod.SelectTrigger),
+    { ssr: false }
+);
+const SelectContent = dynamic(
+    () => import("./ui/select").then((mod) => mod.SelectContent),
+    { ssr: false }
+);
+const SelectItem = dynamic(
+    () => import("./ui/select").then((mod) => mod.SelectItem),
+    { ssr: false }
+);
+const SelectValue = dynamic(
+    () => import("./ui/select").then((mod) => mod.SelectValue),
+    { ssr: false }
+);
+
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 interface Template {
     id: number;
