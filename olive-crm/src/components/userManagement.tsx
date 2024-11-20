@@ -223,7 +223,7 @@ const UserManagementPage: React.FC = () => {
       console.error("Failed to suspend user", error);
     }
   };
-  
+
   const handleActivate = async (id: number, username: string) => {
     try {
       const confirmActivate = confirm(
@@ -236,7 +236,7 @@ const UserManagementPage: React.FC = () => {
     } catch (error) {
       console.error("Failed to activate user", error);
     }
-  };  
+  };
 
   return (
     <motion.section
@@ -692,15 +692,16 @@ const UserManagementPage: React.FC = () => {
                               : "▼"
                             : ""}
                         </th>
-                        <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                        <th
+                          className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                           onClick={() => handleSort("lastLogin")}
                         >
                           Last Login{" "}
                           {sortConfig?.key === "lastLogin"
                             ? sortConfig.direction === "asc"
-                            ? "▲"
-                            : "▼"
-                          : ""}
+                              ? "▲"
+                              : "▼"
+                            : ""}
                         </th>
                         <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
                           Actions
@@ -818,7 +819,9 @@ const UserManagementPage: React.FC = () => {
                             <h3 className="font-medium text-gray-900">
                               {user.first_name} {user.last_name}
                             </h3>
-                            <p className="text-sm text-gray-500">@{user.username}</p>
+                            <p className="text-sm text-gray-500">
+                              @{user.username}
+                            </p>
                             <div className="text-xs text-gray-400 mt-2">
                               <span className="font-medium">Last login: </span>
                               {user.lastLogin
@@ -834,13 +837,17 @@ const UserManagementPage: React.FC = () => {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEdit(user.id)}>
+                                <DropdownMenuItem
+                                  onClick={() => handleEdit(user.id)}
+                                >
                                   <Edit2 className="w-4 h-4 mr-2" />
                                   Edit
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="text-red-600"
-                                  onClick={() => handleDelete(user.id, user.username)}
+                                  onClick={() =>
+                                    handleDelete(user.id, user.username)
+                                  }
                                 >
                                   <Trash2 className="w-4 h-4 mr-2" />
                                   Delete
