@@ -38,6 +38,8 @@ interface User {
   last_name: string;
   role: string;
   password?: string;
+  lastLogin: string;
+  status: "ACTIVE" | "INACTIVE" | "SUSPENDED";
 }
 
 type ViewMode = "table" | "grid";
@@ -76,6 +78,8 @@ const UserManagementPage: React.FC = () => {
         last_name: user.last_name,
         role: user.role,
         password: user.password,
+        status: user.status,
+        lastLogin: user.lastLogin,
       }));
       setUsers(fetchedUsers);
       setOriginalUsers(fetchedUsers);
@@ -206,6 +210,34 @@ const UserManagementPage: React.FC = () => {
     window.URL.revokeObjectURL(url);
   };
 
+  const handleSuspend = async (id: number, username: string) => {
+    try {
+      const confirmSuspend = confirm(
+        `Are you sure you want to suspend user '${username}'?`
+      );
+      if (confirmSuspend) {
+        await axios.put(`http://localhost:8080/api/employee/suspend/${id}`);
+        fetchUsers(); // Refresh the list after updating
+      }
+    } catch (error) {
+      console.error("Failed to suspend user", error);
+    }
+  };
+  
+  const handleActivate = async (id: number, username: string) => {
+    try {
+      const confirmActivate = confirm(
+        `Are you sure you want to activate user with ID '${username}'?`
+      );
+      if (confirmActivate) {
+        await axios.put(`http://localhost:8080/api/employee/activate/${id}`);
+        fetchUsers(); // Refresh the list after updating
+      }
+    } catch (error) {
+      console.error("Failed to activate user", error);
+    }
+  };  
+
   return (
     <motion.section
       initial={{ opacity: 0, scale: 0.8 }}
@@ -308,7 +340,7 @@ const UserManagementPage: React.FC = () => {
                       <SelectContent>
                         <SelectGroup>
                           <SelectLabel>Roles</SelectLabel>
-                          <SelectItem value="SALES">Sales</SelectItem>
+                          <SelectItem value="SALES">SALES</SelectItem>
                           <SelectItem value="MARKETING">MARKETING</SelectItem>
                         </SelectGroup>
                       </SelectContent>
@@ -601,6 +633,7 @@ const UserManagementPage: React.FC = () => {
 
               <div className="overflow-x-auto">
                 {viewMode === "table" ? (
+                  // Table View
                   <table className="w-full">
                     <thead>
                       <tr className="border-y border-gray-200">
@@ -648,6 +681,27 @@ const UserManagementPage: React.FC = () => {
                               : "▼"
                             : ""}
                         </th>
+                        <th
+                          className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                          onClick={() => handleSort("status")}
+                        >
+                          Status{" "}
+                          {sortConfig?.key === "status"
+                            ? sortConfig.direction === "asc"
+                              ? "▲"
+                              : "▼"
+                            : ""}
+                        </th>
+                        <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                          onClick={() => handleSort("lastLogin")}
+                        >
+                          Last Login{" "}
+                          {sortConfig?.key === "lastLogin"
+                            ? sortConfig.direction === "asc"
+                            ? "▲"
+                            : "▼"
+                          : ""}
+                        </th>
                         <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
                           Actions
                         </th>
@@ -675,41 +729,68 @@ const UserManagementPage: React.FC = () => {
                                   ? "bg-purple-100 text-purple-800"
                                   : user.role === "MARKETING"
                                   ? "bg-blue-100 text-blue-800"
-                                  : "bg-green-100 text-green-800"
+                                  : "bg-yellow-100 text-yellow-800"
                               }`}
                             >
                               {user.role}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                user.status === "ACTIVE"
+                                  ? "bg-green-100 text-green-800"
+                                  : user.status === "INACTIVE"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {user.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {user.lastLogin
+                              ? new Date(user.lastLogin).toLocaleString()
+                              : "Never"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {user.role !== "ADMIN" && (
                               <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    className="h-8 w-8 p-0"
-                                  >
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem
-                                    onClick={() => handleEdit(user.id)}
-                                  >
-                                    <Edit2 className="w-4 h-4 mr-2" />
-                                    Edit
-                                  </DropdownMenuItem>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleEdit(user.id)}>
+                                  <Edit2 className="w-4 h-4 mr-2" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="text-red-600"
+                                  onClick={() => handleDelete(user.id, user.username)}
+                                >
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                                {user.status === "ACTIVE" && (
                                   <DropdownMenuItem
                                     className="text-red-600"
-                                    onClick={() =>
-                                      handleDelete(user.id, user.username)
-                                    }
+                                    onClick={() => handleSuspend(user.id, user.username)}
                                   >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Delete
+                                    Suspend
                                   </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                                )}
+                                {user.status === "SUSPENDED" && (
+                                  <DropdownMenuItem
+                                    className="text-green-600"
+                                    onClick={() => handleActivate(user.id, user.username)}
+                                  >
+                                    Activate
+                                  </DropdownMenuItem>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                             )}
                           </td>
                         </tr>
@@ -729,9 +810,13 @@ const UserManagementPage: React.FC = () => {
                             <h3 className="font-medium text-gray-900">
                               {user.first_name} {user.last_name}
                             </h3>
-                            <p className="text-sm text-gray-500">
-                              @{user.username}
-                            </p>
+                            <p className="text-sm text-gray-500">@{user.username}</p>
+                            <div className="text-xs text-gray-400 mt-2">
+          <span className="font-medium">Last login: </span>
+          {user.lastLogin
+            ? new Date(user.lastLogin).toLocaleString() // Format the date and time
+            : "Never"}
+        </div>
                           </div>
                           {user.role !== "ADMIN" && (
                             <DropdownMenu>
@@ -741,39 +826,64 @@ const UserManagementPage: React.FC = () => {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                  onClick={() => handleEdit(user.id)}
-                                >
+                                <DropdownMenuItem onClick={() => handleEdit(user.id)}>
                                   <Edit2 className="w-4 h-4 mr-2" />
                                   Edit
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="text-red-600"
-                                  onClick={() =>
-                                    handleDelete(user.id, user.username)
-                                  }
+                                  onClick={() => handleDelete(user.id, user.username)}
                                 >
                                   <Trash2 className="w-4 h-4 mr-2" />
                                   Delete
                                 </DropdownMenuItem>
+                                {user.status === "ACTIVE" && (
+                                  <DropdownMenuItem
+                                    className="text-red-600"
+                                    onClick={() => handleSuspend(user.id)}
+                                  >
+                                    Suspend
+                                  </DropdownMenuItem>
+                                )}
+                                {user.status === "SUSPENDED" && (
+                                  <DropdownMenuItem
+                                    className="text-green-600"
+                                    onClick={() => handleActivate(user.id)}
+                                  >
+                                    Activate
+                                  </DropdownMenuItem>
+                                )}
                               </DropdownMenuContent>
                             </DropdownMenu>
                           )}
                         </div>
 
                         <div className="space-y-2">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                            ${
-                              user.role === "ADMIN"
-                                ? "bg-purple-100 text-purple-800"
-                                : user.role === "MARKETING"
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-green-100 text-green-800"
-                            }`}
-                          >
-                            {user.role}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                user.role === "ADMIN"
+                                  ? "bg-purple-100 text-purple-800"
+                                  : user.role === "MARKETING"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}
+                            >
+                              {user.role}
+                            </span>
+
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                user.status === "ACTIVE"
+                                  ? "bg-green-100 text-green-800"
+                                  : user.status === "INACTIVE"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {user.status}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     ))}

@@ -1,5 +1,7 @@
 package com.olivecrm.entity;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -27,8 +29,18 @@ public class Employee {
     @Column(name = "role", nullable = false)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private Status status;
+
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
+
     // Enum for Role
     public enum Role { MARKETING, SALES, ADMIN }
+
+    // Enum for Status
+    public enum Status { ACTIVE, INACTIVE, SUSPENDED }
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -56,4 +68,12 @@ public class Employee {
     public Role getRole() { return role; }
 
     public void setRole(Role role) { this.role = role; }
+
+    public Status getStatus() { return status; }
+
+    public void setStatus(Status status) { this.status = status; }
+
+    public LocalDateTime getLastLogin() { return lastLogin; }
+
+    public void setLastLogin(LocalDateTime lastLogin) { this.lastLogin = lastLogin; }
 }
