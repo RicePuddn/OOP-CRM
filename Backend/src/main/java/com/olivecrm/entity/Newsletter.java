@@ -24,7 +24,8 @@ public class Newsletter {
 
     @Column(name = "target", nullable = false) private String target;
 
-    @Column(name = "content", nullable = false) private String content;
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    private String content;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id", referencedColumnName = "id", nullable = false)
