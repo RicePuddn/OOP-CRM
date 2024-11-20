@@ -158,6 +158,26 @@ export default function CustomerSegmentation() {
     }
   };
 
+  const renderCustomerCounts = (category: "Recency" | "Frequency" | "Monetary") => {
+    const categorySegments = Object.entries(segments).filter(
+      ([, segment]) => segment.segmentCategory === category
+    );
+
+    return (
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <h4 className="text-lg font-semibold mb-4 text-gray-900">Customer Distribution</h4>
+        <div className="space-y-3">
+          {categorySegments.map(([type, segment]) => (
+            <div key={type} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span className="font-medium text-gray-700">{type}</span>
+              <span className="text-indigo-600 font-semibold">{segment.customerIds.length}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   //getting the data for the chart
   const getChartData = (category: "Recency" | "Frequency" | "Monetary"): ChartData<"pie"> => {
     const categorySegments = Object.entries(segments).filter(
@@ -211,26 +231,6 @@ export default function CustomerSegmentation() {
     }
   };
 
-  const renderCustomerCounts = (category: "Recency" | "Frequency" | "Monetary") => {
-    const categorySegments = Object.entries(segments).filter(
-      ([, segment]) => segment.segmentCategory === category
-    );
-
-    return (
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <h4 className="text-lg font-semibold mb-4 text-gray-900">Customer Distribution</h4>
-        <div className="space-y-3">
-          {categorySegments.map(([type, segment]) => (
-            <div key={type} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-              <span className="font-medium text-gray-700">{type}</span>
-              <span className="text-indigo-600 font-semibold">{segment.customerIds.length}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
   //Search Component
   const handleSearch = () => {
     setIsSearching(true);
@@ -240,7 +240,7 @@ export default function CustomerSegmentation() {
       segmentCategory: string;
     }[] = [];
 
-    const trimmedQuery = searchQuery.trim();
+    const trimmedQuery = searchQuery.trim().toLowerCase();
     const isNumericSearch = !isNaN(Number(trimmedQuery));
 
     Object.entries(segments).forEach(([segmentType, segment]) => {
@@ -255,8 +255,9 @@ export default function CustomerSegmentation() {
             });
           }
         } else {
-          // For text searches, do case-insensitive partial match on customer name
-          if (customer.name.toLowerCase().includes(trimmedQuery.toLowerCase())) {
+          // For text searches, do exact match on customer name
+          const customerNameLower = customer.name.toLowerCase();
+          if (customerNameLower === trimmedQuery) {
             results.push({
               customer,
               segmentType,
