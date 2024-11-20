@@ -41,8 +41,24 @@ const LoginForm: React.FC = () => {
         alert("Login failed. Please check your credentials.");
       }
     } catch (error) {
-      console.error("An error occurred during login:", error);
-      alert("An error occurred. Please try again.");
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          const status = error.response.status;
+          const errorMessage = error.response.data;
+  
+          if (status === 403) {
+            alert("User account is suspended. Please contact admin.");
+          } else if (status === 401) {
+            alert("Invalid username or password");
+          } else {
+            alert("An unexpected error occurred. Please try again.");
+          }
+        } else {
+          alert("Unable to connect to server. Please try again later.");
+        }
+      } else {
+        alert("An error occurred. Please try again.");
+      }
     }
   };
 

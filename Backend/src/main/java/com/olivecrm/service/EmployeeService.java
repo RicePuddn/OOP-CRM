@@ -1,5 +1,6 @@
 package com.olivecrm.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,6 +44,8 @@ public class EmployeeService {
             throw new Exception("You have no permission to create an admin account.");
         }
         employee.setRole(role);
+
+        employee.setStatus(Employee.Status.ACTIVE);
 
         return employeeRepository.save(employee); // Save the new user to the database
     }
@@ -109,10 +112,17 @@ public class EmployeeService {
             Employee employee = employeeOptional.get();
             System.out.println("Employee found: " + employee.getUsername());
 
+            // Check if the user's account is suspended
+            if (employee.getStatus() == Employee.Status.SUSPENDED) {
+                throw new RuntimeException("User account is suspended. Please contact admin.");
+            }
+
             boolean matchPassword = PasswordUtil.checkPassword(password, employee.getPassword());
 
             if (matchPassword) {
                 System.out.println("Password matched for user: " + employee.getUsername());
+                employee.setLastLogin(LocalDateTime.now());
+                employeeRepository.save(employee);
                 return employee;
             } else {
                 System.out.println("Password mismatch for user: " + employee.getUsername());
@@ -122,5 +132,18 @@ public class EmployeeService {
             System.out.println("No employee found with username: " + username);
             throw new RuntimeException("Invalid username");
         }
+    }
+
+    // Method to update user status
+    public Employee updateUserStatus(Long id, Employee.Status newStatus) throws Exception {
+        Optional<Employee> employeeOptional = employeeRepository.findById(id);
+
+        if (!employeeOptional.isPresent()) {
+            throw new Exception("Employee with ID " + id + " not found");
+        }
+
+        Employee employee = employeeOptional.get();
+        employee.setStatus(newStatus);
+        return employeeRepository.save(employee);
     }
 }

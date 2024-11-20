@@ -94,12 +94,35 @@ public class EmployeeController {
         try {
             Employee employee = employeeService.login(
                 loginRequest.getUsername(), loginRequest.getPassword());
-            // You can create and return a JWT token or session information here
-            return ResponseEntity.ok(
-                employee); // Or return relevant info such as a token
+            return ResponseEntity.ok(employee);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body("Invalid username or password");
+            if (e.getMessage().equals("User account is suspended. Please contact admin.")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
         }
     }
+
+    // SUSPEND EMPLOYEE
+    @PutMapping("/suspend/{id}")
+    public ResponseEntity<?> suspendEmployee(@PathVariable Long id) {
+        try {
+            Employee suspendedEmployee = employeeService.updateUserStatus(id, Employee.Status.SUSPENDED);
+            return ResponseEntity.ok("User " + suspendedEmployee.getUsername() + " suspended successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // ACTIVATE EMPLOYEE
+    @PutMapping("/activate/{id}")
+    public ResponseEntity<?> activateEmployee(@PathVariable Long id) {
+        try {
+            Employee activatedEmployee = employeeService.updateUserStatus(id, Employee.Status.ACTIVE);
+            return ResponseEntity.ok("User " + activatedEmployee.getUsername() + " activated successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }
