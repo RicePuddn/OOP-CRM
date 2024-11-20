@@ -22,6 +22,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
         @Query("SELECT DISTINCT o FROM Order o WHERE " +
                         "(:customerId IS NULL OR o.customer.cID = :customerId) AND " +
                         "(:salesType IS NULL OR o.salesType = :salesType) AND " +
+                        "(:totalCost IS NULL OR ROUND(o.totalCost, 2) = ROUND(CAST(:totalCost AS double), 2)) AND " +
                         "(:#{#productIds == null} = true OR o.product.pID IN (:productIds)) AND " +
                         "(:singleDate IS NULL OR o.salesDate = :singleDate) AND " +
                         "((:startDate IS NULL AND :endDate IS NULL) OR " +
@@ -29,6 +30,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
         Page<Order> findByFilters(
                         @Param("customerId") Integer customerId,
                         @Param("salesType") String salesType,
+                        @Param("totalCost") Double totalCost,
                         @Param("productIds") List<Integer> productIds,
                         @Param("singleDate") LocalDate singleDate,
                         @Param("startDate") LocalDate startDate,

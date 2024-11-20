@@ -150,7 +150,6 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    // Helper class for grouping products
     private static class ProductInfo {
         private final Integer pID;
         private final String productName;
@@ -216,12 +215,13 @@ public class OrderService {
     public Page<Order> getOrdersByFilters(
             Integer customerId,
             String salesType,
+            Double totalCost,
             List<Integer> productIds,
             LocalDate singleDate,
             LocalDate startDate,
             LocalDate endDate,
             Pageable pageable) {
-        return orderRepository.findByFilters(customerId, salesType, productIds, singleDate, startDate, endDate,
+        return orderRepository.findByFilters(customerId, salesType, totalCost, productIds, singleDate, startDate, endDate,
                 pageable);
     }
 
@@ -256,6 +256,7 @@ public class OrderService {
         Page<Order> filteredOrders = getOrdersByFilters(
                 customerId,
                 salesType,
+                null,
                 productIds,
                 null, // singleDate
                 startDate,

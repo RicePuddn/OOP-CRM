@@ -27,7 +27,7 @@ interface Filters {
 
 interface Order {
   id: number;
-  customer: { 
+  customer: {
     cid: number;
     first_name?: string;
     last_name?: string;
@@ -165,40 +165,49 @@ export default function OrdersTable() {
 
   const handleDeleteOrder = async (orderId: number) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/orders/${orderId}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `http://localhost:8080/api/orders/${orderId}`,
+        {
+          method: "DELETE",
+        }
+      );
       if (response.ok) {
         fetchOrders();
       } else {
-        console.error('Failed to delete order');
-        alert('Failed to delete order. Please try again.');
+        console.error("Failed to delete order");
+        alert("Failed to delete order. Please try again.");
       }
     } catch (error) {
-      console.error('Error deleting order:', error);
-      alert('Error deleting order. Please try again.');
+      console.error("Error deleting order:", error);
+      alert("Error deleting order. Please try again.");
     }
   };
 
-  const handleEditCustomer = async (customerId: number, data: { first_name: string; last_name: string; zipcode: string }) => {
+  const handleEditCustomer = async (
+    customerId: number,
+    data: { first_name: string; last_name: string; zipcode: string }
+  ) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/customers/${customerId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+      const response = await fetch(
+        `http://localhost:8080/api/customers/${customerId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
 
       if (response.ok) {
         fetchOrders(); // Refresh the orders list to show updated customer details
       } else {
-        console.error('Failed to update customer');
-        alert('Failed to update customer. Please try again.');
+        console.error("Failed to update customer");
+        alert("Failed to update customer. Please try again.");
       }
     } catch (error) {
-      console.error('Error updating customer:', error);
-      alert('Error updating customer. Please try again.');
+      console.error("Error updating customer:", error);
+      alert("Error updating customer. Please try again.");
     }
   };
 
@@ -502,9 +511,9 @@ export default function OrdersTable() {
                           onClick={() => {
                             setSelectedCustomer({
                               id: order.customer.cid,
-                              first_name: order.customer.first_name || '',
-                              last_name: order.customer.last_name || '',
-                              zipcode: order.customer.zipcode || ''
+                              first_name: order.customer.first_name || "",
+                              last_name: order.customer.last_name || "",
+                              zipcode: order.customer.zipcode || "",
                             });
                             setEditDialogOpen(true);
                           }}
@@ -577,7 +586,7 @@ export default function OrdersTable() {
           initialData={{
             first_name: selectedCustomer.first_name,
             last_name: selectedCustomer.last_name,
-            zipcode: selectedCustomer.zipcode
+            zipcode: selectedCustomer.zipcode,
           }}
         />
       )}

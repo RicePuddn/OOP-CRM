@@ -121,6 +121,7 @@ public class OrderController {
     public ResponseEntity<Page<Order>> getOrdersByFilters(
         @RequestParam(required = false) Integer customerId,
         @RequestParam(required = false) String salesType,
+        @RequestParam(required = false) String totalCost,
         @RequestParam(required = false) List<Integer> productIds,
         @RequestParam(required = false) String dateFilterType,
         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd")
@@ -131,8 +132,17 @@ public class OrderController {
         LocalDate endDate, Pageable pageable) {
 
         logger.info(
-            "Received filter request - dateFilterType: {}, singleDate: {}, startDate: {}, endDate: {}, productIds: {}",
-            dateFilterType, singleDate, startDate, endDate, productIds);
+            "Received filter request - dateFilterType: {}, singleDate: {}, startDate: {}, endDate: {}, productIds: {}, totalCost: {}",
+            dateFilterType, singleDate, startDate, endDate, productIds, totalCost);
+
+        Double parsedTotalCost = null;
+        if (totalCost != null && !totalCost.isEmpty()) {
+            try {
+                parsedTotalCost = Double.parseDouble(totalCost.replace("$", "").trim());
+            } catch (NumberFormatException e) {
+                logger.warn("Invalid totalCost format: {}", totalCost);
+            }
+        }
 
         Page<Order> orders;
         try {
@@ -140,18 +150,18 @@ public class OrderController {
                 logger.info("Applying single date filter for date: {}",
                             singleDate);
                 orders = orderService.getOrdersByFilters(customerId, salesType,
-                                                         productIds, singleDate,
+                                                         parsedTotalCost, productIds, singleDate,
                                                          null, null, pageable);
             } else if ("range".equals(dateFilterType) && startDate != null &&
                        endDate != null) {
                 logger.info("Applying date range filter from {} to {}",
                             startDate, endDate);
                 orders = orderService.getOrdersByFilters(
-                    customerId, salesType, productIds, null, startDate, endDate,
+                    customerId, salesType, parsedTotalCost, productIds, null, startDate, endDate,
                     pageable);
             } else {
                 logger.info("No date filtering applied");
-                orders = orderService.getOrdersByFilters(customerId, salesType,
+                orders = orderService.getOrdersByFilters(customerId, salesType, parsedTotalCost,
                                                          productIds, null, null,
                                                          null, pageable);
             }
@@ -224,16 +234,16 @@ public class OrderController {
             Page<Order> orders;
             if ("single".equals(dateFilterType) && singleDate != null) {
                 orders = orderService.getOrdersByFilters(
-                    customerId, salesType, productIds, singleDate, null, null,
+                    customerId, salesType, null, productIds, singleDate, null, null,
                     Pageable.unpaged());
             } else if ("range".equals(dateFilterType) && startDate != null &&
                        endDate != null) {
                 orders = orderService.getOrdersByFilters(
-                    customerId, salesType, productIds, null, startDate, endDate,
+                    customerId, salesType, null, productIds, null, startDate, endDate,
                     Pageable.unpaged());
             } else {
                 orders = orderService.getOrdersByFilters(
-                    customerId, salesType, productIds, null, null, null,
+                    customerId, salesType, null, productIds, null, null, null,
                     Pageable.unpaged());
             }
 
