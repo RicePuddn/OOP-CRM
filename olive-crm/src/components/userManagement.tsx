@@ -5,6 +5,7 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import {
   Select,
   SelectContent,
@@ -63,6 +64,7 @@ const UserManagementPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(true);
   const [originalUsers, setOriginalUsers] = useState<User[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>("table");
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchUsers();
@@ -85,6 +87,11 @@ const UserManagementPage: React.FC = () => {
       setOriginalUsers(fetchedUsers);
     } catch (error) {
       console.error("Failed to fetch users", error);
+      toast({
+        title: "Error fetching users",
+        description: "Could not fetch users. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -119,11 +126,21 @@ const UserManagementPage: React.FC = () => {
       if (confirmDelete) {
         await axios.delete(`http://localhost:8080/api/employee/delete/${id}`);
         setUsers(users.filter((user) => user.id !== id));
+        toast({
+          title: "User Deleted",
+          description: `User '${username}' has been successfully deleted.`,
+          variant: "success",
+        });
       } else {
         console.log(`User '${id}' not deleted`); // User canceled
       }
     } catch (error) {
       console.error("Failed to delete user", error);
+      toast({
+        title: "Error Deleting User",
+        description: "An error occurred while deleting the user.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -218,9 +235,19 @@ const UserManagementPage: React.FC = () => {
       if (confirmSuspend) {
         await axios.put(`http://localhost:8080/api/employee/suspend/${id}`);
         fetchUsers(); // Refresh the list after updating
+        toast({
+          title: "User Suspended",
+          description: `User '${username}' has been suspended.`,
+          variant: "warning",
+        });
       }
     } catch (error) {
       console.error("Failed to suspend user", error);
+      toast({
+        title: "Error Suspending User",
+        description: "An error occurred while suspending the user.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -232,9 +259,19 @@ const UserManagementPage: React.FC = () => {
       if (confirmActivate) {
         await axios.put(`http://localhost:8080/api/employee/activate/${id}`);
         fetchUsers(); // Refresh the list after updating
+        toast({
+          title: "User Activated",
+          description: `User '${username}' has been activated.`,
+          variant: "success",
+        });
       }
     } catch (error) {
       console.error("Failed to activate user", error);
+      toast({
+        title: "Error Activating User",
+        description: "An error occurred while activating the user.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -278,8 +315,18 @@ const UserManagementPage: React.FC = () => {
                         last_name: "",
                         role: "SALES",
                       });
+                      toast({
+                        title: "User Created",
+                        description: `New user '${newUser.username}' was successfully created.`,
+                        variant: "success",
+                      });
                     } catch (error) {
                       console.error("Failed to create user", error);
+                      toast({
+                        title: "Error Creating User",
+                        description: "An error occurred while creating the user.",
+                        variant: "destructive",
+                      });
                     }
                   }}
                 >
@@ -412,8 +459,18 @@ const UserManagementPage: React.FC = () => {
                       fetchUsers();
                       setShowEditModal(false);
                       setEditedUser(null);
+                      toast({
+                        title: "User Updated",
+                        description: `User '${editedUser.username}' was successfully updated.`,
+                        variant: "success",
+                      });
                     } catch (error) {
                       console.error("Failed to update user", error);
+                      toast({
+                        title: "Error Updating User",
+                        description: "An error occurred while updating the user.",
+                        variant: "destructive",
+                      });
                     }
                   }}
                 >
