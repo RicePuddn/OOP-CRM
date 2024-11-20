@@ -227,7 +227,7 @@ export default function CustomerTopProducts() {
                 <label className="font-semibold mb-2">First Name:</label>
                 <input
                   type="text"
-                  value={selectedCustomer.first_name}
+                  value={selectedCustomer.first_name ?? ""}
                   onChange={(e) =>
                     setSelectedCustomer({
                       ...selectedCustomer,
@@ -242,7 +242,7 @@ export default function CustomerTopProducts() {
                 <label className="font-semibold mb-2">Last Name:</label>
                 <input
                   type="text"
-                  value={selectedCustomer.last_name}
+                  value={selectedCustomer.last_name ?? ""}
                   onChange={(e) =>
                     setSelectedCustomer({
                       ...selectedCustomer,
