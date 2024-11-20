@@ -223,7 +223,7 @@ const UserManagementPage: React.FC = () => {
       console.error("Failed to suspend user", error);
     }
   };
-  
+
   const handleActivate = async (id: number, username: string) => {
     try {
       const confirmActivate = confirm(
@@ -236,7 +236,7 @@ const UserManagementPage: React.FC = () => {
     } catch (error) {
       console.error("Failed to activate user", error);
     }
-  };  
+  };
 
   return (
     <motion.section
@@ -692,15 +692,16 @@ const UserManagementPage: React.FC = () => {
                               : "▼"
                             : ""}
                         </th>
-                        <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                        <th
+                          className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                           onClick={() => handleSort("lastLogin")}
                         >
                           Last Login{" "}
                           {sortConfig?.key === "lastLogin"
                             ? sortConfig.direction === "asc"
-                            ? "▲"
-                            : "▼"
-                          : ""}
+                              ? "▲"
+                              : "▼"
+                            : ""}
                         </th>
                         <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
                           Actions
@@ -756,41 +757,52 @@ const UserManagementPage: React.FC = () => {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {user.role !== "ADMIN" && (
                               <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEdit(user.id)}>
-                                  <Edit2 className="w-4 h-4 mr-2" />
-                                  Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  className="text-red-600"
-                                  onClick={() => handleDelete(user.id, user.username)}
-                                >
-                                  <Trash2 className="w-4 h-4 mr-2" />
-                                  Delete
-                                </DropdownMenuItem>
-                                {user.status === "ACTIVE" && (
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() => handleEdit(user.id)}
+                                  >
+                                    <Edit2 className="w-4 h-4 mr-2" />
+                                    Edit
+                                  </DropdownMenuItem>
                                   <DropdownMenuItem
                                     className="text-red-600"
-                                    onClick={() => handleSuspend(user.id, user.username)}
+                                    onClick={() =>
+                                      handleDelete(user.id, user.username)
+                                    }
                                   >
-                                    Suspend
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Delete
                                   </DropdownMenuItem>
-                                )}
-                                {user.status === "SUSPENDED" && (
-                                  <DropdownMenuItem
-                                    className="text-green-600"
-                                    onClick={() => handleActivate(user.id, user.username)}
-                                  >
-                                    Activate
-                                  </DropdownMenuItem>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                                  {user.status === "ACTIVE" && (
+                                    <DropdownMenuItem
+                                      className="text-red-600"
+                                      onClick={() =>
+                                        handleSuspend(user.id, user.username)
+                                      }
+                                    >
+                                      Suspend
+                                    </DropdownMenuItem>
+                                  )}
+                                  {user.status === "SUSPENDED" && (
+                                    <DropdownMenuItem
+                                      className="text-green-600"
+                                      onClick={() =>
+                                        handleActivate(user.id, user.username)
+                                      }
+                                    >
+                                      Activate
+                                    </DropdownMenuItem>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             )}
                           </td>
                         </tr>
@@ -810,13 +822,15 @@ const UserManagementPage: React.FC = () => {
                             <h3 className="font-medium text-gray-900">
                               {user.first_name} {user.last_name}
                             </h3>
-                            <p className="text-sm text-gray-500">@{user.username}</p>
+                            <p className="text-sm text-gray-500">
+                              @{user.username}
+                            </p>
                             <div className="text-xs text-gray-400 mt-2">
-          <span className="font-medium">Last login: </span>
-          {user.lastLogin
-            ? new Date(user.lastLogin).toLocaleString() // Format the date and time
-            : "Never"}
-        </div>
+                              <span className="font-medium">Last login: </span>
+                              {user.lastLogin
+                                ? new Date(user.lastLogin).toLocaleString() // Format the date and time
+                                : "Never"}
+                            </div>
                           </div>
                           {user.role !== "ADMIN" && (
                             <DropdownMenu>
@@ -826,13 +840,17 @@ const UserManagementPage: React.FC = () => {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEdit(user.id)}>
+                                <DropdownMenuItem
+                                  onClick={() => handleEdit(user.id)}
+                                >
                                   <Edit2 className="w-4 h-4 mr-2" />
                                   Edit
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="text-red-600"
-                                  onClick={() => handleDelete(user.id, user.username)}
+                                  onClick={() =>
+                                    handleDelete(user.id, user.username)
+                                  }
                                 >
                                   <Trash2 className="w-4 h-4 mr-2" />
                                   Delete
@@ -840,7 +858,9 @@ const UserManagementPage: React.FC = () => {
                                 {user.status === "ACTIVE" && (
                                   <DropdownMenuItem
                                     className="text-red-600"
-                                    onClick={() => handleSuspend(user.id)}
+                                    onClick={() =>
+                                      handleSuspend(user.id, user.username)
+                                    }
                                   >
                                     Suspend
                                   </DropdownMenuItem>
@@ -848,7 +868,9 @@ const UserManagementPage: React.FC = () => {
                                 {user.status === "SUSPENDED" && (
                                   <DropdownMenuItem
                                     className="text-green-600"
-                                    onClick={() => handleActivate(user.id)}
+                                    onClick={() =>
+                                      handleActivate(user.id, user.username)
+                                    }
                                   >
                                     Activate
                                   </DropdownMenuItem>
