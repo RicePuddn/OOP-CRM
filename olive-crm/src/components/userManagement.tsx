@@ -781,6 +781,14 @@ const UserManagementPage: React.FC = () => {
                                     Suspend
                                   </DropdownMenuItem>
                                 )}
+                                {user.status === "INACTIVE" && (
+                                  <DropdownMenuItem
+                                    className="text-red-600"
+                                    onClick={() => handleSuspend(user.id, user.username)}
+                                  >
+                                    Suspend
+                                  </DropdownMenuItem>
+                                )}
                                 {user.status === "SUSPENDED" && (
                                   <DropdownMenuItem
                                     className="text-green-600"
@@ -812,11 +820,11 @@ const UserManagementPage: React.FC = () => {
                             </h3>
                             <p className="text-sm text-gray-500">@{user.username}</p>
                             <div className="text-xs text-gray-400 mt-2">
-          <span className="font-medium">Last login: </span>
-          {user.lastLogin
-            ? new Date(user.lastLogin).toLocaleString() // Format the date and time
-            : "Never"}
-        </div>
+                              <span className="font-medium">Last login: </span>
+                              {user.lastLogin
+                                ? new Date(user.lastLogin).toLocaleString() // Format the date and time
+                                : "Never"}
+                            </div>
                           </div>
                           {user.role !== "ADMIN" && (
                             <DropdownMenu>
@@ -840,7 +848,15 @@ const UserManagementPage: React.FC = () => {
                                 {user.status === "ACTIVE" && (
                                   <DropdownMenuItem
                                     className="text-red-600"
-                                    onClick={() => handleSuspend(user.id)}
+                                    onClick={() => handleSuspend(user.id, user.username)}
+                                  >
+                                    Suspend
+                                  </DropdownMenuItem>
+                                )}
+                                 {user.status === "INACTIVE" && (
+                                  <DropdownMenuItem
+                                    className="text-red-600"
+                                    onClick={() => handleSuspend(user.id, user.username)}
                                   >
                                     Suspend
                                   </DropdownMenuItem>
@@ -848,7 +864,7 @@ const UserManagementPage: React.FC = () => {
                                 {user.status === "SUSPENDED" && (
                                   <DropdownMenuItem
                                     className="text-green-600"
-                                    onClick={() => handleActivate(user.id)}
+                                    onClick={() => handleActivate(user.id, user.username)}
                                   >
                                     Activate
                                   </DropdownMenuItem>
@@ -877,7 +893,7 @@ const UserManagementPage: React.FC = () => {
                                 user.status === "ACTIVE"
                                   ? "bg-green-100 text-green-800"
                                   : user.status === "INACTIVE"
-                                  ? "bg-orange-100 text-orange-800"
+                                  ? "bg-yellow-100 text-yellow-800"
                                   : "bg-red-100 text-red-800"
                               }`}
                             >
