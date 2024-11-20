@@ -59,6 +59,7 @@ interface TopProduct {
 
 export default function AllCustomerPurchaseHistory() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
   const [totalCustomers, setTotalCustomers] = useState<number>(0);
   const [totalOrders, setTotalOrders] = useState<number>(0);
   const [averageOrderValue, setAverageOrderValue] = useState<number>(0);
@@ -126,6 +127,8 @@ export default function AllCustomerPurchaseHistory() {
       } catch (error) {
         console.error("Error fetching orders:", error);
         setError("Failed to fetch orders. Please try again later.");
+      } finally {
+        setLoading(false);
       }
     };
     fetchAllOrders();
@@ -154,6 +157,13 @@ export default function AllCustomerPurchaseHistory() {
     });
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-700"></div>
+      </div>
+    );
+  }
   return (
     <motion.section
       initial={{ opacity: 0, scale: 0.8 }}
