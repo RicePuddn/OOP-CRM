@@ -22,15 +22,15 @@ public class EmployeeStatusService {
     @Scheduled(cron = "0 0 0 * * ?")
     public void updateInactiveUsers() {
         // Define the threshold for inactivity (currently 1 month)
-        LocalDateTime sixMonthsAgo = LocalDateTime.now().minus(1, ChronoUnit.MONTHS);
+        LocalDateTime oneMonthAgo = LocalDateTime.now().minus(1, ChronoUnit.MONTHS);
 
         // Find all active employees
         List<Employee> employees = employeeRepository.findAll();
 
         for (Employee employee : employees) {
-            // If the employee's last login is older than 6 months, mark as INACTIVE
+            // If the employee's last login is older than 1 month, mark as INACTIVE
             if (employee.getStatus() == Employee.Status.ACTIVE &&
-                (employee.getLastLogin() == null || employee.getLastLogin().isBefore(sixMonthsAgo))) {
+                (employee.getLastLogin() == null || employee.getLastLogin().isBefore(oneMonthAgo))) {
 
                 employee.setStatus(Employee.Status.INACTIVE);
                 employeeRepository.save(employee);
