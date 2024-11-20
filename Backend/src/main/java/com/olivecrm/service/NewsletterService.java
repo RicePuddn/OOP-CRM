@@ -58,6 +58,7 @@ public class NewsletterService {
     }
 
     public void deleteNewsletter(int id) {
+        System.out.println("Deleting newsletter with id in service: " + id);
         newsletterRepository.deleteById(id);
     }
 
