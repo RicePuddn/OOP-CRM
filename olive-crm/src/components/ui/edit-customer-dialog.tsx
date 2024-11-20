@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./dialog";
 import { Input } from "./input";
 import { Button } from "./button";
@@ -7,7 +7,10 @@ interface EditCustomerDialogProps {
   isOpen: boolean;
   onClose: () => void;
   customerId: number;
-  onSave: (customerId: number, data: { first_name: string; last_name: string; zipcode: string }) => void;
+  onSave: (
+    customerId: number,
+    data: { first_name: string; last_name: string; zipcode: string }
+  ) => void;
   initialData?: {
     first_name: string;
     last_name: string;
@@ -20,7 +23,7 @@ export function EditCustomerDialog({
   onClose,
   customerId,
   onSave,
-  initialData = { first_name: '', last_name: '', zipcode: '' }
+  initialData = { first_name: "", last_name: "", zipcode: "" },
 }: EditCustomerDialogProps) {
   const [formData, setFormData] = useState(initialData);
 
@@ -32,9 +35,9 @@ export function EditCustomerDialog({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -46,7 +49,10 @@ export function EditCustomerDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="customer_id" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="customer_id"
+              className="block text-sm font-medium text-white"
+            >
               Customer ID
             </label>
             <Input
@@ -54,11 +60,14 @@ export function EditCustomerDialog({
               name="customer_id"
               value={customerId}
               disabled
-              className="mt-1 bg-gray-100 text-black disabled:text-black disabled:opacity-100"
+              className="mt-1 bg-gray-300 disabled:text-gray-500 disabled:opacity-100"
             />
           </div>
           <div>
-            <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="first_name"
+              className="block text-sm font-medium text-white"
+            >
               First Name
             </label>
             <Input
@@ -66,11 +75,14 @@ export function EditCustomerDialog({
               name="first_name"
               value={formData.first_name}
               onChange={handleChange}
-              className="mt-1"
+              className="mt-1 bg-gray-100 text-black"
             />
           </div>
           <div>
-            <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="last_name"
+              className="block text-sm font-medium text-white"
+            >
               Last Name
             </label>
             <Input
@@ -78,11 +90,14 @@ export function EditCustomerDialog({
               name="last_name"
               value={formData.last_name}
               onChange={handleChange}
-              className="mt-1"
+              className="mt-1 bg-gray-100 text-black"
             />
           </div>
           <div>
-            <label htmlFor="zipcode" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="zipcode"
+              className="block text-sm font-medium text-white"
+            >
               Zip Code
             </label>
             <Input
@@ -90,14 +105,11 @@ export function EditCustomerDialog({
               name="zipcode"
               value={formData.zipcode}
               onChange={handleChange}
-              className="mt-1"
+              className="mt-1 bg-gray-100 text-black"
             />
           </div>
           <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit">
+            <Button type="submit" className="hover:bg-slate-600">
               Save Changes
             </Button>
           </div>
