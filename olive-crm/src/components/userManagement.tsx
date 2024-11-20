@@ -729,7 +729,7 @@ const UserManagementPage: React.FC = () => {
                                   ? "bg-purple-100 text-purple-800"
                                   : user.role === "MARKETING"
                                   ? "bg-blue-100 text-blue-800"
-                                  : "bg-yellow-100 text-yellow-800"
+                                  : "bg-orange-100 text-orange-800"
                               }`}
                             >
                               {user.role}
@@ -866,7 +866,7 @@ const UserManagementPage: React.FC = () => {
                                   ? "bg-purple-100 text-purple-800"
                                   : user.role === "MARKETING"
                                   ? "bg-blue-100 text-blue-800"
-                                  : "bg-yellow-100 text-yellow-800"
+                                  : "bg-orange-100 text-orange-800"
                               }`}
                             >
                               {user.role}
@@ -877,7 +877,7 @@ const UserManagementPage: React.FC = () => {
                                 user.status === "ACTIVE"
                                   ? "bg-green-100 text-green-800"
                                   : user.status === "INACTIVE"
-                                  ? "bg-yellow-100 text-yellow-800"
+                                  ? "bg-orange-100 text-orange-800"
                                   : "bg-red-100 text-red-800"
                               }`}
                             >

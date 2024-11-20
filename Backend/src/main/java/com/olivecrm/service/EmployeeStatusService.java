@@ -21,8 +21,8 @@ public class EmployeeStatusService {
     // Scheduled task to run every day at midnight
     @Scheduled(cron = "0 0 0 * * ?")
     public void updateInactiveUsers() {
-        // Define the threshold for inactivity (e.g., 6 months)
-        LocalDateTime sixMonthsAgo = LocalDateTime.now().minus(6, ChronoUnit.MONTHS);
+        // Define the threshold for inactivity (currently 1 month)
+        LocalDateTime sixMonthsAgo = LocalDateTime.now().minus(1, ChronoUnit.MONTHS);
 
         // Find all active employees
         List<Employee> employees = employeeRepository.findAll();
