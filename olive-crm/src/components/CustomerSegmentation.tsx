@@ -1,4 +1,3 @@
-// Previous imports and interfaces remain the same until the CustomerSegmentation component
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import type { ChartData, ChartOptions } from "chart.js";
