@@ -164,6 +164,13 @@ export default function AllCustomerPurchaseHistory() {
       </div>
     );
   }
+  if(orders.length === 0){
+    return(
+      <div className="flex items-center justify-center h-screen">
+        <h1 className="text-green-700">No Orders Found!</h1>
+      </div>
+    )
+  }
   return (
     <motion.section
       initial={{ opacity: 0, scale: 0.8 }}
