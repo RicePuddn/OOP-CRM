@@ -27,6 +27,7 @@ import {
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ChartContainer, ChartTooltip } from "./ui/chart";
+import { BarChart as Chart, DollarSign, TrendingUp } from "lucide-react";
 
 interface ProductPurchaseHistoryDTO {
   purchaseCounts: number[];
@@ -45,6 +46,11 @@ interface Customer {
   last_name: string;
   cid: number;
 }
+interface SalesMetrics {
+  totalSales: number;
+  totalAmount: number;
+  averageOrderValue: number;
+}
 
 export default function CustomerTopProducts() {
   const { toast } = useToast();
@@ -54,7 +60,7 @@ export default function CustomerTopProducts() {
   const [topProducts, setTopProducts] = useState<TopProductDTO[]>([]);
   const [customerId, setCustomerId] = useState<Customer[]>([]);
   const [open, setOpen] = useState(false);
-
+  const [metrics, setMetrics] = useState<SalesMetrics>();
   const [purchaseHistory, setPurchaseHistory] =
     useState<ProductPurchaseHistoryDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -91,14 +97,19 @@ export default function CustomerTopProducts() {
       const purchaseHistoryResponse = await axios.get(
         `http://localhost:8080/api/orders/customer/${selectedCustomer.cid}/purchase-history`
       );
+      const metricsResponse = await axios.get(
+        `http://localhost:8080/api/orders/metrics?customerId=${selectedCustomer.cid}`
+      );
 
       if (
         purchaseHistoryResponse.data &&
-        purchaseHistoryResponse.data.purchaseCounts.length > 0
+        purchaseHistoryResponse.data.purchaseCounts.length > 0 &&
+        metricsResponse.data
       ) {
         console.log("Top Products Response:", topProductsResponse.data);
         setTopProducts(topProductsResponse.data);
         setPurchaseHistory(purchaseHistoryResponse.data);
+        setMetrics(metricsResponse.data);
       } else {
         setError("No purchase history found for this customer.");
         setPurchaseHistory(null);
@@ -313,6 +324,64 @@ export default function CustomerTopProducts() {
             </div>
           )}
         </div>
+        {metrics && (
+          <div className="p-8 border rounded-lg shadow w-full bg-white mb-8">
+            <h3 className="text-lg font-semibold mb-4">Customer Sale Metric</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="p-6 bg-white shadow-lg rounded-lg">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-full bg-blue-100 mr-4">
+                    <Chart className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-gray-500 text-sm">
+                      Total Number of Sales
+                    </p>
+                    <p className="text-2xl font-bold text-gray-700">
+                      {metrics?.totalSales}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6 bg-white shadow-lg rounded-lg">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-full bg-green-100 mr-4">
+                    <DollarSign className="h-8 w-8 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-gray-500 text-sm">Total Sales Amount</p>
+                    <p className="text-2xl font-bold text-gray-700">
+                      $
+                      {metrics?.totalAmount.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6 bg-white shadow-lg rounded-lg">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-full bg-purple-100 mr-4">
+                    <TrendingUp className="h-8 w-8 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-gray-500 text-sm">Average Order Value</p>
+                    <p className="text-2xl font-bold text-gray-700">
+                      $
+                      {metrics?.averageOrderValue.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        )}
 
         {purchaseHistory && (
           <div className="p-8 border rounded-lg shadow w-full bg-white">
