@@ -283,6 +283,7 @@ const Newsletter: React.FC = () => {
                     variant: "default",
                     description: "Email sent successfully!",
                 });
+                setSelectedTemplate(null);
             } else {
                 toast({
                     title: "Success",
@@ -331,12 +332,11 @@ const Newsletter: React.FC = () => {
         >
             <div className="w-full px-6 py-3"></div>
 
-            
             {templates.length === 0 ? (
                 <div className="text-center text-gray-500 text-lg">
                     No Template Available
                 </div>
-            ) :!selectedTemplate ? (
+            ) : !selectedTemplate ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 ml-5 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {templates.map((template) => (
                         <div

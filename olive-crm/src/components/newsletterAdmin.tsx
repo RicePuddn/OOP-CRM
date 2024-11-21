@@ -173,6 +173,8 @@ const Newsletter: React.FC = () => {
                         },
                     }
                 );
+                setSelectedTemplate(null);
+                setIsEditing(false);
                 alert("Template updated successfully!");
             } catch (error) {
                 console.error("Error updating template:", error);
