@@ -83,7 +83,10 @@ const Newsletter: React.FC = () => {
                 console.log("Customers by segment:", response.data);
                 const customerNames = response.data.map(
                     (customer: Customer) => ({
-                        name: `${customer.first_name} ${customer.last_name}`,
+                        name:
+                            customer.first_name && customer.last_name
+                                ? `${customer.first_name} ${customer.last_name}`
+                                : `Customer ${customer.cid}`,
                         first_name: customer.first_name,
                         last_name: customer.last_name,
                         cid: customer.cid,
@@ -106,6 +109,9 @@ const Newsletter: React.FC = () => {
 
         if (selectedTemplate) {
             fetchCustomersBySegment(selectedTemplate.target);
+        } else {
+            setSelectedCustomer(null);
+            setSelectedTemplate(null);
         }
     }, [selectedTemplate]);
 
