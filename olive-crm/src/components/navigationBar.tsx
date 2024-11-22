@@ -42,28 +42,7 @@ export default function AppSidebar() {
     Cookies.remove("role");
     router.push("/");
   };
-  const items = [
-    // {
-    //   title: "Dashboard",
-    //   url: "/dashboard",
-    //   icon: Home,
-    // },
-    // {
-    //   title: "Orders",
-    //   url: "/orders",
-    //   icon: ShoppingCart,
-    // },
-    // {
-    //   title: "CSV Upload",
-    //   url: "/csv-upload",
-    //   icon: Upload,
-    // },
-    // {
-    //   title: "Customers",
-    //   url: "/customers",
-    //   icon: UsersRound,
-    // },
-  ];
+  const items = [];
   if (role === "ADMIN") {
     items.push(
       {

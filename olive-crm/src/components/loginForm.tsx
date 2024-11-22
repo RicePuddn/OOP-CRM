@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const LoginForm: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -45,7 +46,7 @@ const LoginForm: React.FC = () => {
         if (error.response) {
           const status = error.response.status;
           const errorMessage = error.response.data;
-  
+
           if (status === 403) {
             alert("User account is suspended. Please contact admin.");
           } else if (status === 401) {
@@ -73,8 +74,14 @@ const LoginForm: React.FC = () => {
     >
       <Card>
         <CardHeader>
-          <CardTitle className="text-center text-xl font-bold text-green-800">
-            Login
+          <CardTitle className=" text-xl font-bold text-green-800">
+            <Image
+              width="150"
+              height="100"
+              src="/images/logo.png"
+              alt="Logo"
+              className="mx-auto"
+            />
           </CardTitle>
         </CardHeader>
         <CardContent>
