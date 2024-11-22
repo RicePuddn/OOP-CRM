@@ -68,5 +68,5 @@ SELECT * FROM employees;
 ### How to Login as Admin
 Use the following username and password to login as an admin:<br>
 - **username**: ironman
-- **password**: iamgenius
-<br>**Notes**: The example password provided here is hashed using bcrypt. Make sure to use the password 'iamgenius', which corresponds to the hash value given in the example when you login.
+- **password**: iamgenius<br>
+**Notes**: The example password provided here is hashed using bcrypt. Make sure to use the password 'iamgenius', which corresponds to the hash value given in the example when you login.
