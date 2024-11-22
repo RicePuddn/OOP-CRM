@@ -6,8 +6,8 @@ Our memembers consists of
 - [Bjorn - Importing data and Performance Metrics](https://www.linkedin.com/in/bjorn-tin-kar-g/)
 - Celeste - Customer Segmentation
 - [Ernest - Customer and Product Analysis](https://www.linkedin.com/in/ernest-heng-2b0aa0168/)
-- Lynn - User Management
-- Sue - Newsletter Template
+- [Lynn - User Management](https://www.linkedin.com/in/yi-ywe-lin-a582281a9/)
+- [Sue - Newsletter Template](https://www.linkedin.com/in/hsu-yati-ko)
 
 ## Prerequisites
 
