@@ -52,3 +52,19 @@ mvn spring-boot:run
 The application will start and be available at `http://localhost:8080`.
 
 ## Creation of Admin Account
+Currently, admin accounts cannot be created through the application interface, either in the frontend or backend, due to the restriction that admins cannot create another admin. To create an admin account, you need to manually insert the admin details directly into the MySQL database. Below is the SQL query to insert a new admin into the employees table.
+
+### SQL Query to Create an Admin Account:
+Make sure you have access to your MySQL database and use the following query to add an admin:
+-- Insert a new admin employee into the employees table
+INSERT INTO employees (username, first_name, last_name, password, role, last_login, status)
+VALUES ('ironman', 'Tony', 'Stark', '$2a$10$W0YqBx7I7ehmXlyMayqR.uMO14iy/0hKFXHayv0lv7hnOWs3dkn9m', 'ADMIN', NEVER, 'ACTIVE');
+
+-- Verify the newly added employee
+SELECT * FROM employees;
+
+### How to Login as Admin
+Use the following username and password to login as an admin:
+Username: ironman
+Password: iamgenius
+Notes: The example password provided here is hashed using bcrypt. Make sure to use the password 'iamgenius', which corresponds to the hash value given in the example when you login.
